@@ -1,186 +1,303 @@
 #' Create plot of methylation values
 #'
-#' @param cpg_values A data.frame with the methylation values of CpGs for different samples such as returned by extract_cpg_values_from_methrix. 
-#' All CpG sites must be located on the same sequence.
-#' @param reference_region An optional GRanges object with a single range. If provided, the x-axis will show the distance of CpG sites to the start of this region with CpGs upstream 
-#' relative to the reference_region shown first. If not, the x-axis will show the start site coordinate of the CpG. 
-#' @param samples_subset An optional vector of sample names to use to subset cpg_values.
-#' @param geom geom to display. Can be one of geom_point, geom_line, geom_boxplot or geom_linepoint which indicates to use both geom_point and geom_line together.
-#' @param sample_groups An optional factor vector giving the names of the groups that samples belong to. Alternatively, can set to "all_samples" to plot and colour each sample separately.
-#' @param group_summary_function The name of a function to use to summarize values from each group before plotting. Can be any function which returns a single value from a numeric vector e.g. mean.
-#' If not set, individual samples are plotted instead of group summaries.
-#' @param group_difference An optional vector of length two with the names of two groups from sample_groups. Providing group_difference specifies to plot the difference between 
-#' the summary values calculated for each group using group_summary_function by subtracting the second group from the first.
-#' @param group_colors An optional vector of colours to be used for each group. Default is to use default ggplot2 colours. If group_difference is provided, should just be a single colour. 
+#' @param meth_site_values A data.frame with values associated with methylation sites. row.names should be the names of methylation sites and all methylation sites must be located on the same sequence. 
+#' @param column_name Name of column in meth_site_values to plot. If not provided, will attempt to use the first column. 
+#' @param reference_region An optional GRanges object with a single range. If provided, the x-axis will 
+#' show the distance of methylation sites to the start of this region with methylation sites upstream 
+#' relative to the reference_region shown first. If not, the x-axis will show the start site coordinate of the methylation site. 
 #' @param title Title of the plot. Default is no title. 
 #' @param xlabel Label for the X axis in the plot. Default is "Genomic Position".
-#' @param ylabel Label for the Y axis in the plot. Default is "CpG Methylation".
-#' @return A ggplot object of the mean methylation values of the CpGs in cpg_values. 
+#' @param ylabel Label for the Y axis in the plot. Default is "Methylation Site Values".
+#' @param low_colour Colour to use for low values. Default value is "cadetblue4".
+#' @param high_colour Colour to use for high values. Default value is "firebrick3".
+#' @return A ggplot object 
 #' @export
-plot_cpg_methylation = function(cpg_values, geom, samples_subset = NULL, sample_groups = NULL, group_summary_function = NULL, group_difference = NULL, group_colours = NULL, reference_region = NULL,
-  title = NULL, xlabel =  "Genomic Position", ylabel = "CpG Methylation") {
+plot_meth_site_values = function(meth_site_values, column_name = NULL, reference_region = NULL, 
+  title = NULL, xlabel = "Genomic Position", ylabel = "Methylation Site Values", low_colour = "cadetblue4", high_colour = "firebrick3") {
   
-  # Check that allowed values are provided for geom
-  match.arg(arg = geom, choices = c("geom_point", "geom_line", "geom_linepoint", "geom_boxplot"), several.ok = F)
+  # Check that if reference_region is provided, it has a length of 1
+  if(!is.null(reference_region) & length(reference_region) > 1){stop("reference_region should have length of 1 if provided")}
   
-  # Make sure group_summary_function is a function
-  if(!is.null(group_summary_function) & !is.function(group_summary_function)){
-    stop("If provided, group_summary_function should be the unquoted name of a function which returns a single value for each row in a data.frame e.g. rowMeans")
+  # Check that all methylation sites are on the same sequence
+  if(length(seqlevels(GenomicRanges::GRanges(row.names(meth_site_values)))) > 1){
+    stop("All methylation sites must be located on the same sequence")
   }
   
-  # If samples_subset not provided, set to all samples in cpg_values
-  if(is.null(samples_subset)){samples_subset = names(cpg_values)}
-  
-  # Subset cpg_values for specified samples if provided
-  cpg_values = dplyr::select(cpg_values, dplyr::all_of(samples_subset))
-  
-  # Set sample_groups if they are not set
-  if(!is.null(sample_groups)){
-    if(all(sample_groups == "all_samples")){sample_groups = factor(samples_subset)} 
-  } else {sample_groups = factor(rep("base", length(samples_subset)))}
-  
-  # Check that sample_groups is the same length as samples if they are provided
-  if(!is.null(sample_groups) & length(samples_subset) != length(sample_groups)){stop("samples and sample_groups are not the same length")}
-  if(!is.factor(sample_groups)){sample_groups = factor(sample_groups)}
-  
-  # Check if group_colours is equal to the number of groups unless using group_difference.
-  if(!is.null(group_colours) & is.null(group_difference) & length(levels(sample_groups)) != length(group_colours)){stop("group_colours must provide one colour for each level in sample_groups")}
-  
-  # Check that group_difference is a vector of length two with the names of two groups in sample_groups if it is provided
-  if(!is.null(group_difference)){
-    if(length(group_difference) != 2 | any(!group_difference %in% sample_groups)){stop("group_difference should be a vector of length two with the names of two groups in sample_groups")}
+  # If column_name not provided, set to name of first column in meth_site_values
+  if(is.null(column_name)){
+    column_name = names(meth_site_values)[1]
   }
   
-  # Create a vector matching samples to groups
-  sample_to_group_vec = setNames(sample_groups, samples_subset)
-  sample_to_group_list = split(samples_subset, sample_groups)
+  # Check that column_name has length 1 
+  if(length(column_name) > 1){stop("column_name should just be a character of length 1")}
   
-  # Check that all CpGs are on the same sequence
-  if(length(seqlevels(GenomicRanges::GRanges(row.names(cpg_values)))) > 1){stop("All CpG sites should be located on the same sequence")}
+  # Check that column_name is in the names of meth_site_values
+  if(!column_name %in% names(meth_site_values)){stop(paste(column_name, "not the name of a column in meth_site_values"))}
   
-  # Summarize values in groups using group_summary_function if specified
-  if(!is.null(group_summary_function)){
-    cpg_values = data.frame(lapply(sample_to_group_list, function(x) apply(dplyr::select(cpg_values, dplyr::any_of(x)), 1, function(x) group_summary_function(x, na.rm = T))))
-    
-    # If group_difference supplied, calculate the difference between the two provided groups
-    if(!is.null(group_difference)){
-      cpg_values = dplyr::transmute(cpg_values, difference = get(group_difference[1]) - get(group_difference[2]))
-      sample_groups = rep("difference", length(samples_subset))
-    }
-  }
+  # Create a data.frame with the selected column
+  plot_df = dplyr::select(meth_site_values, values = !!column_name)
   
-  # Add CpG chromosome_coordinate depending on whether reference_region provided
+  # Add meth_site_start position to plot_df
+  plot_df$meth_site_start = GenomicRanges::start(GenomicRanges::GRanges(row.names(plot_df)))
+  
+  # Decide x-axis values for methylation sites depending on whether reference_region provided
   if(!is.null(reference_region)){
-    reference_region_start = resize(reference_region, 1, fix = "start")
-    cpg_values$chromosome_coordinate = cpg_distances_to_region(reference_region_start, cpg_names = row.names(cpg_values))
-  } else {cpg_values$chromosome_coordinate = GenomicRanges::start(GenomicRanges::GRanges(row.names(cpg_values)))}
+    plot_df$meth_site_plot_position = methodical::stranded_distance(query_gr = GRanges(row.names(plot_df)), subject_gr = reference_region)
+  } else {
+    plot_df$meth_site_plot_position = plot_df$meth_site_start 
+  }
   
-  # Convert cpg_values to long format
-  cpg_values = reshape2::melt(tibble::rownames_to_column(cpg_values, "position_name"), id.var = c("position_name", "chromosome_coordinate"))
-  if(is.null(group_summary_function)){
-    cpg_values$sample_group = sample_to_group_vec[cpg_values$variable]
-  } else {cpg_values$sample_group =  cpg_values$variable}
+  # Subset plot_df for complete rows
+  plot_df = plot_df[complete.cases(plot_df), ]
   
-  # Create a scatter plot of CpG Methylation values
-  methyl_plot = ggplot(data = cpg_values, mapping = aes(x = chromosome_coordinate, y = value, color = sample_group, label = position_name)) +
-    scale_y_continuous(expand = expansion(mult = c(0.01, 0.05))) +
+  # Create a scatter plot of methylation site values and return
+  meth_site_plot = ggplot(data = plot_df, mapping = aes(x = meth_site_plot_position, y = values)) +
+    geom_line(color = "black", alpha = 0.75) +
+    geom_point(shape = 21, colour = "black", size = 4, alpha = 1, aes(fill = values)) +
     theme_bw() +
     theme(plot.title = element_text(hjust = 0.5, size = 24), legend.text = element_text(size = 12),
-    axis.title = element_text(size = 20), axis.text = element_text(size = 18)) +
+      axis.title = element_text(size = 20), axis.text = element_text(size = 18), legend.position = "None") +
     scale_x_continuous(expand = c(0.005, 0.005), labels = scales::comma) +
+    scale_y_continuous(expand = expansion(mult = c(0.05, 0.05))) + 
+    scale_fill_gradient2(low = low_colour, high = high_colour, mid = "white", midpoint = 0) +
     labs(x = xlabel, y = ylabel, title = title, color = NULL)
   
-  if(!is.null(group_colours)){methyl_plot = methyl_plot + scale_color_manual(values = group_colours)}
-  
-  if(geom == "geom_boxplot"){methyl_plot = methyl_plot + geom_boxplot(aes(group = interaction(chromosome_coordinate, sample_group)))}
-  if(geom == "geom_point"){methyl_plot = methyl_plot + geom_point(alpha = 0.75)}
-  if(geom == "geom_line"){methyl_plot = methyl_plot + geom_line(alpha = 0.75)}
-  if(geom == "geom_linepoint"){methyl_plot = methyl_plot + geom_point(alpha = 0.75) + geom_line(alpha = 0.75, show.legend = F)}
-  
-  # If there is only one sample_groups remove the legend
-  if(length(unique(sample_groups)) == 1){methyl_plot = methyl_plot + theme(legend.position = "None")}
-  
-  return(methyl_plot)
+  return(meth_site_plot)
 }
 
-#' Create a scatter plot of methylation and another feature
+#' Create a plot with genomic annotation for a plot returned by plot_meth_site_values()
 #'
-#' Calculates the specified correlation coefficient of two named numeric vectors, matching elements by common names and ignoring elements whose name is not present in both vectors.
+#' Can combine the meth site values plot and genomic annotation together into a single plot or return the annotation plot separately. 
 #'
-#' @param cpg_values A data.frame with the methylation values of CpGs for different samples such as returned by extract_cpg_values_from_methrix. 
-#' @param cpg_name The name of a CpG site in cpg_values.
-#' @param feature A named numeric vector for a feature of interest.
-#' @param sample_groups An optional factor giving the names of the groups that samples belong to. 
-#' @param group_colors An optional vector of colours to be used for each group. Default is to use default ggplot2 colours. 
-#' @param use_names A logical value indicating whether elements in cpg_values and feature should be matched by their names. Default is TRUE.
-#' @param regression_line A logical value indicating whether to add a regression line to the plot. Default is FALSE. 
-#' @param add_correlation A logical value indicating whether to add correlation to the plot. Default if FALSE. 
-#' @param method A character string indicating which correlation coefficient is to be computed. Identical to methods from cor().
-#' @param position A numeric vector of length 2 giving the x and y coordinates on a 0 to 1 scale of the correlation label. 
-#' Default is 90% of max methylation value for the x-coordinate and 0.99 for the y coordinate.
-#' @param label_size Size of the add_correlation. Default is 3.
-#' @param xlab x-axis label. Default is "Methylation Value".
-#' @param ylab y-axis label. Default is  
-#' @param title Title of the plot
-#' @param alpha Value specifying the alpha
+#' @param meth_site_plot A plot of methylation site values (generally methylation level or correlation of methylation with transcription) around a TSS
+#' @param reference_region An optional GRanges object with a single range. 
+#' If provided, the x-axis will show the distance of methylation sites to the start of this region with methylation sites upstream 
+#' relative to the reference_region shown first. If not, the x-axis will show the start site coordinate of the methylation site.
+#' @param annotation_gr A GRanges object giving the locations of different classes of regions. 
+#' There must be a metadata column named region_type giving the class of each region. 
+#' If this is a factor, the levels will be used to order the region classes in the plot. 
+#' @param class_colours An optional named vector of colours to use with different region classes. Names of vector match colours to region classes. 
+#' @param annotation_line_size Linewidth for annotation plot. Default is 5. 
+#' @param annotation_plot_height A value giving the proportion of the height of the plot devoted to the annotation. Default is 0.5. 
+#' @param keep_meth_site_plot_legend A logical value indicating whether to retain the legend of meth_site_plot, if it has one. Default value is FALSE. 
+#' @param annotation_plot_only A logical value indicating whether to return only the annotation plot. Default is to combine meth_site_plot with the annotation. 
 #' @return A ggplot object
 #' @export
-methylation_feature_scatter_plot = function(cpg_values, cpg_name, feature, sample_groups = NULL, group_colours = NULL, 
-  use_names = T, regression_line = F, add_correlation = F, method = "p", position = NULL,
-  label_size = 3, xlab = "Methylation Value", ylab = "Feature Value", title = "Methylation Correlation", alpha = 1){
+annotate_meth_site_plot = function(meth_site_plot, annotation_gr, reference_region = NULL, region_class_colours = NULL, 
+  annotation_line_size = 5, annotation_plot_height = 0.5, keep_meth_site_plot_legend = F, annotation_plot_only = F){
   
-  # Check that an allowed value is used for position
-  if(!is.null(position)){
-    if(!is.numeric(position) | length(position) != 2 | any(position < 0) | any(position > 1)){
-      stop("position should be a numeric vector of length two with each value between 0 and 1")}}
+  # Check that if reference_region is provided, if has a length of 1
+  if(!is.null(reference_region) & length(reference_region) > 1){stop("reference_region should have length of 1 if provided")}
   
-  # Check that cpg_name is in cpg_values 
-  if(length(cpg_name) != 1 || !cpg_name %in% row.names(cpg_values)){stop("cpg_name must be the name of a single cpg_site in cpg_values")}
-  cpg_methylation = setNames(unlist(cpg_values[cpg_name, ]), names(cpg_values))
-  
-  # If position not provided set to 90% of max methylation value and 0.8
-  if(is.null(position)){position = c(max(cpg_methylation, na.rm = T) * 0.95, 0.99)}
-  
-  # Create a scatterplot of two features, matching them by names (or optionally using a preficpg_methylation of names)
-  if(use_names){
-    common_names = intersect(names(cpg_methylation), names(feature))
-    cpg_methylation = cpg_methylation[common_names]
-    feature = feature[common_names]
+  # Check that annotation_gr contains a metadata column called region_type
+  if(is.null(annotation_gr$region_type)){
+    stop("annotation_gr must contain a metadata column called region_type")
   }
   
-  # Get sample names
-  samples = names(cpg_values)
-  
-  # Check that sample_colours and samples are the same length
-  if(!is.null(sample_groups) & length(samples) != length(sample_groups)){stop("samples and sample_groups are not the same length")}
-  
-  # If sample_groups are NULL, set them as sample names. Then check if group_colours is equal to the number of groups.
-  if(!is.null(sample_groups)){if(!is.factor(sample_groups)){sample_groups = factor(sample_groups)}}
-  if(!is.null(group_colours) & length(levels(sample_groups)) != length(group_colours)){stop("group_colours must provide one colour for each level in sample_groups")}
-  
-  # Create a vector matching samples to groups
-  if(!is.null(sample_groups)){sample_to_group_vec = setNames(sample_groups, samples)}
-  
-  feature_df = tibble::rownames_to_column(data.frame(cpg_methylation = cpg_methylation, feature = feature), "sample")
-  if(!is.null(sample_groups)){feature_df$sample_groups = sample_to_group_vec[feature_df$sample]}
-  scatter_plot = ggplot(feature_df, aes(x = cpg_methylation, y = feature, color = sample_groups, label = sample)) +
-      geom_point(alpha = alpha) +
-      scale_y_continuous(expand = expansion(mult = c(0.05, 0.05))) +
-      scale_x_continuous(expand = expansion(mult = c(0.005, 0.005))) +
-      theme_classic() +
-      theme(plot.title = element_text(hjust = 0.5, size = 24), legend.text = element_text(size = 12),
-        axis.title = element_text(size = 20), axis.text = element_text(size = 18)) +
-        labs(x = xlab, y = ylab, title = title, colour = NULL)
-  if(regression_line){scatter_plot = scatter_plot + geom_smooth(method = "lm", se = F, show.legend = F)}
-  if(add_correlation){
-    correlation_label = dplyr::case_when(method %in% c("pearson", "p") ~ "R", method %in% c("spearman", "s") ~ "rho",
-      method %in% c("kendall", "k") ~ "tau")
-    scatter_plot = scatter_plot + ggpubr::stat_cor(
-      method = method, label.sep = "", p.digits = NA, label.x.npc = position[1], label.y.npc = position[2], size = label_size, show.legend = F, 
-      cor.coef.name = correlation_label)
+  # Check that annotation_plot_height is between 0 and 1
+  if(annotation_plot_height < 0 | annotation_plot_height > 1){
+    stop("annotation_plot_height should be between 0 and 1")
   }
-  if(!is.null(group_colours)){scatter_plot = scatter_plot + scale_color_manual(values = group_colours)}
   
-  return(scatter_plot)
+  # Get most extreme methylation sites in plot
+  meth_site_min = row.names(meth_site_plot$data)[which.min(start(GRanges(row.names(meth_site_plot$data))))]
+  meth_site_max = row.names(meth_site_plot$data)[which.max(start(GRanges(row.names(meth_site_plot$data))))]
+  
+  # Create a GRanges object which covers the plot
+  plot_region = reduce(GRanges(c(meth_site_min, meth_site_max)), min.gapwidth = .Machine$integer.max)
+  
+  # Filter annotation regions for those which overlap plot_region
+  annotation_gr = subsetByOverlaps(annotation_gr, plot_region)
+  
+  # Update start and end of annotation_gr so that they lie within plot_region
+  start(annotation_gr) = pmax(start(annotation_gr), start(plot_region))
+  end(annotation_gr) = pmin(end(annotation_gr), end(plot_region))
+  
+  # Decide x-axis values for methylation sites depending on whether reference_region provided
+  if(!is.null(reference_region)){
+    meth_site_plot$data$meth_site_plot_position = methodical::stranded_distance(query_gr = GRanges(row.names(meth_site_plot$data)), subject_gr = reference_region)
+    annotation_gr = methodical::relative_ranges(genomic_regions = annotation_gr, reference_positions = reference_region)
+  } else {
+    meth_site_plot$data$meth_site_plot_position = meth_site_plot$data$meth_site_start 
+  }
+  
+  # Convert annotation_gr to a data.frame
+  annotation_df = data.frame(annotation_gr)
+  
+  # Ensure region_type is a factor and reverse their order so that they are displayed from top to bottom in the plot
+  annotation_df$region_type = factor(annotation_df$region_type)
+  annotation_df$region_type = factor(annotation_df$region_type, levels = rev(levels(annotation_df$region_type)))
+  
+  # Extract axis text size, axis title size and x-axis title from meth_site_plot
+  axis_text_size = theme(meth_site_plot)[[1]]$theme$axis.text$size
+  axis_title_size = theme(meth_site_plot)[[1]]$theme$axis.title$size
+  x_axis_title = meth_site_plot$labels$x
+  
+  # Create colours for region classes
+  if(is.null(region_class_colours)){
+    region_class_colours = setNames(colorRampPalette(RColorBrewer::brewer.pal(11, "Spectral"))(length(levels(annotation_df$region_type))), 
+      levels(annotation_df$region_type))
+  }
+  
+  # Create a linerange plot showing the positions of different genomic elements
+  annotation_plot = ggplot(annotation_df, aes(xmin = start, xmax = end, x = NULL, y = region_type,  group = region_type, color = region_type)) + 
+    geom_linerange(linewidth = annotation_line_size, linetype = "dashed", position = position_dodge(0.06)) +
+    theme_bw() + 
+    theme(plot.title = element_text(hjust = 0.5, size = 24),
+      axis.title = element_text(size = axis_title_size), axis.text = element_text(size = axis_text_size ), legend.position = "None")  +
+    labs(x = x_axis_title, y = "Region Classification") +
+    scale_x_continuous(expand = expansion(mult = c(0, 0)), labels = scales::comma, limits = ggplot_build(meth_site_plot)$layout$panel_params[[1]]$x.range) + 
+    scale_color_manual(values = region_class_colours, guide = guide_legend(override.aes = list(color = "white"))) +
+    # The following code makes the legend invisible
+    theme(
+        legend.text = element_text(color = "white"),
+        legend.title = element_text(color = "white")
+    )
+  
+  # Return annotation_plot is return_only_annotation_plot is TRUE
+  if(annotation_plot_only){return(annotation_plot)}
+  
+  # Get legend from meth_site_plot
+  meth_site_plot_legend = cowplot::get_legend(meth_site_plot)
+  legends = cowplot::plot_grid(meth_site_plot_legend, NULL, nrow = 2, rel_heights = c(1 - annotation_plot_height, annotation_plot_height))
+  
+  # Combine meth_site_plot and annotation_plot
+  annotated_meth_site_plot = cowplot::plot_grid(meth_site_plot + theme(legend.position = "none", 
+    axis.text.x = element_blank(), axis.ticks.x = element_blank(), axis.title.x = element_blank()), annotation_plot, 
+    nrow = 2, align = "v", rel_heights = c(1 - annotation_plot_height, annotation_plot_height))
+  
+  # Add legend if specified
+  if(keep_meth_site_plot_legend){
+    annotated_meth_site_plot = cowplot::plot_grid(annotated_meth_site_plot, legends, rel_widths = c(1, 0.2))
+  }
+  
+  # Return annotated_meth_site_plot
+  return(annotated_meth_site_plot)
 }
 
+#' Add TMRs to a methylation site value plot
+#'
+#' @param meth_site_plot A plot of methylation site values around a TSS.
+#' @param tmrs_gr A GRanges object giving the position of TMRs.
+#' @param reference_region An optional GRanges object with a single range. If provided, the x-axis will show the distance of methylation sites to the start of this region with methylation sites upstream. 
+#' relative to the reference_region shown first. If not, the x-axis will show the start site coordinate of the methylation site.
+#' @param transcript_id An optional transcript ID. If provided, will attempt to filter tmrs_gr and reference_region using a metadata column called transcript_id with 
+#' a value identical to the provided one. 
+#' @param tmr_colours A vector with colours to use for negative and positive TMRs. Defaults to "#7B5C90" for negative and "#BFAB25" for positive TMRs. 
+#' @param linewidth A numeric value to be provided as linewidth for geom_segment(). 
+#' @return A ggplot object
+#' @export
+plot_tmrs = function(meth_site_plot, tmrs_gr, reference_region = NULL, transcript_id = NULL, tmr_colours = c("#A28CB1", "#D2C465"), linewidth = 5){
+  
+  # Filter tmrs_gr and reference_region for transcript_id if provided
+  if(!is.null(transcript_id)){
+    tmrs_gr = tmrs_gr[tmrs_gr$transcript_id == transcript_id]
+    reference_region = reference_region[reference_region$transcript_id == transcript_id]
+  }
+  
+  # Check that if reference_region is provided, it has a length of 1
+  if(!is.null(reference_region) & length(reference_region) > 1){
+    stop("reference_region should have length of 1 if provided")
+  }
+  
+  # Decide positions for tmrs depending on whether reference_region provided
+  if(!is.null(reference_region)){
+      tmrs_df = data.frame(methodical::relative_ranges(
+        genomic_regions = tmrs_gr, reference_positions = reference_region))
+  } else {
+      tmrs_df = data.frame(tmrs_gr)
+  }
+  
+  
+  # Add TMRs to meth_site_plot
+  meth_site_plot_with_tmrs = meth_site_plot +
+  geom_segment(data = tmrs_df, aes(x = start, xend = end, y = 0, yend = 0, color = direction), 
+    linewidth = linewidth) + scale_color_manual(values = setNames(tmr_colours, levels(tmrs_df$direction))) + labs(color = "TMR Direction")
+  
+  # Return meth_site_plot_with_tmrs
+  return(meth_site_plot_with_tmrs)
+  
+}
+
+#' Create plot of Methodical score values for methylation sites around a TSS
+#'
+#' @param meth_site_values A data.frame with correlation values for methylation sites. There should be one column called "cor".
+#' and another called "p_val" which are used to calculate the Methodical score. row.names should be the names of methylation sites and all methylation sites must be located on the same sequence. 
+#' @param reference_region An optional GRanges object with a single range. If provided, the x-axis will show the distance of methylation sites to the start of this region with methylation sites upstream.
+#' relative to the reference_region shown first. If not, the x-axis will show the start site coordinate of the methylation site. 
+#' @param title Title of the plot. Default is no title. 
+#' @param xlabel Label for the X axis in the plot. Default is "Genomic Position".
+#' @param low_colour Colour to use for low values. Default value is "#7B5C90".
+#' @param high_colour Colour to use for high values. Default value is "#BFAB25".
+#' @param p_value_threshold The p-value threshold used to identify TMRs. Default value is 0.005. Set to NULL to not display thresholds. 
+#' @return A ggplot object 
+#' @export
+plot_methodical_scores = function(meth_site_values, reference_region = NULL, 
+  title = NULL, xlabel = "Genomic Position", low_colour = "#7B5C90", high_colour = "#BFAB25", p_value_threshold = 0.005) {
+  
+  # Check that if reference_region is provided, it has a length of 1
+  if(!is.null(reference_region) & length(reference_region) > 1){stop("reference_region should have length of 1 if provided")}
+  
+  # Check that all methylation sites are on the same sequence
+  if(length(seqlevels(GenomicRanges::GRanges(row.names(meth_site_values)))) > 1){
+    stop("All methylation sites must be located on the same sequence")
+  }
+  
+  # Add meth_site_start position to meth_site_values
+  meth_site_values$meth_site_start = GenomicRanges::start(GenomicRanges::GRanges(row.names(meth_site_values)))
+  
+  # Decide x-axis values for methylation sites depending on whether reference_region provided
+  if(!is.null(reference_region)){
+    meth_site_values$meth_site_plot_position = methodical::stranded_distance(query_gr = GRanges(row.names(meth_site_values)), subject_gr = reference_region)
+  } else {
+    meth_site_values$meth_site_plot_position = meth_site_values$meth_site_start 
+  }
+  
+  # Convert p-values into methodical score
+  meth_site_values$methodical_score = log10(meth_site_values$p_val) * -sign(meth_site_values$cor)
+  
+  # Subset meth_site_values for necessary columns
+  meth_site_values = dplyr::select(meth_site_values, meth_site_start, meth_site_plot_position, methodical_score, cor)
+  
+  # Create a scatter plot of methylation site values and return
+  meth_site_plot = ggplot(data = meth_site_values, mapping = aes(x = meth_site_plot_position, y = methodical_score)) +
+    geom_line(color = "black", alpha = 0.75) +
+    geom_point(shape = 21, colour = "black", size = 4, alpha = 1, aes(fill = cor)) +
+    theme_bw() +
+    theme(plot.title = element_text(hjust = 0.5, size = 24), legend.text = element_text(size = 12),
+      axis.title = element_text(size = 20), axis.text = element_text(size = 18), legend.position = "None") +
+    scale_x_continuous(expand = c(0.005, 0.005), labels = scales::comma) +
+    scale_y_continuous(expand = expansion(mult = c(0.05, 0.05))) + 
+    scale_fill_gradient2(low = low_colour, high = high_colour, mid = "white", midpoint = 0) +
+    labs(x = xlabel, y = "Methodical Score", title = title, color = NULL) 
+  
+  # Add TMR thresholds if specified
+  if(!is.null(p_value_threshold)){
+    meth_site_plot = meth_site_plot + 
+      geom_hline(yintercept = log10(p_value_threshold), linetype = "dashed", colour = low_colour) +
+      geom_hline(yintercept = -log10(p_value_threshold), linetype = "dashed", colour = high_colour) 
+  }
+  
+  return(meth_site_plot)
+}
+
+###
+
+#' Add smoothed methodical scores curve to a methylation site plot
+#'
+#' @param meth_site_plot A plot of methylation site values around a TSS.
+#' @param smoothed_methodical_scores A vector with smoothed methodical scores for each methylation site in meth_site_plot.
+#' @param colour Colour of the smoothed curve. Default is "black"
+#' @param linewidth Line width of the smoothed curve. Default value is 1.
+#' @param alpha Alpha value for the curve. Default value is 0.75. 
+#' @return A ggplot object 
+#' @export
+plot_smoothed_methodical_scores = function(meth_site_plot, smoothed_methodical_scores, colour = "black", linewidth = 1, alpha = 0.75) {
+  
+  # Add smoothed Methodical scores to meth_site_plot and return
+  meth_site_plot_with_curve = meth_site_plot + 
+    geom_line(mapping = aes(y = smoothed_methodical_scores), 
+      color = colour, alpha = alpha, linewidth = linewidth)
+  
+  return(meth_site_plot_with_curve)
+}

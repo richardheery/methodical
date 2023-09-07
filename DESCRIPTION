@@ -1,41 +1,17 @@
 Package: methodical
-Title: Integrate CpG methylation data and other related data types such as RNA-seq.
+Title: What the Package Does (One Line, Title Case)
 Version: 0.0.0.9000
 Authors@R: 
-    person("Richard", "Heery", "", "richard.heery@ieo.it", role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0001-8067-3114"))
-Description: Extract and plot CpG methylation data from WGBS and Illumina array data and correlate it with other features of interest.
-biocViews: DNAMethylation, GeneRegulation
-License: MIT + file LICENSE
+    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: What the package does (one paragraph).
+License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
+    license
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.2
-Suggests: 
-    biomaRt,
-    knitr,
-    rmarkdown
-VignetteBuilder: knitr
-Imports: 
-    GenomicRanges,
-    rtracklayer,
-    dplyr,
-    ggpubr,
-    reshape2,
-    scales,
-    tibble,
-    tools,
-    psych,
-    gtools,
-    shiny,
-    DT,
-    doRNG,
-    WGCNA,
-    doParallel,
-    foreach,
-    parallel,
-    RColorBrewer,
-    SummarizedExperiment,
-    data.table
 Depends: 
-    methrix,
-    ggplot2
+    ggplot2,
+    R (>= 2.10),
+    SummarizedExperiment
+LazyData: true
