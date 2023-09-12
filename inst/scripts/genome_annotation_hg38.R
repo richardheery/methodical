@@ -24,7 +24,7 @@ download.file(url = "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/r
   destfile = "genome_annotation_files/gencode.v38.annotation.gtf.gz")
 
 # Import Gencode annotation
-system.time({gencode_annotation = rtracklayer::import.gff2("genome_annotation_files/gencode.v38.annotation.gtf.gz")})
+gencode_annotation = rtracklayer::import.gff2("genome_annotation_files/gencode.v38.annotation.gtf.gz")
 
 # Add a column to gencode_annotation  classifying transcripts
 gencode_annotation$region_type = gencode_annotation $gene_type
@@ -68,8 +68,8 @@ transcript_ranges_hg38_list = transcript_ranges_hg38_list[names(exon_ranges_hg38
 
 # Find introns for each transcript by taking the set difference for the range of the transcript and its exons
 # Takes about 5 hours to finish!
-system.time({intron_ranges_hg38_list = lapply(seq_along(transcript_ranges_hg38_list), function(transcript) 
-  GenomicRanges::setdiff(transcript_ranges_hg38_list[[transcript]], exon_ranges_hg38_list[[transcript]]))})
+intron_ranges_hg38_list = lapply(seq_along(transcript_ranges_hg38_list), function(transcript) 
+  GenomicRanges::setdiff(transcript_ranges_hg38_list[[transcript]], exon_ranges_hg38_list[[transcript]]))
 
 # Name intron_ranges_hg38_list with transcripts introns come from
 names(intron_ranges_hg38_list) = names(transcript_ranges_hg38_list)
@@ -77,7 +77,7 @@ saveRDS(intron_ranges_hg38_list, "genome_annotation_files/intron_ranges_hg38_lis
 intron_ranges_hg38_list = readRDS("genome_annotation_files/intron_ranges_hg38_list.rds")
 
 # Convert intron_ranges_hg38_list into a single GRanges and set region_type as intron
-system.time({intron_ranges_hg38 = unlist(GRangesList(intron_ranges_hg38_list))})
+intron_ranges_hg38 = unlist(GRangesList(intron_ranges_hg38_list))
 
 # Add names of transcript as metadata column
 intron_ranges_hg38$transcript_id = names(intron_ranges_hg38)

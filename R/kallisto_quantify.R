@@ -6,13 +6,13 @@
 #' @export
 kallisto_index = function(path_to_kallisto, transcripts_fasta, index_name = "kallisto_index.idx"){
   
-    # Check if kallisto can be executed from the given path
-  if(suppressWarnings(system(paste(path_to_kallisto, "version"), ignore.stdout = T, ignore.stderr = F)) != 0){
-    stop("kallisto could can not be executed from given path")
-  }
-  
   # Get the canonical path to kallisto
   path_to_kallisto = normalizePath(path_to_kallisto)
+  
+  # Check if kallisto can be executed from the given path
+  if(suppressWarnings(system2(command = path_to_kallisto, args = "version", stdout = NULL, stderr = NULL)) != 0){
+    stop("kallisto could can not be executed from given path")
+  }
   
   # Create the index
   system2(command = path_to_kallisto,
@@ -41,13 +41,13 @@ kallisto_index = function(path_to_kallisto, transcripts_fasta, index_name = "kal
 kallisto_quantify = function(path_to_kallisto, kallisto_index, forward_fastq_files, reverse_fastq_files, 
   sample_names, output_directory, merged_output_prefix = "kallisto_transcript", messages_file = "", n_cores = 1, number_bootstraps  = 100){
   
-  # Check if kallisto can be executed from the given path
-  if(suppressWarnings(system(paste(path_to_kallisto, "version"), ignore.stdout = T, ignore.stderr = F)) != 0){
-    stop("kallisto could can not be executed from given path")
-  }
-  
   # Get the canonical path to kallisto
   path_to_kallisto = normalizePath(path_to_kallisto)
+  
+  # Check if kallisto can be executed from the given path
+  if(suppressWarnings(system2(command = path_to_kallisto, args = "version", stdout = NULL, stderr = NULL)) != 0){
+    stop("kallisto could can not be executed from given path")
+  }
   
   # Check that path to kallisto_index exits
   if(!file.exists(kallisto_index)){stop("kallisto_index could not be found")}
@@ -93,7 +93,7 @@ kallisto_quantify = function(path_to_kallisto, kallisto_index, forward_fastq_fil
   
   # Loop through each pair of FASTQs and run kallisto
   for(pair in seq_along(forward_fastq_files)){
-    print(paste("Starting to process FASTQ pair", pair))
+    message(paste("Starting to process FASTQ pair", pair))
     system2(command = path_to_kallisto,
       args = paste(
         "quant -i", kallisto_index, "-t", n_cores, "-b", number_bootstraps, "-o", 
