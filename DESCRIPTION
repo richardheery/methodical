@@ -1,17 +1,31 @@
 Package: methodical
-Title: What the Package Does (One Line, Title Case)
+Title: Discovering genomic regions where methylation is strongly associated with transcriptional activity
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    person("Richard", "Heery", , "richardheery@gmail.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-8067-3114"))
+Description: DNA methylation is generally considered to be associated with transcriptional silencing. However, comprehensive, genome-wide investigation of this relationship requires the evaluation of
+	potentially millions of correlation values between the methylation of individual genomic loci and expression of associated transcripts in a relatively large numbers of samples.  
+	Methodical makes this process quick and easy while keeping a low memory footprint. It also provides a novel method for identifying regions where a number of methylation sites are consistently strongly 
+	associated with transcriptional expression. In addition, Methodical enables housing DNA methylation data from diverse sources (e.g. WGBS, RRBS and methylation arrays) with a common framework, 
+	lifting over DNA methylation data between different genome builds and creating base-resolution plots of the association between DNA methylation and 
+	transcriptional activity at transcriptional start sites. 
+License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.2
 Depends: 
+    GenomicRanges,
     ggplot2,
     R (>= 2.10),
     SummarizedExperiment
 LazyData: true
+Imports: 
+    data.table,
+    doParallel,
+    HDF5Array,
+    RcppRoll,
+    rtracklayer,
+    tidyr
+Suggests: 
+    BSgenome
