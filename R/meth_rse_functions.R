@@ -33,6 +33,41 @@ extract_granges_meth_site_values = function(meth_rse, genomic_regions, samples_s
   
 }
 
+#' Randomly sample methylation sites from a methylation RSE. 
+#' 
+#' @param meth_rse A RangedSummarizedExperiment for methylation data.
+#' @param n_sites Number of sites to randomly sample. Default is 1000.
+#' @param genomic_ranges_filter An optional GRanges object used to first subset meth_rse. 
+#' Sites will then be chosen randomly from those overlapping these ranges.
+#' @param invert_filter A logical value indicating whether to invert the genomic_ranges_filter so 
+#' as to exclude sites overlapping these regions. Default value is FALSE.
+#' @param samples_subset Optional sample names used to subset meth_rse.
+#' @param assay_number The assay from meth_rse to extract values from. Default is the first assay.
+#' @return A data.frame with the methylation site values for all sites in meth_rse which overlap genomic_ranges. 
+#' Row names are the coordinates of the sites as a character vector. 
+#' @export
+sample_meth_sites = function(meth_rse, n_sites = 1000, genomic_ranges_filter = NULL, 
+  invert_filter = F, samples_subset = NULL, assay_number = 1){
+  
+  # If genomic_ranges_filter provided, subset meth_rse with it
+  if(!is.null(genomic_ranges_filter)){
+    meth_rse = IRanges::subsetByOverlaps(meth_rse, genomic_ranges_filter, invert = invert_filter)
+  }
+  
+  # Randomly sample specified number of sites from meth_rse
+  sites = sample(nrow(meth_rse), n_sites, replace = F)
+  
+  # Subset meth_rse for random sites
+  meth_rse_sites = meth_rse[sites, ]
+  
+  # Subset for samples if specified
+  if(!is.null(samples_subset)){
+    meth_rse_sites = meth_rse_sites[, samples_subset]
+  }
+  return(meth_rse_sites)
+  
+}
+  
 #' Liftover rowRanges of a RangedSummarizedExperiment for methylation data from one genome build to another
 #' 
 #' Removes methylation sites which cannot be mapped to the target genome build and those which result in 
