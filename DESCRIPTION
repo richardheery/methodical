@@ -21,6 +21,7 @@ Depends:
     SummarizedExperiment
 LazyData: true
 Imports: 
+    cowplot,
     data.table,
     doParallel,
     HDF5Array,
