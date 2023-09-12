@@ -135,7 +135,9 @@ annotate_meth_site_plot = function(meth_site_plot, annotation_gr, reference_regi
   
   # Create colours for region classes
   if(is.null(region_class_colours)){
-    region_class_colours = setNames(colorRampPalette(RColorBrewer::brewer.pal(11, "Spectral"))(length(levels(annotation_df$region_type))), 
+    palette = c("#9E0142", "#D53E4F", "#F46D43", "#FDAE61", "#FEE08B", "#FFFFBF", 
+      "#E6F598", "#ABDDA4", "#66C2A5", "#3288BD", "#5E4FA2")
+    region_class_colours = setNames(colorRampPalette(palette)(length(levels(annotation_df$region_type))), 
       levels(annotation_df$region_type))
   }
   
