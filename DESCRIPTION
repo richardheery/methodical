@@ -1,6 +1,6 @@
 Package: methodical
 Title: Discovering genomic regions where methylation is strongly associated with transcriptional activity
-Version: 0.0.0.9000
+Version: 0.99.0
 Authors@R: 
     person("Richard", "Heery", , "richardheery@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-8067-3114"))
@@ -11,6 +11,8 @@ Description: DNA methylation is generally considered to be associated with trans
 	lifting over DNA methylation data between different genome builds and creating base-resolution plots of the association between DNA methylation and 
 	transcriptional activity at transcriptional start sites. 
 License: GPL (>= 3)
+BugReports: https://support.bioconductor.org/tag/methodical
+biocViews: Software
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.2
