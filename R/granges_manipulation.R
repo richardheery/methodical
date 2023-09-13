@@ -1,6 +1,6 @@
 #' Create a GRanges with methylation sites of interest from a BSgenome. 
 #'
-#' @param bsgenome A BSgenome object.  
+#' @param bsgenome A BSgenome object or the name of one.  
 #' @param pattern A pattern to match in bsgenome. Default is "CG".
 #' @param plus_strand_only A logical value indicating whether to only return matches on "+" strand. Default is TRUE.
 #' @param meth_site_position Which position in the pattern corresponds to the methylation site of interest. 
@@ -8,9 +8,13 @@
 #' @param standard_sequences_only A logical value indicating whether to only return sites 
 #' on standard sequences (those without "-" in their names). Default is TRUE. 
 #' @return A GRanges object where each range has a width of 1 and corresponds to a methylation site of interest.
+#' @examples 
 #' @export
-get_meth_sites_from_genome = function(genome, pattern = "CG", plus_strand_only = TRUE, 
+extract_meth_sites_from_genome = function(genome, pattern = "CG", plus_strand_only = TRUE, 
   meth_site_position = 1, standard_sequences_only = TRUE){
+  
+  # If bsgenome is a character, try to load BSgenome with that name
+  if(is.character(bsgenome)){bsgenome = BSgenome::getBSgenome(bsgenome)}
   
   # Check that meth_site_position is not greater than the length of the pattern
   if(meth_site_position > nchar(pattern)){
