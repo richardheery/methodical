@@ -1,3 +1,53 @@
+#' Create a GRanges with methylation sites of interest from a BSgenome. 
+#'
+#' @param bsgenome A BSgenome object.  
+#' @param pattern A pattern to match in bsgenome. Default is "CG".
+#' @param plus_strand_only A logical value indicating whether to only return matches on "+" strand. Default is TRUE.
+#' @param meth_site_position Which position in the pattern corresponds to the methylation site of interest. 
+#' Default is the first position.
+#' @param standard_sequences_only A logical value indicating whether to only return sites 
+#' on standard sequences (those without "-" in their names). Default is TRUE. 
+#' @return A GRanges object where each range has a width of 1 and corresponds to a methylation site of interest.
+#' @export
+get_meth_sites_from_genome = function(genome, pattern = "CG", plus_strand_only = TRUE, 
+  meth_site_position = 1, standard_sequences_only = TRUE){
+  
+  # Check that meth_site_position is not greater than the length of the pattern
+  if(meth_site_position > nchar(pattern)){
+    stop("meth_site_position cannot be greater than the number of characters in pattern")
+  }
+  
+  # Find sites matching pattern in genome
+  meth_sites_gr = Biostrings::vmatchPattern(pattern, genome)
+  
+  # Filter for matches on "+" strand if specified
+  if(plus_strand_only){
+    meth_sites_gr = meth_sites_gr[GenomicRanges::strand(meth_sites_gr) == "+"]
+  }
+  
+  # Add seqinfo to GRanges
+  GenomeInfoDb::seqinfo(meth_sites_gr) = GenomeInfoDb::seqinfo(genome)
+  
+  # Subset for standard sequences if specified
+  if(standard_sequences_only){
+    standard_sequences = grep("_", names(genome), invert = T, value = T)
+    GenomeInfoDb::seqlevels(meth_sites_gr, pruning.mode = "coarse") = standard_sequences
+  }
+  
+  # Extract the base of interest from the methylation sites
+  meth_sites_gr = GenomicRanges::resize(meth_sites_gr, 1, fix = "start", ignore.strand = F)
+  meth_site_position = meth_site_position - 1
+  meth_sites_gr = GenomicRanges::shift(meth_sites_gr, 
+    shift = meth_site_position * ifelse(GenomicRanges::strand(meth_sites_gr) == "-", -1, 1))
+  
+  # Set strand as "*" if plus_strand_only is TRUE 
+  if(plus_strand_only){GenomicRanges::strand(meth_sites_gr) = "*"}
+  
+  # Return meth_sites_gr
+  return(meth_sites_gr)
+  
+}
+
 #' Expand GRanges
 #'
 #' Expand ranges in a GRanges object upstream and downstream by specified numbers of bases, taking account of strand.
