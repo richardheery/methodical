@@ -18,7 +18,7 @@
 #' @return A data.frame with the summary of methylation of each region in genomic_regions for each sample.
 #' @export
 summarize_region_methylation = function(meth_rse, assay_number = 1, genomic_regions, genomic_regions_names = NULL, 
-  keep_metadata_cols = F, max_sites_per_chunk = NULL, summary_function = base::colMeans, na.rm = T, n_chunks_parallel = 1, ...){
+  keep_metadata_cols = FALSE, max_sites_per_chunk = NULL, summary_function = base::colMeans, na.rm = TRUE, n_chunks_parallel = 1, ...){
   
   # Check that summary_function is a function
   if(!is(summary_function, "function")){stop("summary_function must be the unquoted name of a function")}
@@ -85,7 +85,7 @@ summarize_region_methylation = function(meth_rse, assay_number = 1, genomic_regi
     
     # Summarize methylation values 
     meth_summary = lapply(region_names_to_rows_list, function(x) 
-      summary_function(meth_values[x, , drop = F], na.rm = na.rm))
+      summary_function(meth_values[x, , drop = FALSE], na.rm = na.rm))
     rm(meth_values); gc()
     
     # Combine meth_summary into a single table
@@ -110,7 +110,7 @@ summarize_region_methylation = function(meth_rse, assay_number = 1, genomic_regi
   
   # Put rows in same order as regions in genomic_regions. Adds rows with NA values for regions which didn't overlap any methylation sites. 
   region_methylation = data.table::merge.data.table(genomic_regions_names_df, region_methylation, 
-    by = "region_name", all.x = T, sort = F)
+    by = "region_name", all.x = TRUE, sort = FALSE)
 
   # Add metadata from genomic_regions if specified
   if(keep_metadata_cols){

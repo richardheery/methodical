@@ -165,7 +165,7 @@ split_bedgraphs_into_chunks = function(bedgraphs, seqnames_column, start_column,
     
     # Convert values from percentages to proportions if specified
     if(convert_percentages){
-      if(max(bg$value, na.rm = T) > 1){
+      if(max(bg$value, na.rm = TRUE) > 1){
         bg$value = bg$value/100
       }
     }
@@ -182,7 +182,7 @@ split_bedgraphs_into_chunks = function(bedgraphs, seqnames_column, start_column,
     data.table::setkey(bg, seqnames, start)
     
     # Add values from bg to meth_site_values
-    meth_site_values = merge(meth_site_values, bg, by = c("seqnames", "start"), all.x = T, sort = F)
+    meth_site_values = merge(meth_site_values, bg, by = c("seqnames", "start"), all.x = TRUE, sort = FALSE)
     
     # Remove bg and run the garbage collection
     rm(bg); invisible(gc())
@@ -196,7 +196,7 @@ split_bedgraphs_into_chunks = function(bedgraphs, seqnames_column, start_column,
       # Write values to appropriate file
       data.table::fwrite(x = meth_site_group_values, 
         file = paste0(temp_chunk_dirs[current_chunk], "/", basename(bg_file)),
-        row.names = F, quote = F, na = "NA", compress = "none", nThread = dt_threads)
+        row.names = FALSE, quote = FALSE, na = "NA", compress = "none", nThread = dt_threads)
       
       # Increase current chunk number
       current_chunk = current_chunk + 1
@@ -262,7 +262,7 @@ split_meth_array_files_into_chunks = function(array_files, probe_name_column, be
     
     # Convert values from percentages to proportions if specified
     if(convert_percentages){
-      if(max(array_file$value, na.rm = T) > 1){
+      if(max(array_file$value, na.rm = TRUE) > 1){
         array_file$value = array_file$value/100
       }
     }
@@ -279,7 +279,7 @@ split_meth_array_files_into_chunks = function(array_files, probe_name_column, be
     data.table::setkey(array_file, name)
     
     # Add values from array_file to probe_values
-    probe_values = merge(probe_values, array_file, by = "name", all.x = T, sort = F)
+    probe_values = merge(probe_values, array_file, by = "name", all.x = TRUE, sort = FALSE)
     
     # Remove array_file and run the garbage collection
     rm(array_file); invisible(gc())
@@ -293,7 +293,7 @@ split_meth_array_files_into_chunks = function(array_files, probe_name_column, be
       # Write values to appropriate file
       data.table::fwrite(x = probe_group_values, 
         file = paste0(temp_chunk_dirs[current_chunk], "/", basename(file)),
-        row.names = F, quote = F, na = "NA", compress = "none", nThread = dt_threads)
+        row.names = FALSE, quote = FALSE, na = "NA", compress = "none", nThread = dt_threads)
       
       # Increase current chunk number
       current_chunk = current_chunk + 1
@@ -340,7 +340,7 @@ write_chunks_to_hdf5 = function(temp_chunk_dirs, files_in_chunks, hdf5_sink, hdf
     invisible(HDF5Array::write_block(block = chunk_data, sink = hdf5_sink, viewport = hdf5_grid[[as.integer(chunk)]]))
     
     # Delete chunk temporary directory
-    unlink(chunk_dir, recursive = T)
+    unlink(chunk_dir, recursive = TRUE)
       
   }
   
@@ -367,13 +367,13 @@ create_meth_rse_from_hdf5 = function(hdf5_filepath, hdf5_dir, meth_sites_df, sam
   
   # Update meth_sites to make sure they are in the same order as meth_sites_df
   meth_sites = GenomicRanges::makeGRangesFromDataFrame(meth_sites_df, 
-    keep.extra.columns = T, seqinfo = levels(meth_sites_df$seqnames))
+    keep.extra.columns = TRUE, seqinfo = levels(meth_sites_df$seqnames))
   
   # Create a RangedSummarizedExperiment using the data sets in hdf5_dir, sample_metadata and meth_sites
   rse = SummarizedExperiment::SummarizedExperiment(assays = assay_list, colData = sample_metadata, rowRanges = meth_sites)
   
   # Save rse in parent same directory as hdf5_dir
-  HDF5Array:::.serialize_HDF5SummarizedExperiment(x = rse, rds_path = paste0(hdf5_dir, "/se.rds"), verbose = T)
+  HDF5Array:::.serialize_HDF5SummarizedExperiment(x = rse, rds_path = paste0(hdf5_dir, "/se.rds"), verbose = TRUE)
   
   # Return rse
   return(rse)

@@ -29,7 +29,7 @@ calculate_smoothed_methodical_scores = function(correlation_df, offset_length = 
   
   # Calculate smoothed Methodical score with a weighted rolling mean
   smoothed_score = RcppRoll::roll_mean(x = correlation_df$score, n = (offset_length*2)+1, 
-    weights = wts, normalize = T, na.rm = T, fill = NA, align = "center")
+    weights = wts, normalize = TRUE, na.rm = TRUE, fill = NA, align = "center")
   
   # Return smoothed_score 
   return(smoothed_score)
@@ -117,7 +117,7 @@ find_tmrs = function(correlation_df, offset_length = 10, smoothing_factor = 0.75
   }
   
   # If all p-values are above p_value_threshold or are NA can immediately return an empty GRanges
-  if(sum(correlation_df$p_val > p_value_threshold, na.rm = T) == 0){return(GenomicRanges::GRanges())}
+  if(sum(correlation_df$p_val > p_value_threshold, na.rm = TRUE) == 0){return(GenomicRanges::GRanges())}
   
   # Calculate smoothed methodical scores 
   smoothed_methodical_scores = methodical:::calculate_smoothed_methodical_scores(
@@ -142,16 +142,16 @@ find_tmrs = function(correlation_df, offset_length = 10, smoothing_factor = 0.75
   positive_tmrs = IRanges::append(tmr_gr_list$Positive, GenomicRanges::GRanges())
   
   # Merge TMRs of the same direction in close proximity
-  negative_tmrs_merged = GenomicRanges::reduce(negative_tmrs, ignore.strand = T, min.gapwidth = min_gapwidth)
-  positive_tmrs_merged = GenomicRanges::reduce(positive_tmrs, ignore.strand = T, min.gapwidth = min_gapwidth)
+  negative_tmrs_merged = GenomicRanges::reduce(negative_tmrs, ignore.strand = TRUE, min.gapwidth = min_gapwidth)
+  positive_tmrs_merged = GenomicRanges::reduce(positive_tmrs, ignore.strand = TRUE, min.gapwidth = min_gapwidth)
   
   # Find negative and positive extensions
   negative_extensions = GenomicRanges::setdiff(negative_tmrs_merged, negative_tmrs)
   positive_extensions = GenomicRanges::setdiff(positive_tmrs_merged, positive_tmrs)
   
   # Remove extensions that overlap opposing TMRs
-  negative_extensions = IRanges::subsetByOverlaps(negative_extensions, positive_tmrs, invert = T)
-  positive_extensions = IRanges::subsetByOverlaps(positive_extensions, negative_tmrs, invert = T)
+  negative_extensions = IRanges::subsetByOverlaps(negative_extensions, positive_tmrs, invert = TRUE)
+  positive_extensions = IRanges::subsetByOverlaps(positive_extensions, negative_tmrs, invert = TRUE)
   
   # Combine the extensions with the original TMRs
   negative_tmrs = GenomicRanges::reduce(c(negative_tmrs, negative_extensions))
@@ -165,7 +165,7 @@ find_tmrs = function(correlation_df, offset_length = 10, smoothing_factor = 0.75
   tmr_gr = c(negative_tmrs, positive_tmrs)
   
   # Sort TMRs depending on the strand of the associated TSS
-  tmr_gr = sort(tmr_gr, ignore.strand = T, decreasing = as.character(strand(tss_gr)) == "-")
+  tmr_gr = sort(tmr_gr, ignore.strand = TRUE, decreasing = as.character(strand(tss_gr)) == "-")
   
   # Number TMRs starting from most upstream to most downstream
   tmr_gr$tmr_name = trimws(paste(transcript_id, "tmr", 1:length(tmr_gr), sep = "_"), whitespace = "_")

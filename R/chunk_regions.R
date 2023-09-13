@@ -11,7 +11,7 @@ chunk_regions = function(meth_rse, genomic_regions, max_sites_per_chunk = NULL, 
   GenomeInfoDb::seqlevels(genomic_regions, pruning.mode = "coarse") = GenomeInfoDb::seqlevels(meth_rse)
   
   # Sort genomic_regions ordering by seqlevels of meth_rse
-  genomic_regions = sort(genomic_regions, ignore.strand = T)
+  genomic_regions = sort(genomic_regions, ignore.strand = TRUE)
   
   # Get methylation sites covered in meth_rse
   meth_sites = sort(rowRanges(meth_rse))

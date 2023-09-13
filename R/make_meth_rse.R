@@ -26,8 +26,8 @@
 #' @export
 make_meth_rse_from_bedgraphs = function(bedgraphs, 
   seqnames_column = 1, start_column = 2, end_column = 3, value_column = 4,
-  zero_based = T, convert_percentages = T, decimal_places = NA, 
-  meth_sites, sample_metadata = NULL, hdf5_dir, dataset_name = "beta", overwrite = F, chunkdim = NULL, 
+  zero_based = TRUE, convert_percentages = TRUE, decimal_places = NA, 
+  meth_sites, sample_metadata = NULL, hdf5_dir, dataset_name = "beta", overwrite = FALSE, chunkdim = NULL, 
   temporary_dir = NULL, ncores = 1, ...){
   
   # Check if meth_sites is sorted and print a message if it is not. 
@@ -56,7 +56,7 @@ make_meth_rse_from_bedgraphs = function(bedgraphs,
   
   # Delete temporary_dir if it is empty
   if(length(list.files(temporary_dir)) == 0){
-    unlink(temporary_dir, recursive = T)
+    unlink(temporary_dir, recursive = TRUE)
   }
   
   return(rse)
@@ -87,8 +87,8 @@ make_meth_rse_from_bedgraphs = function(bedgraphs,
 #' @return A RangedSummarizedExperiment with methylation values for all methylation sites in meth_sites. Methylation sites will be in the same order as sort(meth_sites). 
 #' @export
 make_meth_rse_from_array_files = function(array_files, probe_name_column = 1, beta_value_column = 2, 
-  convert_percentages = T, decimal_places = NA, probe_ranges, sample_metadata = NULL, hdf5_dir, dataset_name = "beta", 
-  overwrite = F, chunkdim = NULL, temporary_dir, ncores = 1, ...){
+  convert_percentages = TRUE, decimal_places = NA, probe_ranges, sample_metadata = NULL, hdf5_dir, dataset_name = "beta", 
+  overwrite = FALSE, chunkdim = NULL, temporary_dir, ncores = 1, ...){
   
   # Check that probe_ranges has a metadata column called name and that there are no duplicate names
   if(!"name" %in% names(mcols(probe_ranges))){
@@ -123,7 +123,7 @@ make_meth_rse_from_array_files = function(array_files, probe_name_column = 1, be
   
   # Delete temporary_dir if it is empty
   if(length(list.files(temporary_dir)) == 0){
-    unlink(temporary_dir, recursive = T)
+    unlink(temporary_dir, recursive = TRUE)
   }
   
   return(rse)

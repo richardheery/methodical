@@ -47,7 +47,7 @@ extract_granges_meth_site_values = function(meth_rse, genomic_regions, samples_s
 #' Row names are the coordinates of the sites as a character vector. 
 #' @export
 sample_meth_sites = function(meth_rse, n_sites = 1000, genomic_ranges_filter = NULL, 
-  invert_filter = F, samples_subset = NULL, assay_number = 1){
+  invert_filter = FALSE, samples_subset = NULL, assay_number = 1){
   
   # If genomic_ranges_filter provided, subset meth_rse with it
   if(!is.null(genomic_ranges_filter)){
@@ -55,7 +55,7 @@ sample_meth_sites = function(meth_rse, n_sites = 1000, genomic_ranges_filter = N
   }
   
   # Randomly sample specified number of sites from meth_rse
-  sites = sample(nrow(meth_rse), n_sites, replace = F)
+  sites = sample(nrow(meth_rse), n_sites, replace = FALSE)
   
   # Subset meth_rse for random sites
   meth_rse_sites = meth_rse[sites, ]
@@ -83,7 +83,7 @@ sample_meth_sites = function(meth_rse, n_sites = 1000, genomic_ranges_filter = N
 #' GRangesList to GRanges if all remaining source regions can be uniquely mapped to the target genome. 
 #' @return A RangedSummarizedExperiment with rowRanges lifted over to the genome build indicated by chain. 
 #' @export
-liftover_meth_rse = function(meth_rse, chain, remove_one_to_many_mapping = T, permitted_target_regions = NULL){
+liftover_meth_rse = function(meth_rse, chain, remove_one_to_many_mapping = TRUE, permitted_target_regions = NULL){
   
   # Liftover rowRanges for meth_rse using specified liftover chain file
   liftover_ranges = rtracklayer::liftOver(SummarizedExperiment::rowRanges(meth_rse), chain)

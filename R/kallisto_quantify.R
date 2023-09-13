@@ -107,22 +107,22 @@ kallisto_quantify = function(path_to_kallisto, kallisto_index, forward_fastq_fil
   
   # Create a data.frame with the counts calculated using kallisto for each sample
   kallisto_counts = data.frame(setNames(lapply(abundance_files, function(x) 
-    data.table::fread(x, sep = "\t", header = T)$est_counts), basename(sample_directories)))
+    data.table::fread(x, sep = "\t", header = TRUE)$est_counts), basename(sample_directories)))
   
   # Create a data.frame with the TPM values calculated using kallisto for each sample
   kallisto_tpm = data.frame(setNames(lapply(abundance_files, function(x) 
-    data.table::fread(x, sep = "\t", header = T)$tpm), basename(sample_directories)))
+    data.table::fread(x, sep = "\t", header = TRUE)$tpm), basename(sample_directories)))
   
   # Get names of transcripts and add to output tables
-  transcript_names = data.table::fread(abundance_files[1], sep = "\t", header = T)$target_id
+  transcript_names = data.table::fread(abundance_files[1], sep = "\t", header = TRUE)$target_id
   row.names(kallisto_counts) = transcript_names
   kallisto_counts = tibble::rownames_to_column(kallisto_counts, "transcript_id")
   row.names(kallisto_tpm) = transcript_names
   kallisto_tpm = tibble::rownames_to_column(kallisto_tpm, "transcript_id")
       
   # Write tables to output directory
-  data.table::fwrite(kallisto_counts, paste(output_directory, merged_counts_file, sep = "/"), sep = "\t", row.names = F, quote = F)
-  data.table::fwrite(kallisto_tpm, paste(output_directory, merged_tpm_file, sep = "/"), sep = "\t", row.names = F, quote = F)
+  data.table::fwrite(kallisto_counts, paste(output_directory, merged_counts_file, sep = "/"), sep = "\t", row.names = FALSE, quote = FALSE)
+  data.table::fwrite(kallisto_tpm, paste(output_directory, merged_tpm_file, sep = "/"), sep = "\t", row.names = FALSE, quote = FALSE)
   
   # Invisibly return TRUE
   invisible(return(TRUE))
@@ -148,10 +148,10 @@ sum_transcript_values_for_genes = function(transcript_expression_table, gene_to_
   results_list = foreach::foreach(gene_transcripts = gene_to_transcript_list) %do% {
     
     # Sum the transcript values for each transcript associated with a gene
-    gene_results = colSums(transcript_expression_table[gene_transcripts, ], na.rm = T)
+    gene_results = colSums(transcript_expression_table[gene_transcripts, ], na.rm = TRUE)
     
     # Samples where all values for gene_transcripts are NA are given a value of NA for the gene. 
-    # This is done as colSums returns a value of 0 if all values in a column are NA and na.rm = T.  
+    # This is done as colSums returns a value of 0 if all values in a column are NA and na.rm = TRUE.  
     gene_results[apply(transcript_expression_table[gene_transcripts, ], 2, function(x) all(is.na(x)))] = NA
     gene_results
   }

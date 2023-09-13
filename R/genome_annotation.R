@@ -20,7 +20,7 @@
 #' or the Jaccard index of the intersection in terms of base pairs. Default value is "absolute".
 #' @return A numeric vector with the overlap measure for genomic_regions with each type of region in annotation_ranges
 #' @export
-annotate_granges = function(genomic_regions, annotation_ranges, annotation_column = "region_type", ignore.strand = T, overlap_measure = "absolute"){
+annotate_granges = function(genomic_regions, annotation_ranges, annotation_column = "region_type", ignore.strand = TRUE, overlap_measure = "absolute"){
   
   # If annotation_ranges is "hg38", load genome_annotation_hg38. 
   # Otherwise, check that provided annotation_ranges is a GRanges and has a metadata column matching annotation_column

@@ -131,7 +131,7 @@ relative_ranges = function(genomic_regions, reference_positions){
 #' @return An numeric value
 count_covered_bases = function(gr){
   
-  return(sum(width(reduce(gr, ignore.strand = T))))
+  return(sum(width(reduce(gr, ignore.strand = TRUE))))
 
 }
 
@@ -144,7 +144,7 @@ count_covered_bases = function(gr){
 #' the absolute size of the intersection in base pairs, the proportion base paris of gr1 overlapping gr2 
 #' or the Jaccard index of the intersection in terms of base pairs. Default value is "absolute".
 #' @return An numeric value
-calculate_regions_intersections = function(gr1, gr2, ignore.strand = T, overlap_measure = "absolute"){
+calculate_regions_intersections = function(gr1, gr2, ignore.strand = TRUE, overlap_measure = "absolute"){
   
   # Check allowed value provided for overlap_measure
   match.arg(overlap_measure, c("absolute", "proportion", "jaccard"))
@@ -188,15 +188,15 @@ calculate_regions_intersections = function(gr1, gr2, ignore.strand = T, overlap_
 #' @param max_tries The maximum number of attempts to make to find non-overlapping regions which do not overlap masked_regions. Default value is 100. 
 #' @return A GRanges object
 #' @export 
-create_random_regions = function(bsgenome, n_regions = 1000, region_widths = 1000, sequences = NULL, all_sequences_equally_likely = F,
-   stranded = F, masked_regions = NULL, allow_overlapping_regions = F, ignore.strand = T, max_tries = 100){
+create_random_regions = function(bsgenome, n_regions = 1000, region_widths = 1000, sequences = NULL, all_sequences_equally_likely = FALSE,
+   stranded = FALSE, masked_regions = NULL, allow_overlapping_regions = FALSE, ignore.strand = TRUE, max_tries = 100){
   
   # Check that all region_widths are positive
   if(any(region_widths < 0)){stop("region_widths cannot contain negative values")}
   
   # If no sequences provided, use the standard sequences for the species from the provider
   if(is.null(sequences)){
-    sequences = grep("_", seqnames(bsgenome), invert = T, value = T)
+    sequences = grep("_", seqnames(bsgenome), invert = TRUE, value = TRUE)
   }
   
   # If all_sequences_equally_likely is false, make likelihood of sequences proportional to their lengths
@@ -221,7 +221,7 @@ create_random_regions = function(bsgenome, n_regions = 1000, region_widths = 100
     }
     
     # Select random sequences
-    random_sequences = sample(sequences, size = n_regions, prob = sequence_probabilities, replace = T)
+    random_sequences = sample(sequences, size = n_regions, prob = sequence_probabilities, replace = TRUE)
     
     # Create a data.frame
     random_gr_df = data.frame(seqnames = random_sequences, seqlengths = seqlengths(bsgenome)[random_sequences], row.names = NULL)
@@ -233,11 +233,11 @@ create_random_regions = function(bsgenome, n_regions = 1000, region_widths = 100
     random_gr_df$end = random_gr_df$start + region_widths - 1
     
     # Randomly assign a strand if specified
-    if(stranded){random_gr_df$strand = sample(c("+", "-"), nrow(random_gr_df), replace = T)}
+    if(stranded){random_gr_df$strand = sample(c("+", "-"), nrow(random_gr_df), replace = TRUE)}
     
     # Create a GRanges from the data.frame and return and initialize a column indicating if they pass the contrainsts to TRUE
-    temp_random_gr = makeGRangesFromDataFrame(random_gr_df, keep.extra.columns = F)
-    temp_random_gr$pass = T
+    temp_random_gr = makeGRangesFromDataFrame(random_gr_df, keep.extra.columns = FALSE)
+    temp_random_gr$pass = TRUE
     
     # Indicate if any random regions overlap masked_regions
     if(!is.null(masked_regions)){

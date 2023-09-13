@@ -21,7 +21,7 @@ setup_cluster = function(ncores, packages = NULL, outfile = NULL){
     if(!is.null(packages)){
       lapply(packages, function(x)
         parallel::clusterCall(cl,
-          function(x){invisible(suppressMessages(library(x, character.only = T)))}, x))
+          function(x){invisible(suppressMessages(library(x, character.only = TRUE)))}, x))
     }
     # Return the cluster
     return(cl)

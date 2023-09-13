@@ -30,7 +30,7 @@
 #' If results_dir is provided, instead returns a list with the paths to the RDS files with the results. 
 #' @export
 calculate_meth_site_transcript_cors = function(meth_rse, assay_number = 1, transcript_expression_table, samples_subset = NULL, tss_gr, expand_upstream = 5000,
-  expand_downstream = 5000, cor_method = "spearman", p_adjust_method = "BH", add_distance_to_region = T, max_sites_per_chunk = NULL, ncores = 1, results_dir = NULL){
+  expand_downstream = 5000, cor_method = "spearman", p_adjust_method = "BH", add_distance_to_region = TRUE, max_sites_per_chunk = NULL, ncores = 1, results_dir = NULL){
   
   # Create results_dir is it doesn't exist
   if(!dir.exists(results_dir)){
@@ -117,8 +117,8 @@ calculate_meth_site_transcript_cors = function(meth_rse, assay_number = 1, trans
     row.names(meth_values_chunk) = as.character(SummarizedExperiment::rowRanges(meth_rse_for_chunk))
     
     # Create lists with the methylation values, transcript values and TSS for each transcript
-    tss_meth_values = lapply(tss_region_indices_list, function(x) meth_values_chunk[x, , drop = F])
-    transcript_values = lapply(names(tss_region_indices_list), function(x) transcript_expression_table_chunk[x, , drop = F])
+    tss_meth_values = lapply(tss_region_indices_list, function(x) meth_values_chunk[x, , drop = FALSE])
+    transcript_values = lapply(names(tss_region_indices_list), function(x) transcript_expression_table_chunk[x, , drop = FALSE])
     chunk_tss = split(chunk_tss, names(chunk_tss))[names(tss_meth_values)] 
     
     # Remove meth_values_chunk and tss_region_indices_list
@@ -175,6 +175,6 @@ calculate_meth_site_transcript_cors = function(meth_rse, assay_number = 1, trans
 
   # Run garbage collection one final time and return result
   invisible(gc())
-  return(unlist(all_correlations, recursive = F))
+  return(unlist(all_correlations, recursive = FALSE))
   
 }

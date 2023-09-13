@@ -84,7 +84,7 @@ plot_meth_site_values = function(meth_site_values, column_name = NULL, reference
 #' @return A ggplot object
 #' @export
 annotate_meth_site_plot = function(meth_site_plot, annotation_gr, reference_region = NULL, region_class_colours = NULL, 
-  annotation_line_size = 5, annotation_plot_height = 0.5, keep_meth_site_plot_legend = F, annotation_plot_only = F){
+  annotation_line_size = 5, annotation_plot_height = 0.5, keep_meth_site_plot_legend = FALSE, annotation_plot_only = FALSE){
   
   # Check that if reference_region is provided, if has a length of 1
   if(!is.null(reference_region) & length(reference_region) > 1){stop("reference_region should have length of 1 if provided")}
