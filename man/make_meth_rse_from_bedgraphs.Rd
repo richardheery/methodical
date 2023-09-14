@@ -82,11 +82,11 @@ bedgraphs = list.files(path = system.file('extdata', package = 'methodical'),
 # Create sample metadata
 sample_metadata = data.frame(
   tcga_project = gsub("_.*", "", gsub("TCGA_", "", basename(bedgraphs))),
-  sample_type ifelse(grepl("N", basename(bedgraphs)), "Normal", "Tumour")
-  row.names = tools::file_path_sans_ext(basename(bedgraphs)
+  sample_type = ifelse(grepl("N", basename(bedgraphs)), "Normal", "Tumour")),
+  row.names = tools::file_path_sans_ext(basename(bedgraphs))
 )
 
-# Create a HDF5-backed RangedSummarizedExperiment for 
+# Create a HDF5-backed RangedSummarizedExperiment from bedGraphs
 meth_rse = methodical::make_meth_rse_from_bedgraphs(bedgraphs = bedgraphs, meth_sites = hg38_cpgs, 
   sample_metadata = sample_metadata, hdf5_dir = "test_hdf5")
 

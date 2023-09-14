@@ -6,6 +6,7 @@
 #' @param assay_number The assay from meth_rse to extract values from. Default is the first assay.
 #' @return A data.frame with the methylation site values for all sites in meth_rse which overlap genomic_ranges. 
 #' Row names are the coordinates of the sites as a character vector. 
+#' @examples 
 #' @export
 extract_granges_meth_site_values = function(meth_rse, genomic_regions, samples_subset = NULL, assay_number = 1){
   

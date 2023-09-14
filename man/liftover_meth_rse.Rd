@@ -25,6 +25,32 @@ GRangesList to GRanges if all remaining source regions can be uniquely mapped to
 }
 \value{
 A RangedSummarizedExperiment with rowRanges lifted over to the genome build indicated by chain.
+#' @examples \dontrun{
+
+# Get CpG sites for hg38
+hg38_cpgs = methodical::extract_meth_sites_from_genome("BSgenome.Hsapiens.UCSC.hg38")
+
+# Get paths to bedGraphs
+bedgraphs = list.files(path = system.file('extdata', package = 'methodical'), 
+  pattern = ".bg.gz", full.names = TRUE)
+
+# Create a HDF5-backed RangedSummarizedExperiment for 
+meth_rse_hg38 = methodical::make_meth_rse_from_bedgraphs(bedgraphs = bedgraphs, meth_sites = hg38_cpgs, 
+  hdf5_dir = "test_hdf5")
+  
+# Get CpG sites for hg19
+hg19_cpgs = methodical::extract_meth_sites_from_genome("BSgenome.Hsapiens.UCSC.hg19")
+
+# Get liftover chain for mapping hg38 to hg19
+wget("http://hgdownload.cse.ucsc.edu/gbdb/hg38/liftOver/hg38ToHg19.over.chain.gz")
+R.utils::gunzip("hg38ToHg19.over.chain.gz")
+chain = rtracklayer::import.chain("hg38ToHg19.over.chain")
+  
+# Liftover meth_rse_hg38 from hg38 to hg19, keeping only sites that were mapped to CpG sites in hg19
+meth_rse_hg19 = methodical::liftover_meth_rse(meth_rse_hg38, chain = chain, 
+  permitted_target_regions = hg19_cpgs)
+
+}
 }
 \description{
 Removes methylation sites which cannot be mapped to the target genome build and those which result in
