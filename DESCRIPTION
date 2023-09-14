@@ -23,6 +23,7 @@ Depends:
     SummarizedExperiment
 LazyData: true
 Imports: 
+    BSgenome,
     cowplot,
     data.table,
     doParallel,
@@ -31,4 +32,5 @@ Imports:
     rtracklayer,
     tidyr
 Suggests: 
-    BSgenome
+    BSgenome.Athaliana.TAIR.TAIR9,
+    BSgenome.Hsapiens.UCSC.hg38

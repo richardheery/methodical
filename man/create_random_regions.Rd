@@ -9,11 +9,11 @@ create_random_regions(
   n_regions = 1000,
   region_widths = 1000,
   sequences = NULL,
-  all_sequences_equally_likely = F,
-  stranded = F,
+  all_sequences_equally_likely = FALSE,
+  stranded = FALSE,
   masked_regions = NULL,
-  allow_overlapping_regions = F,
-  ignore.strand = T,
+  allow_overlapping_regions = FALSE,
+  ignore.strand = TRUE,
   max_tries = 100
 )
 }

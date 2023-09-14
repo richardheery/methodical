@@ -8,7 +8,7 @@ annotate_granges(
   genomic_regions,
   annotation_ranges,
   annotation_column = "region_type",
-  ignore.strand = T,
+  ignore.strand = TRUE,
   overlap_measure = "absolute"
 )
 }

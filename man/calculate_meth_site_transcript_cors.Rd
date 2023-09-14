@@ -14,7 +14,7 @@ calculate_meth_site_transcript_cors(
   expand_downstream = 5000,
   cor_method = "spearman",
   p_adjust_method = "BH",
-  add_distance_to_region = T,
+  add_distance_to_region = TRUE,
   max_sites_per_chunk = NULL,
   ncores = 1,
   results_dir = NULL

@@ -7,7 +7,7 @@
 calculate_regions_intersections(
   gr1,
   gr2,
-  ignore.strand = T,
+  ignore.strand = TRUE,
   overlap_measure = "absolute"
 )
 }

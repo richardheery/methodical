@@ -2,19 +2,26 @@
 #'
 #' @param bsgenome A BSgenome object or the name of one.  
 #' @param pattern A pattern to match in bsgenome. Default is "CG".
-#' @param plus_strand_only A logical value indicating whether to only return matches on "+" strand. Default is TRUE.
+#' @param plus_strand_only A logical value indicating whether to only return matches on "+" strand, 
+#' avoiding returning duplicate hits for palindromic sequences e.g. CG. Default is TRUE.
 #' @param meth_site_position Which position in the pattern corresponds to the methylation site of interest. 
 #' Default is the first position.
 #' @param standard_sequences_only A logical value indicating whether to only return sites 
 #' on standard sequences (those without "-" in their names). Default is TRUE. 
-#' @return A GRanges object where each range has a width of 1 and corresponds to a methylation site of interest.
-#' @examples 
+#' @return A GRanges object with genomic regions matching the pattern.
+#' @examples \dontrun{
+#' # Get human CpG sites for hg38 genome build
+#' hg38_cpgs = methodical::extract_meth_sites_from_genome("BSgenome.Hsapiens.UCSC.hg38")
+#' 
+#' # Find CHG sites in Arabidopsis thaliana
+#' arabidopsis_cphpgs = methodical::extract_meth_sites_from_genome("BSgenome.Athaliana.TAIR.TAIR9", pattern = "CHG")
+#' }
 #' @export
 extract_meth_sites_from_genome = function(genome, pattern = "CG", plus_strand_only = TRUE, 
   meth_site_position = 1, standard_sequences_only = TRUE){
   
-  # If bsgenome is a character, try to load BSgenome with that name
-  if(is.character(bsgenome)){bsgenome = BSgenome::getBSgenome(bsgenome)}
+  # If genome is a character, try to load genome with that name
+  if(is.character(genome)){genome = BSgenome::getBSgenome(genome)}
   
   # Check that meth_site_position is not greater than the length of the pattern
   if(meth_site_position > nchar(pattern)){
@@ -22,7 +29,7 @@ extract_meth_sites_from_genome = function(genome, pattern = "CG", plus_strand_on
   }
   
   # Find sites matching pattern in genome
-  meth_sites_gr = Biostrings::vmatchPattern(pattern, genome)
+  meth_sites_gr = Biostrings::vmatchPattern(pattern, genome, fixed = "subject")
   
   # Filter for matches on "+" strand if specified
   if(plus_strand_only){
@@ -37,12 +44,6 @@ extract_meth_sites_from_genome = function(genome, pattern = "CG", plus_strand_on
     standard_sequences = grep("_", names(genome), invert = T, value = T)
     GenomeInfoDb::seqlevels(meth_sites_gr, pruning.mode = "coarse") = standard_sequences
   }
-  
-  # Extract the base of interest from the methylation sites
-  meth_sites_gr = GenomicRanges::resize(meth_sites_gr, 1, fix = "start", ignore.strand = F)
-  meth_site_position = meth_site_position - 1
-  meth_sites_gr = GenomicRanges::shift(meth_sites_gr, 
-    shift = meth_site_position * ifelse(GenomicRanges::strand(meth_sites_gr) == "-", -1, 1))
   
   # Set strand as "*" if plus_strand_only is TRUE 
   if(plus_strand_only){GenomicRanges::strand(meth_sites_gr) = "*"}

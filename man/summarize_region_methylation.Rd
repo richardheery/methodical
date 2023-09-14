@@ -9,10 +9,10 @@ summarize_region_methylation(
   assay_number = 1,
   genomic_regions,
   genomic_regions_names = NULL,
-  keep_metadata_cols = F,
+  keep_metadata_cols = FALSE,
   max_sites_per_chunk = NULL,
   summary_function = base::colMeans,
-  na.rm = T,
+  na.rm = TRUE,
   n_chunks_parallel = 1,
   ...
 )

@@ -7,7 +7,7 @@
 liftover_meth_rse(
   meth_rse,
   chain,
-  remove_one_to_many_mapping = T,
+  remove_one_to_many_mapping = TRUE,
   permitted_target_regions = NULL
 )
 }
