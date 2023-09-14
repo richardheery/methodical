@@ -38,7 +38,7 @@
 #'   row.names = tools::file_path_sans_ext(basename(bedgraphs))
 #' )
 #' 
-#' # Create a HDF5-backed RangedSummarizedExperiment for 
+#' # Create a HDF5-backed RangedSummarizedExperiment from bedGraphs
 #' meth_rse = methodical::make_meth_rse_from_bedgraphs(bedgraphs = bedgraphs, meth_sites = hg38_cpgs, 
 #'   sample_metadata = sample_metadata, hdf5_dir = "test_hdf5")
 #' 
@@ -117,6 +117,26 @@ make_meth_rse_from_bedgraphs = function(bedgraphs,
 #' @param ... Additional arguments to be passed to HDF5Array::HDF5RealizationSink() for controlling the physical properties of the created HDF5 file, 
 #' such as compression level. Uses the defaults for any properties that are not specified. 
 #' @return A RangedSummarizedExperiment with methylation values for all methylation sites in meth_sites. Methylation sites will be in the same order as sort(meth_sites). 
+#' # Get human CpG sites for hg38 genome build
+#' data("infinium_450k_probe_granges_hg19", package = "methodical")
+#' 
+#' # Get paths to array files
+#' array_files = list.files(path = system.file('extdata', package = 'methodical'), 
+#'   pattern = ".txt.gz", full.names = TRUE)
+#' 
+#' # Create sample metadata
+#' sample_metadata = data.frame(
+#'   tcga_project = "LUAD",
+#'   sample_type = "Tumour, submitter = gsub("_01.tsv.gz", "", basename(array_files)),
+#'   row.names = gsub(".tsv.gz", "", basename(array_files))
+#' )
+#' 
+#' # Create a HDF5-backed RangedSummarizedExperiment from array files
+#' meth_rse = methodical::make_meth_rse_from_array_files(array_files = array_files, 
+#'  probe_sites = infinium_450k_probe_granges_hg19, 
+#'  sample_metadata = sample_metadata, hdf5_dir = "array_file_hdf5")
+#' 
+#' }
 #' @export
 make_meth_rse_from_array_files = function(array_files, probe_name_column = 1, beta_value_column = 2, 
   convert_percentages = TRUE, decimal_places = NA, probe_ranges, sample_metadata = NULL, hdf5_dir, dataset_name = "beta", 
@@ -188,6 +208,13 @@ make_meth_rse_from_array_files = function(array_files, probe_name_column = 1, be
 #' @param assays A vector indicating the names of assays in methrix used to create a RangedSummarizedExperiment. Can be one or both of "beta" and "cov". 
 #' Default is both "beta" and "cov" assays. 
 #' @return A RangedSummarizedExperiment 
+#' @examples \dontrun{
+#' # Load a sample methrix object
+#' data("methrix_data", package = "methrix")
+#'   
+#' # Convert methrix to a RangedSummarizedExperiment with one assay for the methylation beta values
+#' meth_rse = methodical::methrix_to_rse(methrix_data, assays = "beta")
+#' }
 #' @export
 methrix_to_rse = function(methrix, assays = c("beta", "cov")){
   
