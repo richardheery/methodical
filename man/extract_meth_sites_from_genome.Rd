@@ -15,7 +15,8 @@ extract_meth_sites_from_genome(
 \arguments{
 \item{pattern}{A pattern to match in bsgenome. Default is "CG".}
 
-\item{plus_strand_only}{A logical value indicating whether to only return matches on "+" strand. Default is TRUE.}
+\item{plus_strand_only}{A logical value indicating whether to only return matches on "+" strand,
+avoiding returning duplicate hits for palindromic sequences e.g. CG. Default is TRUE.}
 
 \item{meth_site_position}{Which position in the pattern corresponds to the methylation site of interest.
 Default is the first position.}
@@ -26,13 +27,17 @@ on standard sequences (those without "-" in their names). Default is TRUE.}
 \item{bsgenome}{A BSgenome object or the name of one.}
 }
 \value{
-A GRanges object where each range has a width of 1 and corresponds to a methylation site of interest.
+A GRanges object with genomic regions matching the pattern.
 }
 \description{
 Create a GRanges with methylation sites of interest from a BSgenome.
 }
 \examples{
 \dontrun{
-methodical::extract_meth_sites_from_genome("BSgenome.Hsapiens.UCSC.hg38")
+# Get human CpG sites for hg38 genome build
+hg38_cpgs = methodical::extract_meth_sites_from_genome("BSgenome.Hsapiens.UCSC.hg38")
+
+# Find CHG sites in Arabidopsis thaliana
+arabidopsis_cphpgs = methodical::extract_meth_sites_from_genome("BSgenome.Athaliana.TAIR.TAIR9", pattern = "CHG")
 }
 }

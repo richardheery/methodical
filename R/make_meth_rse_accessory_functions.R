@@ -57,18 +57,6 @@ make_meth_rse_setup = function(meth_files, meth_sites, sample_metadata, hdf5_dir
     }
   }
   
-  # If temporary_dir not provided, set it to a directory in tempdir()
-  if(is.null(temporary_dir)){
-    temporary_dir = tempfile("temporary_meth_chunks_")
-  }
-  
-  # Check temporary directory doesn't already exist and create it if it doesn't
-  if(dir.exists(temporary_dir)){
-    stop(paste("Directory", temporary_dir, "already exists. Please provide a temporary directory name that isn't already in use."))
-  } else {
-    dir.create(temporary_dir)
-  }
-  
   # Create a HDF5 realization sink
   hdf5_sink = HDF5Array::HDF5RealizationSink(dim = as.integer(c(length(meth_sites), length(meth_files))), 
     filepath = hdf5_filepath, name = dataset_name, chunkdim = chunkdim, ...)

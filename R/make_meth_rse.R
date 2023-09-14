@@ -23,12 +23,44 @@
 #' @param ... Additional arguments to be passed to HDF5Array::HDF5RealizationSink() for controlling the physical properties of the created HDF5 file, 
 #' such as compression level. Uses the defaults for any properties that are not specified. 
 #' @return A RangedSummarizedExperiment with methylation values for all methylation sites in meth_sites. methylation sites will be in the same order as sort(meth_sites). 
+#' @examples \dontrun{
+#' # Get human CpG sites for hg38 genome build
+#' hg38_cpgs = methodical::extract_meth_sites_from_genome("BSgenome.Hsapiens.UCSC.hg38")
+#' 
+#' # Get paths to bedGraphs
+#' bedgraphs = list.files(path = system.file('extdata', package = 'methodical'), 
+#'   pattern = ".bg.gz", full.names = TRUE)
+#' 
+#' # Create sample metadata
+#' sample_metadata = data.frame(
+#'   tcga_project = gsub("_.*", "", gsub("TCGA_", "", basename(bedgraphs))),
+#'   sample_type = ifelse(grepl("N", basename(bedgraphs)), "Normal", "Tumour")),
+#'   row.names = tools::file_path_sans_ext(basename(bedgraphs))
+#' )
+#' 
+#' # Create a HDF5-backed RangedSummarizedExperiment for 
+#' meth_rse = methodical::make_meth_rse_from_bedgraphs(bedgraphs = bedgraphs, meth_sites = hg38_cpgs, 
+#'   sample_metadata = sample_metadata, hdf5_dir = "test_hdf5")
+#' 
+#' }
 #' @export
 make_meth_rse_from_bedgraphs = function(bedgraphs, 
   seqnames_column = 1, start_column = 2, end_column = 3, value_column = 4,
   zero_based = TRUE, convert_percentages = TRUE, decimal_places = NA, 
   meth_sites, sample_metadata = NULL, hdf5_dir, dataset_name = "beta", overwrite = FALSE, chunkdim = NULL, 
   temporary_dir = NULL, ncores = 1, ...){
+  
+  # If temporary_dir not provided, set it to a directory in tempdir()
+  if(is.null(temporary_dir)){
+    temporary_dir = tempfile("temporary_meth_chunks_")
+  }
+  
+  # Check temporary directory doesn't already exist and create it if it doesn't
+  if(dir.exists(temporary_dir)){
+    stop(paste("Directory", temporary_dir, "already exists. Please provide a temporary directory name that isn't already in use."))
+  } else {
+    dir.create(temporary_dir)
+  }
   
   # Check if meth_sites is sorted and print a message if it is not. 
   if(!S4Vectors::isSorted(meth_sites)){
@@ -95,6 +127,18 @@ make_meth_rse_from_array_files = function(array_files, probe_name_column = 1, be
     stop("probe_ranges must have a metadata column called name")
   } else if(anyDuplicated(probe_ranges$name)){
     stop("probe_ranges$name cannot contain any duplicates")
+  }
+  
+  # If temporary_dir not provided, set it to a directory in tempdir()
+  if(is.null(temporary_dir)){
+    temporary_dir = tempfile("temporary_meth_chunks_")
+  }
+  
+  # Check temporary directory doesn't already exist and create it if it doesn't
+  if(dir.exists(temporary_dir)){
+    stop(paste("Directory", temporary_dir, "already exists. Please provide a temporary directory name that isn't already in use."))
+  } else {
+    dir.create(temporary_dir)
   }
   
   # Check if probe_ranges is sorted and print a message if it is not. 
