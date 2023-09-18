@@ -193,3 +193,12 @@ find_tmrs = function(correlation_df, offset_length = 10, smoothing_factor = 0.75
   return(tmr_gr)
   
 }
+
+#' example_meth_transcript_cors
+#'
+#' A data.frame with the correlation results for CpG sites within +/- 5 KB of the TUBB6 (ENST00000591909) TSS.
+#'
+#'@format A data.frame with 5 columns giving the name of the CpG site (meth_site), name of the transcript associated with the TSS, 
+#'Spearman correlation value between the methylation of the CpG site and expression of the transcript, 
+#'p-value associated with the correlations and distance from the CpG site to the TSS. 
+"example_meth_transcript_cors"

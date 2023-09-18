@@ -68,6 +68,13 @@ extract_meth_sites_from_genome = function(genome, pattern = "CG", plus_strand_on
 #' Negative values result in upstream end of regions being shortened, however the width of the resulting regions cannot be less than zero. 
 #' @return A GRanges object
 #' @export
+#' @examples \dontrun{
+#' # Create a GRanges 
+#' gr = GenomicRanges::GRanges(c("chr1:1000:+", "chr1:2000:-"))
+#' 
+#' # Add 500 bp upstream and 200 downstream
+#' gr_expanded = methodical::expand_granges(gr, 500, 200)
+#' }
 expand_granges = function(genomic_regions, upstream = 0, downstream = 0) {
   
   # Check that genomic_regions is a GRanges object
@@ -107,7 +114,8 @@ expand_granges = function(genomic_regions, upstream = 0, downstream = 0) {
   
   # Recreate genomic_regions with new starts and ends
   genomic_regions = GRanges(seqnames = seqnames(genomic_regions), 
-    ranges = IRanges(genomic_regions_starts, genomic_regions_ends))
+    ranges = IRanges(genomic_regions_starts, genomic_regions_ends), 
+    strand = GenomicRanges::strand(genomic_regions))
   
   # Restore metadata
   mcols(genomic_regions) = genomic_regions_mcols
@@ -120,12 +128,21 @@ expand_granges = function(genomic_regions, upstream = 0, downstream = 0) {
 
 #' Calculate distances of query GRanges upstream or downstream of subject GRanges
 #' 
-#' Upstream and downstream are relative to the strand of subject_gr. Unstranded regions are treated the same as regions on the "+" strand. 
+#' Upstream and downstream are relative to the strand of subject_gr. 
+#' Unstranded regions are treated the same as regions on the "+" strand. 
 #'
 #' @param query_gr A GRanges object
 #' @param subject_gr A GRanges object. 
 #' @return A numeric vector of distances
 #' @export
+#' @examples \dontrun{
+#' # Create query and subject GRanges 
+#' query_gr = GenomicRanges::GRanges(c("chr1:100-1000:+", "chr1:2000-3000:-"))
+#' subject_gr = GenomicRanges::GRanges(c("chr1:1500-1600:+", "chr1:4000-4500:-"))
+#' 
+#' # Calculate distances between query and subject
+#' methodical::stranded_distance(query_gr, subject_gr)
+#' }
 stranded_distance = function(query_gr, subject_gr){
   
   # Check that query_gr and subject_gr are of the correct length
@@ -151,20 +168,32 @@ stranded_distance = function(query_gr, subject_gr){
 
 }
 
-#' Find locations of ranges relative to a reference positions
+#' Find locations of genomic regions relative to transcription start sites.
 #'
-#' @param genomic_regions A GRanges object
-#' @param reference_positions A GRanges object. Each range should have width 1. Upstream and downstream are relative to reference_positions
-#' @return A GRanges object
+#' @param genomic_regions A GRanges object. 
+#' @param tss_gr A GRanges object with transcription start sites. Each range should have width 1. 
+#' Upstream and downstream are relative to strand of tss_gr.
+#' @return A GRanges object where all regions have "relative" as the sequence names.  
 #' @export
-relative_ranges = function(genomic_regions, reference_positions){
+#' @examples \dontrun{
+#' # Create query and subject GRanges 
+#' genomic_regions = GenomicRanges::GRanges(c("chr1:100-1000:+", "chr1:2000-3000:-"))
+#' tss_gr = GenomicRanges::GRanges(c("chr1:1500:+", "chr1:4000:-"))
+#' 
+#' # Calculate distances between query and subject
+#' methodical::ranges_relative_to_tss(genomic_regions, tss_gr)
+#' }
+ranges_relative_to_tss = function(genomic_regions, tss_gr){
   
-  # Check that all reference positions have width 1
-  if(!all(width(reference_positions) == 1)){stop("All reference_positions should have width 1")}
+  # Check that all tss ranges have width 1 and resize them with a warning if not
+  if(!all(width(tss_gr) == 1)){
+    warning("All regions in tss_gr should have a width of 1. Shortening each region so that it consists of only the most upstream position")
+    tss_gr = GenomicRanges::resize(gr, 1, fix = "start")
+  }
 
-  # Get distances from start and end of ranges in gr from reference_positions
-  relative_start = methodical::stranded_distance(query_gr = resize(genomic_regions, 1, fix = "start"), subject_gr = reference_positions)
-  relative_end = methodical::stranded_distance(query_gr = resize(genomic_regions, 1, fix = "end"), subject_gr = reference_positions)
+  # Get distances from start and end of ranges in gr from tss_gr
+  relative_start = methodical::stranded_distance(query_gr = resize(genomic_regions, 1, fix = "start"), subject_gr = tss_gr)
+  relative_end = methodical::stranded_distance(query_gr = resize(genomic_regions, 1, fix = "end"), subject_gr = tss_gr)
   
   # Create an IRanges with the relative distances
   relative_iranges = IRanges::IRanges(pmin(relative_start, relative_end), pmax(relative_start, relative_end))
@@ -227,7 +256,7 @@ calculate_regions_intersections = function(gr1, gr2, ignore.strand = TRUE, overl
 #' After the maximum number of allowed attempts, the created random regions meeting the constraints up to that point will be returned. 
 #' Any random regions that are out-of-bounds relative to their sequence length are trimmed before being returned. 
 #'
-#' @param bsgenome A BSgenome object. 
+#' @param genome A BSgenome object. 
 #' @param n_regions Number of random regions to create. Default is 1000. 
 #' @param region_widths The widths of the random regions. Widths cannot be negative. 
 #' Can be just a single value if all regions are to have the same widths. Default is 1000.
@@ -243,20 +272,30 @@ calculate_regions_intersections = function(gr1, gr2, ignore.strand = TRUE, overl
 #' @param max_tries The maximum number of attempts to make to find non-overlapping regions which do not overlap masked_regions. Default value is 100. 
 #' @return A GRanges object
 #' @export 
-create_random_regions = function(bsgenome, n_regions = 1000, region_widths = 1000, sequences = NULL, all_sequences_equally_likely = FALSE,
+#' @examples \dontrun{
+#' # Set random seed
+#' set.seed(123)
+#' 
+#' # Create 10,000 random non-overlapping regions with width 1,000 for hg38
+#' random_regions = methodical::create_random_regions(genome = "BSgenome.Hsapiens.UCSC.hg38", n_regions = 10000)
+#' }
+create_random_regions = function(genome, n_regions = 1000, region_widths = 1000, sequences = NULL, all_sequences_equally_likely = FALSE,
    stranded = FALSE, masked_regions = NULL, allow_overlapping_regions = FALSE, ignore.strand = TRUE, max_tries = 100){
   
   # Check that all region_widths are positive
   if(any(region_widths < 0)){stop("region_widths cannot contain negative values")}
   
+  # If genome is a character, try to load genome with that name
+  if(is.character(genome)){genome = BSgenome::getBSgenome(genome)}
+  
   # If no sequences provided, use the standard sequences for the species from the provider
   if(is.null(sequences)){
-    sequences = grep("_", seqnames(bsgenome), invert = TRUE, value = TRUE)
+    sequences = grep("_", seqnames(genome), invert = TRUE, value = TRUE)
   }
   
   # If all_sequences_equally_likely is false, make likelihood of sequences proportional to their lengths
   if(!all_sequences_equally_likely){
-    sequence_probabilities = seqlengths(bsgenome)[sequences]
+    sequence_probabilities = seqlengths(genome)[sequences]
   } else {
     sequence_probabilities = rep(1, length(sequences))
   }
@@ -279,7 +318,7 @@ create_random_regions = function(bsgenome, n_regions = 1000, region_widths = 100
     random_sequences = sample(sequences, size = n_regions, prob = sequence_probabilities, replace = TRUE)
     
     # Create a data.frame
-    random_gr_df = data.frame(seqnames = random_sequences, seqlengths = seqlengths(bsgenome)[random_sequences], row.names = NULL)
+    random_gr_df = data.frame(seqnames = random_sequences, seqlengths = seqlengths(genome)[random_sequences], row.names = NULL)
     
     # Select a random start site on each sequence
     random_gr_df$start = sapply(random_gr_df$seqlengths, function(x) sample(1:x, 1))
@@ -325,7 +364,7 @@ create_random_regions = function(bsgenome, n_regions = 1000, region_widths = 100
   }
   
   # Add seqinfo to final_random_gr
-  suppressWarnings({seqinfo(final_random_gr) = seqinfo(bsgenome)[sequences]})
+  suppressWarnings({seqinfo(final_random_gr) = seqinfo(genome)[sequences]})
   
   # Trim out of bound regions, remove pass column and return final_random_gr
   final_random_gr = trim(final_random_gr)

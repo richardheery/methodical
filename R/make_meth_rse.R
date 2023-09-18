@@ -14,7 +14,7 @@
 #' @param hdf5_dir Directory to save HDF5 file. Is created if it doesn't exist. HDF5 file is called assays.h5. 
 #' @param dataset_name Name to give data set in HDF5 file. Default is "beta".
 #' @param overwrite Logical value indicating whether to allow overwriting if dataset_name already exists in assays.h5. Default is FALSE.
-#' @param chunkdim The dimensions of the chunks for the HDF5 file. Should be a vector of length 2 with giving the number of rows and then the number of columns in each chunk.
+#' @param chunkdim The dimensions of the chunks for the HDF5 file. Should be a vector of length 2 giving the number of rows and then the number of columns in each chunk.
 #' Uses HDF5Array::getHDF5DumpChunkDim(length(meth_sites), length(bedgraphs))) by default. 
 #' @param temporary_dir Name to give temporary directory created to store intermediate files. A directory with this name cannot already exist. 
 #' Default is to create a name using tempfile("temporary_meth_chunks_"). 
@@ -42,6 +42,10 @@
 #' # Create a HDF5-backed RangedSummarizedExperiment from bedGraphs
 #' meth_rse = methodical::make_meth_rse_from_bedgraphs(bedgraphs = bedgraphs, meth_sites = hg38_cpgs, 
 #'   sample_metadata = sample_metadata, hdf5_dir = "test_hdf5")
+#'
+#' # Create a HDF5-backed RangedSummarizedExperiment from bedGraphs specifying chunk dimensions
+#' meth_rse2 = methodical::make_meth_rse_from_bedgraphs(bedgraphs = bedgraphs, meth_sites = hg38_cpgs, 
+#'   sample_metadata = sample_metadata, hdf5_dir = "test_hdf5", chumdim = c(50000, 1))
 #' 
 #' }
 make_meth_rse_from_bedgraphs = function(bedgraphs, 
@@ -110,7 +114,7 @@ make_meth_rse_from_bedgraphs = function(bedgraphs,
 #' @param hdf5_dir Directory to save HDF5 file. Is created if it doesn't exist. HDF5 file is called assays.h5. 
 #' @param dataset_name Name to give data set in HDF5 file. Default is "beta".
 #' @param overwrite Logical value indicating whether to allow overwriting if dataset_name already exists in assays.h5. Default is FALSE.
-#' @param chunkdim The dimensions of the chunks for the HDF5 file. Should be a vector of length 2 with giving the number of rows and then the number of columns in each chunk.
+#' @param chunkdim The dimensions of the chunks for the HDF5 file. Should be a vector of length 2 giving the number of rows and then the number of columns in each chunk.
 #' @param temporary_dir Name to give a temporary directory to store intermediate files. A directory with this name cannot already exist. 
 #' Will be deleted after completion. 
 #' @param ncores Number of array files to process at a time in parallel. Default is 1. 
@@ -133,10 +137,15 @@ make_meth_rse_from_bedgraphs = function(bedgraphs,
 #'   row.names = gsub(".tsv.gz", "", basename(array_files))
 #' )
 #' 
-#' # Create a HDF5-backed RangedSummarizedExperiment from array files
+#' # Create a HDF5-backed RangedSummarizedExperiment from array files using default chumk dimensions
 #' meth_rse = methodical::make_meth_rse_from_array_files(array_files = array_files, 
 #'  probe_sites = infinium_450k_probe_granges_hg19, 
 #'  sample_metadata = sample_metadata, hdf5_dir = "array_file_hdf5")
+#'
+#' # Create an HDF5-backed RangedSummarizedExperiment from array files specifying chunk dimensions
+#' meth_rse2 = methodical::make_meth_rse_from_array_files(array_files = array_files, 
+#'  probe_sites = infinium_450k_probe_granges_hg19, 
+#'  sample_metadata = sample_metadata, hdf5_dir = "array_file_hdf5", chunkdim = c(50000, 1))
 #' 
 #' }
 make_meth_rse_from_array_files = function(array_files, probe_name_column = 1, beta_value_column = 2, 
