@@ -42,7 +42,7 @@ meth_rse_hg38 = methodical::make_meth_rse_from_bedgraphs(bedgraphs = bedgraphs, 
 hg19_cpgs = methodical::extract_meth_sites_from_genome("BSgenome.Hsapiens.UCSC.hg19")
 
 # Get liftover chain for mapping hg38 to hg19
-wget("http://hgdownload.cse.ucsc.edu/gbdb/hg38/liftOver/hg38ToHg19.over.chain.gz")
+download.file("http://hgdownload.cse.ucsc.edu/gbdb/hg38/liftOver/hg38ToHg19.over.chain.gz")
 R.utils::gunzip("hg38ToHg19.over.chain.gz")
 chain = rtracklayer::import.chain("hg38ToHg19.over.chain")
   

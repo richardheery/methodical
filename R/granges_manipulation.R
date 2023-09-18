@@ -9,6 +9,7 @@
 #' @param standard_sequences_only A logical value indicating whether to only return sites 
 #' on standard sequences (those without "-" in their names). Default is TRUE. 
 #' @return A GRanges object with genomic regions matching the pattern.
+#' @export
 #' @examples \dontrun{
 #' # Get human CpG sites for hg38 genome build
 #' hg38_cpgs = methodical::extract_meth_sites_from_genome("BSgenome.Hsapiens.UCSC.hg38")
@@ -16,7 +17,6 @@
 #' # Find CHG sites in Arabidopsis thaliana
 #' arabidopsis_cphpgs = methodical::extract_meth_sites_from_genome("BSgenome.Athaliana.TAIR.TAIR9", pattern = "CHG")
 #' }
-#' @export
 extract_meth_sites_from_genome = function(genome, pattern = "CG", plus_strand_only = TRUE, 
   meth_site_position = 1, standard_sequences_only = TRUE){
   

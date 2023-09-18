@@ -45,7 +45,7 @@ Any probes in array_files that are not in probe_ranges are ignored.}
 
 \item{overwrite}{Logical value indicating whether to allow overwriting if dataset_name already exists in assays.h5. Default is FALSE.}
 
-\item{chunkdim}{The dimensions of the chunks for the HDF5 file. Should be a vector of length 2 with giving the number of rows and then the number of columns in each chunk.}
+\item{chunkdim}{The dimensions of the chunks for the HDF5 file. Should be a vector of length 2 giving the number of rows and then the number of columns in each chunk.}
 
 \item{temporary_dir}{Name to give a temporary directory to store intermediate files. A directory with this name cannot already exist.
 Will be deleted after completion.}

@@ -25,3 +25,12 @@ Expand ranges in a GRanges object upstream and downstream by specified numbers o
 Unstranded ranges are treated like they on the "+" strand.
 If any of the resulting ranges are out-of-bounds given the seqinfo of genomic_regions, they will be trimmed using trim().
 }
+\examples{
+\dontrun{
+# Create a GRanges 
+gr = GenomicRanges::GRanges(c("chr1:1000:+", "chr1:2000:-"))
+
+# Add 500 bp upstream and 200 downstream
+gr_expanded = methodical::expand_granges(gr, 500, 200)
+}
+}

@@ -52,7 +52,7 @@ Default is TRUE.}
 
 \item{overwrite}{Logical value indicating whether to allow overwriting if dataset_name already exists in assays.h5. Default is FALSE.}
 
-\item{chunkdim}{The dimensions of the chunks for the HDF5 file. Should be a vector of length 2 with giving the number of rows and then the number of columns in each chunk.
+\item{chunkdim}{The dimensions of the chunks for the HDF5 file. Should be a vector of length 2 giving the number of rows and then the number of columns in each chunk.
 Uses HDF5Array::getHDF5DumpChunkDim(length(meth_sites), length(bedgraphs))) by default.}
 
 \item{temporary_dir}{Name to give temporary directory created to store intermediate files. A directory with this name cannot already exist.
@@ -89,6 +89,10 @@ sample_metadata = data.frame(
 # Create a HDF5-backed RangedSummarizedExperiment from bedGraphs
 meth_rse = methodical::make_meth_rse_from_bedgraphs(bedgraphs = bedgraphs, meth_sites = hg38_cpgs, 
   sample_metadata = sample_metadata, hdf5_dir = "test_hdf5")
+
+# Create a HDF5-backed RangedSummarizedExperiment from bedGraphs specifying chunk dimensions
+meth_rse2 = methodical::make_meth_rse_from_bedgraphs(bedgraphs = bedgraphs, meth_sites = hg38_cpgs, 
+  sample_metadata = sample_metadata, hdf5_dir = "test_hdf5", chumdim = c(50000, 1))
 
 }
 }

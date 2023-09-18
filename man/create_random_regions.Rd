@@ -5,7 +5,7 @@
 \title{Create a GRanges with random regions from a genome}
 \usage{
 create_random_regions(
-  bsgenome,
+  genome,
   n_regions = 1000,
   region_widths = 1000,
   sequences = NULL,
@@ -18,7 +18,7 @@ create_random_regions(
 )
 }
 \arguments{
-\item{bsgenome}{A BSgenome object.}
+\item{genome}{A BSgenome object.}
 
 \item{n_regions}{Number of random regions to create. Default is 1000.}
 
@@ -51,4 +51,13 @@ Random regions which do meet these constraints will be discarded and new ones ge
 of regions has been reached or a maximum allowed number of attempts has been made.
 After the maximum number of allowed attempts, the created random regions meeting the constraints up to that point will be returned.
 Any random regions that are out-of-bounds relative to their sequence length are trimmed before being returned.
+}
+\examples{
+\dontrun{
+# Set random seed
+set.seed(123)
+
+# Create 10,000 random non-overlapping regions with width 1,000 for hg38
+random_regions = methodical::create_random_regions(genome = "BSgenome.Hsapiens.UCSC.hg38", n_regions = 10000)
+}
 }

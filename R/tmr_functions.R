@@ -6,7 +6,6 @@
 #' @param smoothing_factor Smoothing factor for exponential moving average. Should be a value between 0 and 1 with higher 
 #' values resulting in a greater degree of smoothing. Default is 0.75. 
 #' @return A GRanges object
-#' @export
 calculate_smoothed_methodical_scores = function(correlation_df, offset_length = 10, smoothing_factor = 0.75){
   
   # Check that smoothing_factor is between 0 and 1
@@ -44,7 +43,6 @@ calculate_smoothed_methodical_scores = function(correlation_df, offset_length = 
 #' @param tss_gr An optional GRanges object giving the location of the TSS meth_sites_gr is associated with. 
 #' @param transcript_id Name of the transcript associated with the TSS. 
 #' @return A GRanges object with the location of TMRs. 
-#' @export
 test_tmrs = function(meth_sites_gr, smoothed_methodical_scores, p_value_threshold = 0.005, 
   tss_gr = NULL, transcript_id = NULL){
   
@@ -90,7 +88,7 @@ test_tmrs = function(meth_sites_gr, smoothed_methodical_scores, p_value_threshol
   
 }
 
-#' Calculate methodical score and smooth it using a exponential weighted moving average
+#' Find TSS-Proximal Methylation-Controlled Regulatory Sites (TMRs)
 #' 
 #' @param correlation_df A data.frame with correlation values between methylation sites and a transcript 
 #' or a path to an RDS file containing such a data.frame as returned by calculate_meth_site_transcript_cors. 
@@ -99,10 +97,18 @@ test_tmrs = function(meth_sites_gr, smoothed_methodical_scores, p_value_threshol
 #' @param smoothing_factor Smoothing factor for exponential moving average. Should be a value between 0 and 1 with higher 
 #' values resulting in a greater degree of smoothing. Default is 0.75. 
 #' @param p_value_threshold The p_value cutoff to use. Default value is 0.005
-#' @param min_gapwidth Merge TMRs with the same direction separated by less than this number of base pairs. default value is 150. 
+#' @param min_gapwidth Merge TMRs with the same direction separated by less than this number of base pairs. Default value is 150. 
 #' @param min_meth_sites Minimum number of methylation sites that TMRs can contain. Default value is 5. 
 #' @return A GRanges object with the location of TMRs.
 #' @export
+#' @examples \dontrun{
+#' # Load methylation-transcript correlation results for TUBB6 gene
+#' data("example_meth_transcript_cors", package = "methodical")
+#' 
+#' # Find TMRs for 
+#' tubb6_tmrs = find_tmrs(correlation_df = example_meth_transcript_cors)
+#' print(tubb6_tmrs)
+#' }
 find_tmrs = function(correlation_df, offset_length = 10, smoothing_factor = 0.75, p_value_threshold = 0.005, min_gapwidth = 150, min_meth_sites = 5){
   
   # If correlation_df is a character vector, try to read it as an RDS file and 
