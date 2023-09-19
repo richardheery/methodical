@@ -2,7 +2,7 @@
 % Please edit documentation in R/tmr_functions.R
 \name{find_tmrs}
 \alias{find_tmrs}
-\title{Calculate methodical score and smooth it using a exponential weighted moving average}
+\title{Find TSS-Proximal Methylation-Controlled Regulatory Sites (TMRs)}
 \usage{
 find_tmrs(
   correlation_df,
@@ -25,7 +25,7 @@ values resulting in a greater degree of smoothing. Default is 0.75.}
 
 \item{p_value_threshold}{The p_value cutoff to use. Default value is 0.005}
 
-\item{min_gapwidth}{Merge TMRs with the same direction separated by less than this number of base pairs. default value is 150.}
+\item{min_gapwidth}{Merge TMRs with the same direction separated by less than this number of base pairs. Default value is 150.}
 
 \item{min_meth_sites}{Minimum number of methylation sites that TMRs can contain. Default value is 5.}
 }
@@ -33,5 +33,15 @@ values resulting in a greater degree of smoothing. Default is 0.75.}
 A GRanges object with the location of TMRs.
 }
 \description{
-Calculate methodical score and smooth it using a exponential weighted moving average
+Find TSS-Proximal Methylation-Controlled Regulatory Sites (TMRs)
+}
+\examples{
+\dontrun{
+# Load methylation-transcript correlation results for TUBB6 gene
+data("example_meth_transcript_cors", package = "methodical")
+
+# Find TMRs for 
+tubb6_tmrs = find_tmrs(correlation_df = example_meth_transcript_cors)
+print(tubb6_tmrs)
+}
 }
