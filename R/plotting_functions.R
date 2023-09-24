@@ -76,7 +76,7 @@ plot_meth_site_values = function(meth_site_values, column_name = NULL, reference
 #' @param annotation_gr A GRanges object giving the locations of different classes of regions. 
 #' There must be a metadata column named region_type giving the class of each region. 
 #' If this is a factor, the levels will be used to order the region classes in the plot. 
-#' @param class_colours An optional named vector of colours to use with different region classes. Names of vector match colours to region classes. 
+#' @param region_class_colours An optional named vector of colours to use with different region classes. Names of vector match colours to region classes. 
 #' @param annotation_line_size Linewidth for annotation plot. Default is 5. 
 #' @param annotation_plot_height A value giving the proportion of the height of the plot devoted to the annotation. Default is 0.5. 
 #' @param keep_meth_site_plot_legend A logical value indicating whether to retain the legend of meth_site_plot, if it has one. Default value is FALSE. 
@@ -282,8 +282,6 @@ plot_methodical_scores = function(meth_site_values, reference_region = NULL,
   
   return(meth_site_plot)
 }
-
-###
 
 #' Add smoothed methodical scores curve to a methylation site plot
 #'

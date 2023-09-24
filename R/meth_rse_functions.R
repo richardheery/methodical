@@ -83,7 +83,7 @@ sample_meth_sites = function(meth_rse, n_sites = 1000, genomic_ranges_filter = N
 #' for example CpG sites from the target genome. Any regions which do not overlap permitted_target_regions will be removed.  
 #' GRangesList to GRanges if all remaining source regions can be uniquely mapped to the target genome. 
 #' @return A RangedSummarizedExperiment with rowRanges lifted over to the genome build indicated by chain. 
-#' #' @examples \dontrun{
+#' @examples \dontrun{
 #' 
 #' # Get CpG sites for hg38
 #' hg38_cpgs = methodical::extract_meth_sites_from_genome("BSgenome.Hsapiens.UCSC.hg38")

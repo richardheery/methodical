@@ -25,7 +25,14 @@ GRangesList to GRanges if all remaining source regions can be uniquely mapped to
 }
 \value{
 A RangedSummarizedExperiment with rowRanges lifted over to the genome build indicated by chain.
-#' @examples \dontrun{
+}
+\description{
+Removes methylation sites which cannot be mapped to the target genome build and those which result in
+many-to-one mappings. Also removes one-to-many mappings by default and can remove sites which do not
+map to allowed regions in the target genome e.g. CpG sites.
+}
+\examples{
+\dontrun{
 
 # Get CpG sites for hg38
 hg38_cpgs = methodical::extract_meth_sites_from_genome("BSgenome.Hsapiens.UCSC.hg38")
@@ -51,9 +58,4 @@ meth_rse_hg19 = methodical::liftover_meth_rse(meth_rse_hg38, chain = chain,
   permitted_target_regions = hg19_cpgs)
 
 }
-}
-\description{
-Removes methylation sites which cannot be mapped to the target genome build and those which result in
-many-to-one mappings. Also removes one-to-many mappings by default and can remove sites which do not
-map to allowed regions in the target genome e.g. CpG sites.
 }

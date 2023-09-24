@@ -41,13 +41,17 @@ hg19_to_hg38_liftover_chain = ah[["AH14150"]]
 # Liftover infinium_450k_probe_grange to hg38
 infinium_450k_probe_granges_hg38 = liftOver(infinium_450k_probe_granges_hg19, chain = hg19_to_hg38_liftover_chain)
 
-# Remove any probes which coudn't be mapped to hg38
-infinium_450k_probe_granges_hg38 = infinium_450k_probe_granges_hg38[lengths(infinium_450k_probe_granges_hg38) > 0]
+# Remove any probes which couldn't be mapped to hg38 or resulted in one-to-many mappings
+infinium_450k_probe_granges_hg38 = infinium_450k_probe_granges_hg38[lengths(infinium_450k_probe_granges_hg38) == 1]
+
+# Identify probes resulting in many-to-one mappings and remove
+self_overlaps = GenomicRanges::countOverlaps(infinium_450k_probe_granges_hg38, infinium_450k_probe_granges_hg38)
+infinium_450k_probe_granges_hg38 = infinium_450k_probe_granges_hg38[self_overlaps == 1]
 
 # Convert infinium_450k_probe_granges_hg38 to a GRanges object
 infinium_450k_probe_granges_hg38 = unlist(infinium_450k_probe_granges_hg38)
 
-# Remove probes which do not overlap a CpG site in hg38
+# Remove probes which do not overlap a CpG site in hg38. Leaves 480,975 probes
 probe_seqs_hg38 = as.character(getSeq(BSgenome.Hsapiens.UCSC.hg38::BSgenome.Hsapiens.UCSC.hg38, resize(infinium_450k_probe_granges_hg38, fix = "start", width = 2)))
 infinium_450k_probe_granges_hg38 = infinium_450k_probe_granges_hg38[probe_seqs_hg38 == "CG"]
 
