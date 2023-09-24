@@ -1,14 +1,3 @@
-#' genome_annotation_hg38
-#'
-#' Comprehensive annotation of the standard chromosomes of the hg38 genome build including 
-#' gene annotation, structural annotation, regulatory element annotation and repeat annotation. 
-#' 
-#'
-#'@format GRanges object with 9,034,338 ranges and one metadata column region_type describing the region. 
-#'@source Created by combining gene annotation from Gencode v38, regulatory feature annotation from Ensembl release 109 and
-#'masked CpG island data and repeat annotation from UCSC genome browser annotation database. 
-"genome_annotation_hg38"
-
 #' Annotate GRanges
 #' 
 #' @param genomic_regions A GRanges object to be annotated
@@ -22,8 +11,7 @@
 #' @export
 annotate_granges = function(genomic_regions, annotation_ranges, annotation_column = "region_type", ignore.strand = TRUE, overlap_measure = "absolute"){
   
-  # If annotation_ranges is "hg38", load genome_annotation_hg38. 
-  # Otherwise, check that provided annotation_ranges is a GRanges and has a metadata column matching annotation_column
+  # Check that provided annotation_ranges is a GRanges and has a metadata column matching annotation_column
   if(!is(annotation_ranges, "GRanges")){stop("annotation_ranges must be a GRanges object")}
   if(!annotation_column %in% names(mcols(annotation_ranges))){
       stop(paste(annotation_ranges, "is not the name of a metadata column of annotation_ranges"))
