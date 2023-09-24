@@ -48,11 +48,11 @@ summarize_region_methylation = function(meth_rse, assay_number = 1, genomic_regi
   } 
   
   # Split genomic regions into chunks based on the number of methylation sites that they cover
-  genomic_region_bins = methodical:::chunk_regions(meth_rse = meth_rse, genomic_regions = genomic_regions, 
+  genomic_region_bins = chunk_regions(meth_rse = meth_rse, genomic_regions = genomic_regions, 
     max_sites_per_chunk = max_sites_per_chunk, ncores = n_chunks_parallel)
   
   # Create cluster if n_chunks_parallel greater than 1
-  cl = methodical:::setup_cluster(ncores = n_chunks_parallel, packages = c("methodical", "HDF5Array"), outfile = "")
+  cl = setup_cluster(ncores = n_chunks_parallel, packages = c("methodical", "HDF5Array"), outfile = "")
   if(n_chunks_parallel > 1){on.exit(parallel::stopCluster(cl))}
   
   # For each sequence get methylation of the associated regions

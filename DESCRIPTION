@@ -12,7 +12,7 @@ Description: DNA methylation is generally considered to be associated with trans
 	transcriptional activity at transcriptional start sites. 
 License: GPL (>= 3)
 BugReports: https://support.bioconductor.org/tag/methodical
-biocViews: Software
+biocViews: DNAMethylation, Transcription, MethylationArray, Software
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.2
@@ -21,16 +21,29 @@ Depends:
     ggplot2,
     R (>= 2.10),
     SummarizedExperiment
-LazyData: true
+LazyData: false
 Imports: 
+    Biostrings,
     BSgenome,
     cowplot,
     data.table,
+    DelayedArray,
     doParallel,
+    dplyr,
+    foreach,
+    GenomeInfoDb,
     HDF5Array,
+    IRanges,
     RcppRoll,
+    rhdf5,
     rtracklayer,
+    S4Vectors,
+    scales,
+    tibble,
     tidyr
 Suggests: 
     BSgenome.Athaliana.TAIR.TAIR9,
-    BSgenome.Hsapiens.UCSC.hg38
+    BSgenome.Hsapiens.UCSC.hg38,
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

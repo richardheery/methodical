@@ -8,6 +8,7 @@
 #' @param p_adjust_method Method used to adjust p-values. Same as the methods from p.adjust.methods. Default is Benjamini-Hochberg.
 #' Setting to "none" will result in no adjusted p-values being calculated.  
 #' @return A data.frame with the correlation and its significance for all pairs consisting of a variable from table1 and a variable from table2. 
+#' @export
 rapid_cor_test = function(table1, table2, cor_method = "p", table1_name = "table1", table2_name = "table2", p_adjust_method = "BH"){
   
   # Check that the length of vec equals the number of rows of df

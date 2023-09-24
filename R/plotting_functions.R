@@ -116,7 +116,7 @@ annotate_meth_site_plot = function(meth_site_plot, annotation_gr, reference_regi
   # Decide x-axis values for methylation sites depending on whether reference_region provided
   if(!is.null(reference_region)){
     meth_site_plot$data$meth_site_plot_position = methodical::stranded_distance(query_gr = GRanges(row.names(meth_site_plot$data)), subject_gr = reference_region)
-    annotation_gr = methodical::relative_ranges(genomic_regions = annotation_gr, reference_positions = reference_region)
+    annotation_gr = methodical::ranges_relative_to_tss(genomic_regions = annotation_gr, reference_positions = reference_region)
   } else {
     meth_site_plot$data$meth_site_plot_position = meth_site_plot$data$meth_site_start 
   }
@@ -204,7 +204,7 @@ plot_tmrs = function(meth_site_plot, tmrs_gr, reference_region = NULL, transcrip
   
   # Decide positions for tmrs depending on whether reference_region provided
   if(!is.null(reference_region)){
-      tmrs_df = data.frame(methodical::relative_ranges(
+      tmrs_df = data.frame(methodical::ranges_relative_to_tss(
         genomic_regions = tmrs_gr, reference_positions = reference_region))
   } else {
       tmrs_df = data.frame(tmrs_gr)

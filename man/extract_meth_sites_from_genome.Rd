@@ -13,6 +13,8 @@ extract_meth_sites_from_genome(
 )
 }
 \arguments{
+\item{genome}{A BSgenome object or the name of one.}
+
 \item{pattern}{A pattern to match in bsgenome. Default is "CG".}
 
 \item{plus_strand_only}{A logical value indicating whether to only return matches on "+" strand,
@@ -23,8 +25,6 @@ Default is the first position.}
 
 \item{standard_sequences_only}{A logical value indicating whether to only return sites
 on standard sequences (those without "-" in their names). Default is TRUE.}
-
-\item{bsgenome}{A BSgenome object or the name of one.}
 }
 \value{
 A GRanges object with genomic regions matching the pattern.

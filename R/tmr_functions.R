@@ -126,7 +126,7 @@ find_tmrs = function(correlation_df, offset_length = 10, smoothing_factor = 0.75
   if(sum(correlation_df$p_val > p_value_threshold, na.rm = TRUE) == 0){return(GenomicRanges::GRanges())}
   
   # Calculate smoothed methodical scores 
-  smoothed_methodical_scores = methodical:::calculate_smoothed_methodical_scores(
+  smoothed_methodical_scores = calculate_smoothed_methodical_scores(
     correlation_df = correlation_df, offset_length = offset_length, smoothing_factor = smoothing_factor)
   
   # Create a GRanges with methylation sites from correlation_df
@@ -137,7 +137,7 @@ find_tmrs = function(correlation_df, offset_length = 10, smoothing_factor = 0.75
   transcript_id = tss_gr$transcript_id
   
   # Find TMRs where smoothed methodical scores exceed thresholds
-  tmr_gr_list = methodical:::test_tmrs(meth_sites_gr = meth_sites_gr, smoothed_methodical_scores = smoothed_methodical_scores, 
+  tmr_gr_list = test_tmrs(meth_sites_gr = meth_sites_gr, smoothed_methodical_scores = smoothed_methodical_scores, 
     p_value_threshold = 0.005, tss_gr = tss_gr, transcript_id = transcript_id)
   
   # If there are no TMRs, return an empty GRanges

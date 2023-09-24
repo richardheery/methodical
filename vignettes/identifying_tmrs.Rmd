@@ -1,0 +1,19 @@
+---
+title: "identifying_tmrs"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{identifying_tmrs}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(methodical)
+```

@@ -1,6 +1,6 @@
 #' Create a GRanges with methylation sites of interest from a BSgenome. 
 #'
-#' @param bsgenome A BSgenome object or the name of one.  
+#' @param genome A BSgenome object or the name of one.  
 #' @param pattern A pattern to match in bsgenome. Default is "CG".
 #' @param plus_strand_only A logical value indicating whether to only return matches on "+" strand, 
 #' avoiding returning duplicate hits for palindromic sequences e.g. CG. Default is TRUE.
@@ -239,11 +239,11 @@ calculate_regions_intersections = function(gr1, gr2, ignore.strand = TRUE, overl
   
   # Caluclate proportion, Jaccard index or absolute overlap depending on overlap_measure
   if(overlap_measure == "proportion"){
-    return(methodical:::count_covered_bases(intersection)/methodical:::count_covered_bases(gr1))
+    return(count_covered_bases(intersection)/count_covered_bases(gr1))
   } else if(overlap_measure == "jaccard"){
-    return(methodical:::count_covered_bases(intersection)/methodical:::count_covered_bases(union))
+    return(count_covered_bases(intersection)/count_covered_bases(union))
   } else {
-    return(methodical:::count_covered_bases(intersection))
+    return(count_covered_bases(intersection))
   }
 
 }

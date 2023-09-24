@@ -9,6 +9,7 @@
 #' @param overwrite Logical value indicating whether to allow overwriting if dataset_name already exists in assays.h5. .
 #' @param chunkdim The dimensions of the chunks for the HDF5 file.
 #' @param temporary_dir Name to give a temporary directory to store intermediate files. A directory with this name cannot already exist. 
+#' @param ... Additional arguments to be passed to HDF5Array::HDF5RealizationSink. 
 #' @return A list describing the setup to be used for meth_rse_from_bedgraphs
 make_meth_rse_setup = function(meth_files, meth_sites, sample_metadata, hdf5_dir, 
   dataset_name, overwrite, chunkdim, temporary_dir, ...){
@@ -115,7 +116,7 @@ split_bedgraphs_into_chunks = function(bedgraphs, seqnames_column, start_column,
   file_grid_columns, meth_sites, meth_site_groups, temp_chunk_dirs, zero_based, convert_percentages, decimal_places, ncores){
   
   # Create cluster if ncores greater than 1 and set dt_threads accordingly
-  cl = methodical:::setup_cluster(ncores = ncores, packages = c("methodical"), outfile = "")
+  cl = setup_cluster(ncores = ncores, packages = c("methodical"), outfile = "")
   if(ncores > 1){on.exit(parallel::stopCluster(cl))}
   if(ncores > 1){
     dt_threads = 1
@@ -217,7 +218,7 @@ split_meth_array_files_into_chunks = function(array_files, probe_name_column, be
   file_grid_columns, probe_ranges, probe_groups, temp_chunk_dirs, convert_percentages, decimal_places, ncores){
   
   # Create cluster if ncores greater than 1 and set dt_threads accordingly
-  cl = methodical:::setup_cluster(ncores = ncores, packages = c("methodical"), outfile = "")
+  cl = setup_cluster(ncores = ncores, packages = c("methodical"), outfile = "")
   if(ncores > 1){on.exit(parallel::stopCluster(cl))}
   if(ncores > 1){
     dt_threads = 1
@@ -360,7 +361,7 @@ create_meth_rse_from_hdf5 = function(hdf5_filepath, hdf5_dir, meth_sites_df, sam
   # Create a RangedSummarizedExperiment using the data sets in hdf5_dir, sample_metadata and meth_sites
   rse = SummarizedExperiment::SummarizedExperiment(assays = assay_list, colData = sample_metadata, rowRanges = meth_sites)
   
-  # Save rse in parent same directory as hdf5_dir
+  # Save rse in hdf5_dir
   HDF5Array:::.serialize_HDF5SummarizedExperiment(x = rse, rds_path = paste0(hdf5_dir, "/se.rds"), verbose = TRUE)
   
   # Return rse

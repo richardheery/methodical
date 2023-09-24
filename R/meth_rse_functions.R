@@ -1,7 +1,7 @@
 #' Extract values for methylation sites overlapping genomic regions from a methylation RSE. 
 #' 
 #' @param meth_rse A RangedSummarizedExperiment for methylation data.
-#' @param genomic_ranges A GRanges object.
+#' @param genomic_regions A GRanges object.
 #' @param samples_subset Optional sample names used to subset meth_rse.
 #' @param assay_number The assay from meth_rse to extract values from. Default is the first assay.
 #' @return A data.frame with the methylation site values for all sites in meth_rse which overlap genomic_ranges. 

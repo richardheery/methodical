@@ -33,6 +33,8 @@ Automatically detects if meth_files contain a header if every field in the first
 \item{chunkdim}{The dimensions of the chunks for the HDF5 file.}
 
 \item{temporary_dir}{Name to give a temporary directory to store intermediate files. A directory with this name cannot already exist.}
+
+\item{...}{Additional arguments to be passed to HDF5Array::HDF5RealizationSink.}
 }
 \value{
 A list describing the setup to be used for meth_rse_from_bedgraphs

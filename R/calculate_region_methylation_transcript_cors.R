@@ -122,7 +122,7 @@ calculate_region_methylation_transcript_cors = function(genomic_regions, genomic
   # For each transcript, calculate the correlation between its expression and the methylation of regions associated with it
   methylation_transcript_correlations = foreach::foreach(transcript = names(feature_matches)) %dopar% {
     
-    methodical:::rapid_cor_test(
+    methodical::rapid_cor_test(
       table1 = t(genomic_region_methylation[feature_matches[[transcript]], ]), 
       table2 = setNames(data.frame(unlist(transcript_table[transcript, ])), transcript),
       table1_name = "genomic_region_name", table2_name = "transcript_name",

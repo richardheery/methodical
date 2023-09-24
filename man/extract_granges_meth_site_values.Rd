@@ -14,11 +14,11 @@ extract_granges_meth_site_values(
 \arguments{
 \item{meth_rse}{A RangedSummarizedExperiment for methylation data.}
 
+\item{genomic_regions}{A GRanges object.}
+
 \item{samples_subset}{Optional sample names used to subset meth_rse.}
 
 \item{assay_number}{The assay from meth_rse to extract values from. Default is the first assay.}
-
-\item{genomic_ranges}{A GRanges object.}
 }
 \value{
 A data.frame with the methylation site values for all sites in meth_rse which overlap genomic_ranges.

@@ -72,11 +72,11 @@ calculate_meth_site_transcript_cors = function(meth_rse, assay_number = 1, trans
   tss_gr_expanded = methodical::expand_granges(tss_gr, expand_upstream, expand_downstream)
   
   # Split tss_gr_expanded into chunks based on the number of methylation sites that they cover
-  genomic_region_bins = methodical:::chunk_regions(meth_rse = meth_rse, genomic_regions = tss_gr_expanded, 
+  genomic_region_bins = chunk_regions(meth_rse = meth_rse, genomic_regions = tss_gr_expanded, 
     max_sites_per_chunk = max_sites_per_chunk, ncores = 1)
   
   # Create cluster if ncores greater than 1
-  cl = methodical:::setup_cluster(ncores = ncores, packages = c("methodical", "HDF5Array"), outfile = NULL)
+  cl = setup_cluster(ncores = ncores, packages = c("methodical", "HDF5Array"), outfile = NULL)
   if(ncores > 1){on.exit(parallel::stopCluster(cl))}
   
   # For each sequence get methylation of the associated regions
@@ -137,7 +137,7 @@ calculate_meth_site_transcript_cors = function(meth_rse, assay_number = 1, trans
       transcript_table = setNames(data.frame(t(transcript_table)), transcript_name)
         
       tryCatch({
-        transcript_meth_site_cors = methodical:::rapid_cor_test(
+        transcript_meth_site_cors = methodical::rapid_cor_test(
           table1 = meth_table, table2 = transcript_table, 
           table1_name = "meth_site", table2_name = "transcript_name", 
           cor_method = cor_method, p_adjust_method = p_adjust_method)
