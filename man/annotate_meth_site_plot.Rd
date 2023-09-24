@@ -26,6 +26,8 @@ If this is a factor, the levels will be used to order the region classes in the 
 If provided, the x-axis will show the distance of methylation sites to the start of this region with methylation sites upstream
 relative to the reference_region shown first. If not, the x-axis will show the start site coordinate of the methylation site.}
 
+\item{region_class_colours}{An optional named vector of colours to use with different region classes. Names of vector match colours to region classes.}
+
 \item{annotation_line_size}{Linewidth for annotation plot. Default is 5.}
 
 \item{annotation_plot_height}{A value giving the proportion of the height of the plot devoted to the annotation. Default is 0.5.}
@@ -33,8 +35,6 @@ relative to the reference_region shown first. If not, the x-axis will show the s
 \item{keep_meth_site_plot_legend}{A logical value indicating whether to retain the legend of meth_site_plot, if it has one. Default value is FALSE.}
 
 \item{annotation_plot_only}{A logical value indicating whether to return only the annotation plot. Default is to combine meth_site_plot with the annotation.}
-
-\item{class_colours}{An optional named vector of colours to use with different region classes. Names of vector match colours to region classes.}
 }
 \value{
 A ggplot object
