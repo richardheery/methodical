@@ -41,7 +41,7 @@ extract_meth_sites_from_genome = function(genome, pattern = "CG", plus_strand_on
   
   # Subset for standard sequences if specified
   if(standard_sequences_only){
-    standard_sequences = grep("_", names(genome), invert = T, value = T)
+    standard_sequences = grep("_", names(genome), invert = TRUE, value = TRUE)
     GenomeInfoDb::seqlevels(meth_sites_gr, pruning.mode = "coarse") = standard_sequences
   }
   

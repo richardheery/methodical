@@ -17,6 +17,9 @@ kallisto_index(
 
 \item{index_name}{Name to give the created index file. Default is "kallisto_index.idx".}
 }
+\value{
+Invisibly returns TRUE.
+}
 \description{
 Create an index file for running Kallisto
 }

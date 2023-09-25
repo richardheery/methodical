@@ -40,6 +40,9 @@ kallisto_transcript_counts_merged.tsv.gz and kallisto_transcript_tpm_merged.tsv.
 
 \item{number_bootstraps}{The number of bootstrap samples. Default is 100.}
 }
+\value{
+The path to the merged counts table.
+}
 \description{
 Run kallisto on a set of FASTQ files and merge the results
 }

@@ -3,6 +3,7 @@
 #' @param path_to_kallisto Path to kallisto executable
 #' @param transcripts_fasta Path to a fasta file for the transcripts to be quantified.
 #' @param index_name Name to give the created index file. Default is "kallisto_index.idx".
+#' @return Invisibly returns TRUE. 
 #' @export
 #' @examples \dontrun{
 #' # Download transcripts FASTA from Gencode
@@ -47,6 +48,7 @@ kallisto_index = function(path_to_kallisto, transcripts_fasta, index_name = "kal
 #' @param messages_file Name of file to save kallisto run messages. If no file name given, information is printed to stdout.
 #' @param n_cores The number of cores to use. Default is 1.
 #' @param number_bootstraps The number of bootstrap samples. Default is 100. 
+#' @return The path to the merged counts table. 
 #' @export
 kallisto_quantify = function(path_to_kallisto, kallisto_index, forward_fastq_files, reverse_fastq_files, 
   sample_names, output_directory, merged_output_prefix = "kallisto_transcript", messages_file = "", n_cores = 1, number_bootstraps  = 100){
@@ -134,8 +136,8 @@ kallisto_quantify = function(path_to_kallisto, kallisto_index, forward_fastq_fil
   data.table::fwrite(kallisto_counts, paste(output_directory, merged_counts_file, sep = "/"), sep = "\t", row.names = FALSE, quote = FALSE)
   data.table::fwrite(kallisto_tpm, paste(output_directory, merged_tpm_file, sep = "/"), sep = "\t", row.names = FALSE, quote = FALSE)
   
-  # Invisibly return TRUE
-  invisible(return(TRUE))
+  # Return path to counts table
+  return(paste(output_directory, merged_counts_file, sep = "/"))
   
 }
 

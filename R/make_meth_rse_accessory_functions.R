@@ -304,6 +304,7 @@ split_meth_array_files_into_chunks = function(array_files, probe_name_column, be
 #' @param files_in_chunks A list of files associated with each chunk in the order they should be placed.
 #' @param hdf5_sink A HDF5RealizationSink.
 #' @param hdf5_grid A RegularArrayGrid.
+#' @return Invisibly returns TRUE. 
 write_chunks_to_hdf5 = function(temp_chunk_dirs, files_in_chunks, hdf5_sink, hdf5_grid){
   
   # Define %do% from foreach
@@ -335,6 +336,9 @@ write_chunks_to_hdf5 = function(temp_chunk_dirs, files_in_chunks, hdf5_sink, hdf
   
   # Remove chunk_data and run gc
   rm(chunk_data); invisible(gc())
+  
+  # Invisibly return TRUE
+  invisible(return(TRUE))
   
 }
 

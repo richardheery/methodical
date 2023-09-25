@@ -15,6 +15,9 @@ write_chunks_to_hdf5(temp_chunk_dirs, files_in_chunks, hdf5_sink, hdf5_grid)
 
 \item{hdf5_grid}{A RegularArrayGrid.}
 }
+\value{
+Invisibly returns TRUE.
+}
 \description{
 Write chunks of data to a HDF5 sink
 }

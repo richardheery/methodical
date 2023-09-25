@@ -133,7 +133,7 @@ make_meth_rse_from_bedgraphs = function(bedgraphs,
 #' # Create sample metadata
 #' sample_metadata = data.frame(
 #'   tcga_project = "LUAD",
-#'   sample_type = "Tumour, submitter = gsub("_01.tsv.gz", "", basename(array_files)),
+#'   sample_type = "Tumour", submitter = gsub("_01.tsv.gz", "", basename(array_files)),
 #'   row.names = gsub(".tsv.gz", "", basename(array_files))
 #' )
 #' 
@@ -211,15 +211,6 @@ make_meth_rse_from_array_files = function(array_files, probe_name_column = 1, be
 #'@format GRanges object with 482,421 ranges and one metadata column name giving the name of the associated probe. 
 #'@source Derived from the manifest file downloaded from https://webdata.illumina.com/downloads/productfiles/humanmethylation450/humanmethylation450_15017482_v1-2.csv?_gl=1*ocsx4f*_ga*MTk1Nzc4MDkwMy4xNjg3ODcxNjg0*_ga_VVVPY8BDYL*MTY4Nzg3MTY4My4xLjEuMTY4Nzg3MzU5Mi4xMC4wLjA.
 "infinium_450k_probe_granges_hg19"
-
-#' infinium_450k_probe_granges_hg38
-#'
-#' The genomic coordinates for infinium_450k_probe_granges_hg19 lifted-over to hg38. 
-#' Probes which could not be mapped to hg38 and those resulting in one-to-many or many-to-one mappings 
-#' were removed as well as those which did not overlap CpG sites after lift-over. 
-#'
-#'@format GRanges object with 480,975 ranges and one metadata column name giving the name of the associated probe. 
-"infinium_450k_probe_granges_hg38"
 
 #' Convert a Methrix object into a RangedSummarizedExperiment
 #'

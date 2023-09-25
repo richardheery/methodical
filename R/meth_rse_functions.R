@@ -6,7 +6,6 @@
 #' @param assay_number The assay from meth_rse to extract values from. Default is the first assay.
 #' @return A data.frame with the methylation site values for all sites in meth_rse which overlap genomic_ranges. 
 #' Row names are the coordinates of the sites as a character vector. 
-#' @examples 
 #' @export
 extract_granges_meth_site_values = function(meth_rse, genomic_regions, samples_subset = NULL, assay_number = 1){
   
@@ -170,16 +169,11 @@ liftover_meth_rse = function(meth_rse, chain, remove_one_to_many_mapping = TRUE,
 #' @export
 mask_ranges_in_rse = function(rse, mask_ranges, assay = 1){
   
-  # Check that mask_ranges is a GRanges or GRangesList
-  if(!class(mask_ranges) %in% c("GRanges", "GRangesList")){
-    stop("mask_ranges must be either a GRanges or GRangesList")
-  }
-  
   # Create a copy of rse for masking
   rse_masked = rse
   
   # If mask_ranges is a GRangesList loop through each individual GRanges
-  if(class(mask_ranges) == "GRangesList"){
+  if(is(mask_ranges, "GRangesList")){
   
     # Check that names of mask_ranges match those of samples in rse
     if(length(setdiff(names(mask_ranges), colnames(rse))) > 0){
@@ -199,7 +193,7 @@ mask_ranges_in_rse = function(rse, mask_ranges, assay = 1){
       assay(rse_masked, assay)[mask_indices, sample] = NA
     }
     
-  } else {
+  } else if(is(mask_ranges, "GRanges")){
     
     # Find row indices for regions overlapping regions to be masked in all samples
     mask_indices = unique(queryHits(findOverlaps(rse_masked, mask_ranges)))
@@ -207,6 +201,10 @@ mask_ranges_in_rse = function(rse, mask_ranges, assay = 1){
     # Set values to be masked as NA
     assay(rse_masked, assay)[mask_indices, sample] = NA
     
+    
+  } else {
+    
+    stop("mask_ranges should be either a GRanges or a GRangesList")
     
   }
   
