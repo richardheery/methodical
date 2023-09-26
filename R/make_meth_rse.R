@@ -24,7 +24,7 @@
 #' such as compression level. Uses the defaults for any properties that are not specified. 
 #' @return A RangedSummarizedExperiment with methylation values for all methylation sites in meth_sites. methylation sites will be in the same order as sort(meth_sites). 
 #' @export
-#' @examples \dontrun{
+#' @examples
 #' # Get human CpG sites for hg38 genome build
 #' hg38_cpgs = methodical::extract_meth_sites_from_genome("BSgenome.Hsapiens.UCSC.hg38")
 #' 
@@ -35,19 +35,18 @@
 #' # Create sample metadata
 #' sample_metadata = data.frame(
 #'   tcga_project = gsub("_.*", "", gsub("TCGA_", "", basename(bedgraphs))),
-#'   sample_type = ifelse(grepl("N", basename(bedgraphs)), "Normal", "Tumour")),
+#'   sample_type = ifelse(grepl("N", basename(bedgraphs)), "Normal", "Tumour"),
 #'   row.names = tools::file_path_sans_ext(basename(bedgraphs))
 #' )
 #' 
 #' # Create a HDF5-backed RangedSummarizedExperiment from bedGraphs
 #' meth_rse = methodical::make_meth_rse_from_bedgraphs(bedgraphs = bedgraphs, meth_sites = hg38_cpgs, 
-#'   sample_metadata = sample_metadata, hdf5_dir = "test_hdf5")
+#'   sample_metadata = sample_metadata, hdf5_dir = "bedgraph_hdf5_1")
 #'
 #' # Create a HDF5-backed RangedSummarizedExperiment from bedGraphs specifying chunk dimensions
 #' meth_rse2 = methodical::make_meth_rse_from_bedgraphs(bedgraphs = bedgraphs, meth_sites = hg38_cpgs, 
-#'   sample_metadata = sample_metadata, hdf5_dir = "test_hdf5", chumdim = c(50000, 1))
-#' 
-#' }
+#'   sample_metadata = sample_metadata, hdf5_dir = "bedgraph_hdf5_2", chunkdim = c(50000, 1))
+#'   
 make_meth_rse_from_bedgraphs = function(bedgraphs, 
   seqnames_column = 1, start_column = 2, end_column = 3, value_column = 4,
   zero_based = TRUE, convert_percentages = TRUE, decimal_places = NA, 
@@ -122,7 +121,7 @@ make_meth_rse_from_bedgraphs = function(bedgraphs,
 #' such as compression level. Uses the defaults for any properties that are not specified. 
 #' @return A RangedSummarizedExperiment with methylation values for all methylation sites in meth_sites. Methylation sites will be in the same order as sort(meth_sites). 
 #' @export
-#' @examples \dontrun{
+#' @examples
 #' # Get human CpG sites for hg38 genome build
 #' data("infinium_450k_probe_granges_hg19", package = "methodical")
 #' 
@@ -139,18 +138,17 @@ make_meth_rse_from_bedgraphs = function(bedgraphs,
 #' 
 #' # Create a HDF5-backed RangedSummarizedExperiment from array files using default chumk dimensions
 #' meth_rse = methodical::make_meth_rse_from_array_files(array_files = array_files, 
-#'  probe_sites = infinium_450k_probe_granges_hg19, 
-#'  sample_metadata = sample_metadata, hdf5_dir = "array_file_hdf5")
+#'  probe_ranges = infinium_450k_probe_granges_hg19, 
+#'  sample_metadata = sample_metadata, hdf5_dir = "array_file_hdf5_1")
 #'
 #' # Create an HDF5-backed RangedSummarizedExperiment from array files specifying chunk dimensions
 #' meth_rse2 = methodical::make_meth_rse_from_array_files(array_files = array_files, 
-#'  probe_sites = infinium_450k_probe_granges_hg19, 
-#'  sample_metadata = sample_metadata, hdf5_dir = "array_file_hdf5", chunkdim = c(50000, 1))
+#'  probe_ranges = infinium_450k_probe_granges_hg19, 
+#'  sample_metadata = sample_metadata, hdf5_dir = "array_file_hdf5_2", chunkdim = c(50000, 1))
 #' 
-#' }
 make_meth_rse_from_array_files = function(array_files, probe_name_column = 1, beta_value_column = 2, 
   convert_percentages = TRUE, decimal_places = NA, probe_ranges, sample_metadata = NULL, hdf5_dir, dataset_name = "beta", 
-  overwrite = FALSE, chunkdim = NULL, temporary_dir, ncores = 1, ...){
+  overwrite = FALSE, chunkdim = NULL, temporary_dir = NULL, ncores = 1, ...){
   
   # Check that probe_ranges has a metadata column called name and that there are no duplicate names
   if(!"name" %in% names(mcols(probe_ranges))){
@@ -219,13 +217,13 @@ make_meth_rse_from_array_files = function(array_files, probe_name_column = 1, be
 #' Default is both "beta" and "cov" assays. 
 #' @return A RangedSummarizedExperiment 
 #' @export
-#' @examples \dontrun{
+#' @examples
 #' # Load a sample methrix object
 #' data("methrix_data", package = "methrix")
 #'   
 #' # Convert methrix to a RangedSummarizedExperiment with one assay for the methylation beta values
 #' meth_rse = methodical::methrix_to_rse(methrix_data, assays = "beta")
-#' }
+#' 
 methrix_to_rse = function(methrix, assays = c("beta", "cov")){
   
   # Check that allowed values are provided for assays

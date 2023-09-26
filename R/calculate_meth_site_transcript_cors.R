@@ -1,4 +1,4 @@
-#' Calculate correlation between expression of a transcript and methylation of sites surrounding its TSS
+#' Calculate correlation between expression of transcripts and methylation of sites surrounding their TSS
 #'
 #' @param meth_rse A RangedSummarizedExperiment for methylation sites. 
 #' @param assay_number The assay from meth_rse to extract values from. Default is the first assay. 
@@ -29,14 +29,27 @@
 #' Distance of the methylation sites upstream or downstream to the center of the region is also provided.
 #' If results_dir is provided, instead returns a list with the paths to the RDS files with the results. 
 #' @export
+#' @examples 
+#' 
+#' # Load TUBB6 TSS GRanges, RangedSummarizedExperiment with methylation values for CpGs around TUBB6 TSS and TUBB6 transcript counts
+#' data(tubb6_tss, package = "methodical")
+#' data(tubb6_meth_rse, package = "methodical")
+#' data(tubb6_transcript_counts, package = "methodical")
+#' 
+#' # Calculate correlation values between methylation values and transcript values for TUBB6
+#' tubb6_cpg_meth_transcript_cors = methodical::calculate_meth_site_transcript_cors(meth_rse = tubb6_meth_rse, 
+#'   transcript_expression_table = tubb6_transcript_counts, tss_gr = tubb6_tss, expand_upstream = 5000, expand_downstream = 5000)
+#'   
 calculate_meth_site_transcript_cors = function(meth_rse, assay_number = 1, transcript_expression_table, samples_subset = NULL, tss_gr, expand_upstream = 5000,
   expand_downstream = 5000, cor_method = "spearman", p_adjust_method = "BH", add_distance_to_region = TRUE, max_sites_per_chunk = NULL, ncores = 1, results_dir = NULL){
   
   # Create results_dir is it doesn't exist
-  if(!dir.exists(results_dir)){
-    dir.create(results_dir)
-  } else {
-    stop(paste("Directory called", results_dir, "already exists"))
+  if(!is.null(results_dir)){
+    if(!dir.exists(results_dir)){
+      dir.create(results_dir)
+    } else {
+      stop(paste("Directory called", results_dir, "already exists"))
+    }
   }
 
   # Check that all regions in tss_gr have a length of 1
@@ -46,7 +59,7 @@ calculate_meth_site_transcript_cors = function(meth_rse, assay_number = 1, trans
   if(length(tss_gr) != nrow(transcript_expression_table)){stop("Length of tss_gr should equal the number of rows in transcript_expression_table")}
 
   # Check that transcript_id of tss_gr corresponds to row.names of transcript_expression_table
-  if(!all(names(tss_gr) == row.names(transcript_expression_table))){
+  if(!all(names(tss_gr) == row.names(transcript_expression_table)) | is.null(names(tss_gr))){
     stop("names(tss_gr) must match row.names(transcript_expression_table)")
   } 
 

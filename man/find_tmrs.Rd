@@ -36,12 +36,11 @@ A GRanges object with the location of TMRs.
 Find TSS-Proximal Methylation-Controlled Regulatory Sites (TMRs)
 }
 \examples{
-\dontrun{
 # Load methylation-transcript correlation results for TUBB6 gene
-data("example_meth_transcript_cors", package = "methodical")
+data("tubb6_cpg_meth_transcript_cors", package = "methodical")
 
 # Find TMRs for 
-tubb6_tmrs = find_tmrs(correlation_df = example_meth_transcript_cors)
+tubb6_tmrs = find_tmrs(correlation_df = tubb6_cpg_meth_transcript_cors)
 print(tubb6_tmrs)
-}
+
 }

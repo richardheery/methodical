@@ -19,12 +19,10 @@ A GRanges object where all regions have "relative" as the sequence names.
 Find locations of genomic regions relative to transcription start sites.
 }
 \examples{
-\dontrun{
 # Create query and subject GRanges 
 genomic_regions = GenomicRanges::GRanges(c("chr1:100-1000:+", "chr1:2000-3000:-"))
 tss_gr = GenomicRanges::GRanges(c("chr1:1500:+", "chr1:4000:-"))
 
 # Calculate distances between query and subject
 methodical::ranges_relative_to_tss(genomic_regions, tss_gr)
-}
 }

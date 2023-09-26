@@ -1,7 +1,9 @@
 #' Create plot of methylation values
 #'
-#' @param meth_site_values A data.frame with values associated with methylation sites. row.names should be the names of methylation sites and all methylation sites must be located on the same sequence. 
-#' @param column_name Name of column in meth_site_values to plot. If not provided, will attempt to use the first column. 
+#' @param meth_site_values A data.frame with values associated with methylation sites. 
+#' First column should be called meth_site and give the names of methylation sites. 
+#' All methylation sites must be located on the same sequence. 
+#' @param column_name Name of column in meth_site_values to plot. 
 #' @param reference_region An optional GRanges object with a single range. If provided, the x-axis will 
 #' show the distance of methylation sites to the start of this region with methylation sites upstream 
 #' relative to the reference_region shown first. If not, the x-axis will show the start site coordinate of the methylation site. 
@@ -11,9 +13,23 @@
 #' @param low_colour Colour to use for low values. Default value is "cadetblue4".
 #' @param high_colour Colour to use for high values. Default value is "firebrick3".
 #' @return A ggplot object 
+#' @examples 
+#' # Load methylation-transcript correlation results for TUBB6 gene
+#' data("tubb6_cpg_meth_transcript_cors", package = "methodical")
+#' 
+#' # Plot methylation-transcript correlation values around TUBB6 TSS
+#' methodical::plot_meth_site_values(tubb6_cpg_meth_transcript_cors, column_name = "cor", ylabel = "Spearman Correlation")
+#' 
+#' # Create same plot but showing the distance to the TUBB6 TSS on the x-axis
+#' methodical::plot_meth_site_values(tubb6_cpg_meth_transcript_cors, column_name = "cor", 
+#'   ylabel = "Spearman Correlation", reference_region = attributes(tubb6_cpg_meth_transcript_cors)$tss_range)
+#' 
 #' @export
-plot_meth_site_values = function(meth_site_values, column_name = NULL, reference_region = NULL, 
-  title = NULL, xlabel = "Genomic Position", ylabel = "Methylation Site Values", low_colour = "cadetblue4", high_colour = "firebrick3") {
+plot_meth_site_values = function(meth_site_values, column_name, reference_region = NULL, 
+  title = NULL, xlabel = "Genomic Position", ylabel = "Methylation Site Values", low_colour = "cadetblue4", high_colour = "firebrick3"){
+  
+  # Change meth_site column to row names
+  meth_site_values = tibble::column_to_rownames(meth_site_values, "meth_site")
   
   # Check that if reference_region is provided, it has a length of 1
   if(!is.null(reference_region) & length(reference_region) > 1){stop("reference_region should have length of 1 if provided")}
@@ -21,11 +37,6 @@ plot_meth_site_values = function(meth_site_values, column_name = NULL, reference
   # Check that all methylation sites are on the same sequence
   if(length(seqlevels(GenomicRanges::GRanges(row.names(meth_site_values)))) > 1){
     stop("All methylation sites must be located on the same sequence")
-  }
-  
-  # If column_name not provided, set to name of first column in meth_site_values
-  if(is.null(column_name)){
-    column_name = names(meth_site_values)[1]
   }
   
   # Check that column_name has length 1 
@@ -83,6 +94,18 @@ plot_meth_site_values = function(meth_site_values, column_name = NULL, reference
 #' @param annotation_plot_only A logical value indicating whether to return only the annotation plot. Default is to combine meth_site_plot with the annotation. 
 #' @return A ggplot object
 #' @export
+#' @examples 
+#' # Get CpG islands from UCSC
+#' ucsc_query = rtracklayer::ucscTableQuery("hg38", table = "cpgIslandExt")
+#' cpg_islands = rtracklayer::track(ucsc_query) 
+#' cpg_islands$region_type = "CpG Island"
+#' 
+#' # Load plot with CpG methylation correlation values for TUBB6
+#' data("tubb6_correlation_plot", package = "methodical")
+#' 
+#' # Add positions of CpG islands to tubb6_correlation_plot
+#' methodical::annotate_meth_site_plot(tubb6_correlation_plot, cpg_islands, annotation_plot_height = 0.3)
+#' 
 annotate_meth_site_plot = function(meth_site_plot, annotation_gr, reference_region = NULL, region_class_colours = NULL, 
   annotation_line_size = 5, annotation_plot_height = 0.5, keep_meth_site_plot_legend = FALSE, annotation_plot_only = FALSE){
   
@@ -189,6 +212,18 @@ annotate_meth_site_plot = function(meth_site_plot, annotation_gr, reference_regi
 #' @param linewidth A numeric value to be provided as linewidth for geom_segment(). 
 #' @return A ggplot object
 #' @export
+#' @examples 
+#' # Load methylation-transcript correlation results for TUBB6 gene
+#' data("tubb6_cpg_meth_transcript_cors", package = "methodical")
+#' 
+#' # Plot methylation-transcript correlation values around TUBB6 TSS
+#' tubb6_correlation_plot = methodical::plot_meth_site_values(tubb6_cpg_meth_transcript_cors, column_name = "cor", ylabel = "Spearman Correlation")
+#'   
+#' # Find TMRs for TUBB6
+#' tubb6_tmrs = find_tmrs(correlation_df = tubb6_cpg_meth_transcript_cors)
+#' 
+#' # Plot TMRs on top of tubb6_correlation_plot
+#' methodical::plot_tmrs(tubb6_correlation_plot, tmrs_gr = tubb6_tmrs)
 plot_tmrs = function(meth_site_plot, tmrs_gr, reference_region = NULL, transcript_id = NULL, tmr_colours = c("#A28CB1", "#D2C465"), linewidth = 5){
   
   # Filter tmrs_gr and reference_region for transcript_id if provided
@@ -205,7 +240,7 @@ plot_tmrs = function(meth_site_plot, tmrs_gr, reference_region = NULL, transcrip
   # Decide positions for tmrs depending on whether reference_region provided
   if(!is.null(reference_region)){
       tmrs_df = data.frame(methodical::ranges_relative_to_tss(
-        genomic_regions = tmrs_gr, reference_positions = reference_region))
+        genomic_regions = tmrs_gr, tss_gr = reference_region))
   } else {
       tmrs_df = data.frame(tmrs_gr)
   }
@@ -227,42 +262,59 @@ plot_tmrs = function(meth_site_plot, tmrs_gr, reference_region = NULL, transcrip
 #' and another called "p_val" which are used to calculate the Methodical score. row.names should be the names of methylation sites and all methylation sites must be located on the same sequence. 
 #' @param reference_region An optional GRanges object with a single range. If provided, the x-axis will show the distance of methylation sites to the start of this region with methylation sites upstream.
 #' relative to the reference_region shown first. If not, the x-axis will show the start site coordinate of the methylation site. 
+#' @param p_value_threshold The p-value threshold used to identify TMRs. Default value is 0.005. Set to NULL to turn off significance thresholds.
+#' @param smooth_scores A logical value indicating whether to display a curve of smoothed Methodical scores on top of the plot. Default is TRUE.
+#' @param offset_length Offset length to be supplied to calculate_smoothed_methodical_scores.
+#' @param smoothing_factor Smoothing factor to be provided to calculate_smoothed_methodical_scores.
+#' @param smoothed_curve_colour Colour of the smoothed curve. Default is "black".
+#' @param linewidth Line width of the smoothed curve. Default value is 1.
+#' @param curve_alpha Alpha value for the curve. Default value is 0.75. 
 #' @param title Title of the plot. Default is no title. 
 #' @param xlabel Label for the X axis in the plot. Default is "Genomic Position".
 #' @param low_colour Colour to use for low values. Default value is "#7B5C90".
 #' @param high_colour Colour to use for high values. Default value is "#BFAB25".
-#' @param p_value_threshold The p-value threshold used to identify TMRs. Default value is 0.005. Set to NULL to not display thresholds. 
 #' @return A ggplot object 
 #' @export
-plot_methodical_scores = function(meth_site_values, reference_region = NULL, 
-  title = NULL, xlabel = "Genomic Position", low_colour = "#7B5C90", high_colour = "#BFAB25", p_value_threshold = 0.005) {
+#' @examples 
+#' # Load methylation-transcript correlation results for TUBB6 gene
+#' data("tubb6_cpg_meth_transcript_cors", package = "methodical")
+#'   
+#' # Calculate and plot Methodical scores from correlation values
+#' methodical::plot_methodical_scores(tubb6_cpg_meth_transcript_cors, reference_region = attributes(tubb6_cpg_meth_transcript_cors)$tss_range)
+plot_methodical_scores = function(meth_site_values, reference_region = NULL, p_value_threshold = 0.005,
+  smooth_scores = TRUE, offset_length = 10, smoothing_factor = 0.75, 
+  smoothed_curve_colour = "black", linewidth = 1, curve_alpha = 0.75, 
+  title = NULL, xlabel = "Genomic Position", low_colour = "#7B5C90", high_colour = "#BFAB25"){
+  
+  # Change meth_site column to row names
+  meth_site_values_plot_df = tibble::column_to_rownames(meth_site_values, "meth_site")
   
   # Check that if reference_region is provided, it has a length of 1
   if(!is.null(reference_region) & length(reference_region) > 1){stop("reference_region should have length of 1 if provided")}
   
   # Check that all methylation sites are on the same sequence
-  if(length(seqlevels(GenomicRanges::GRanges(row.names(meth_site_values)))) > 1){
+  if(length(seqlevels(GenomicRanges::GRanges(row.names(meth_site_values_plot_df)))) > 1){
     stop("All methylation sites must be located on the same sequence")
   }
   
-  # Add meth_site_start position to meth_site_values
-  meth_site_values$meth_site_start = GenomicRanges::start(GenomicRanges::GRanges(row.names(meth_site_values)))
+  # Add meth_site_start position to meth_site_values_plot_df
+  meth_site_values_plot_df$meth_site_start = GenomicRanges::start(GenomicRanges::GRanges(row.names(meth_site_values_plot_df)))
   
   # Decide x-axis values for methylation sites depending on whether reference_region provided
   if(!is.null(reference_region)){
-    meth_site_values$meth_site_plot_position = methodical::stranded_distance(query_gr = GRanges(row.names(meth_site_values)), subject_gr = reference_region)
+    meth_site_values_plot_df$meth_site_plot_position = methodical::stranded_distance(query_gr = GRanges(row.names(meth_site_values_plot_df)), subject_gr = reference_region)
   } else {
-    meth_site_values$meth_site_plot_position = meth_site_values$meth_site_start 
+    meth_site_values_plot_df$meth_site_plot_position = meth_site_values_plot_df$meth_site_start 
   }
   
   # Convert p-values into methodical score
-  meth_site_values$methodical_score = log10(meth_site_values$p_val) * -sign(meth_site_values$cor)
+  meth_site_values_plot_df$methodical_score = log10(meth_site_values_plot_df$p_val) * -sign(meth_site_values_plot_df$cor)
   
-  # Subset meth_site_values for necessary columns
-  meth_site_values = dplyr::select(meth_site_values, meth_site_start, meth_site_plot_position, methodical_score, cor)
+  # Subset meth_site_values_plot_df for necessary columns
+  meth_site_values_plot_df = dplyr::select(meth_site_values_plot_df, meth_site_start, meth_site_plot_position, methodical_score, cor)
   
   # Create a scatter plot of methylation site values and return
-  meth_site_plot = ggplot(data = meth_site_values, mapping = aes(x = meth_site_plot_position, y = methodical_score)) +
+  meth_site_plot = ggplot(data = meth_site_values_plot_df, mapping = aes(x = meth_site_plot_position, y = methodical_score)) +
     geom_line(color = "black", alpha = 0.75) +
     geom_point(shape = 21, colour = "black", size = 4, alpha = 1, aes(fill = cor)) +
     theme_bw() +
@@ -280,24 +332,13 @@ plot_methodical_scores = function(meth_site_values, reference_region = NULL,
       geom_hline(yintercept = -log10(p_value_threshold), linetype = "dashed", colour = high_colour) 
   }
   
-  return(meth_site_plot)
-}
-
-#' Add smoothed methodical scores curve to a methylation site plot
-#'
-#' @param meth_site_plot A plot of methylation site values around a TSS.
-#' @param smoothed_methodical_scores A vector with smoothed methodical scores for each methylation site in meth_site_plot.
-#' @param colour Colour of the smoothed curve. Default is "black"
-#' @param linewidth Line width of the smoothed curve. Default value is 1.
-#' @param alpha Alpha value for the curve. Default value is 0.75. 
-#' @return A ggplot object 
-#' @export
-plot_smoothed_methodical_scores = function(meth_site_plot, smoothed_methodical_scores, colour = "black", linewidth = 1, alpha = 0.75) {
-  
-  # Add smoothed Methodical scores to meth_site_plot and return
-  meth_site_plot_with_curve = meth_site_plot + 
+  # Add smoothed Methodical scores if specified
+  if(smooth_scores){
+    smoothed_methodical_scores = calculate_smoothed_methodical_scores(correlation_df = meth_site_values)
+    meth_site_plot = meth_site_plot +
     geom_line(mapping = aes(y = smoothed_methodical_scores), 
-      color = colour, alpha = alpha, linewidth = linewidth)
+      color = smoothed_curve_colour, alpha = curve_alpha, linewidth = linewidth)
+  }
   
-  return(meth_site_plot_with_curve)
+  return(meth_site_plot)
 }

@@ -32,30 +32,18 @@ many-to-one mappings. Also removes one-to-many mappings by default and can remov
 map to allowed regions in the target genome e.g. CpG sites.
 }
 \examples{
-\dontrun{
-
-# Get CpG sites for hg38
-hg38_cpgs = methodical::extract_meth_sites_from_genome("BSgenome.Hsapiens.UCSC.hg38")
-
-# Get paths to bedGraphs
-bedgraphs = list.files(path = system.file('extdata', package = 'methodical'), 
-  pattern = ".bg.gz", full.names = TRUE)
-
-# Create a HDF5-backed RangedSummarizedExperiment for 
-meth_rse_hg38 = methodical::make_meth_rse_from_bedgraphs(bedgraphs = bedgraphs, meth_sites = hg38_cpgs, 
-  hdf5_dir = "test_hdf5")
+# Load sample RangedSummarizedExperiment with CpG methylation data
+data(tubb6_meth_rse, package = "methodical")
   
 # Get CpG sites for hg19
 hg19_cpgs = methodical::extract_meth_sites_from_genome("BSgenome.Hsapiens.UCSC.hg19")
 
 # Get liftover chain for mapping hg38 to hg19
-download.file("http://hgdownload.cse.ucsc.edu/gbdb/hg38/liftOver/hg38ToHg19.over.chain.gz")
-R.utils::gunzip("hg38ToHg19.over.chain.gz")
-chain = rtracklayer::import.chain("hg38ToHg19.over.chain")
+library(AnnotationHub)
+ah = AnnotationHub()
+chain = ah[["AH14108"]]
   
-# Liftover meth_rse_hg38 from hg38 to hg19, keeping only sites that were mapped to CpG sites in hg19
-meth_rse_hg19 = methodical::liftover_meth_rse(meth_rse_hg38, chain = chain, 
+# Liftover tubb6_meth_rse from hg38 to hg19, keeping only sites that were mapped to CpG sites in hg19
+tubb6_meth_rse_hg19 = methodical::liftover_meth_rse(tubb6_meth_rse, chain = chain, 
   permitted_target_regions = hg19_cpgs)
-
-}
 }

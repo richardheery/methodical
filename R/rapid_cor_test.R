@@ -9,6 +9,17 @@
 #' Setting to "none" will result in no adjusted p-values being calculated.  
 #' @return A data.frame with the correlation and its significance for all pairs consisting of a variable from table1 and a variable from table2. 
 #' @export
+#' @examples 
+#'
+#' # Divide mtcars into two tables
+#' table1 = mtcars[1:5]
+#' table2 = mtcars[6:11]
+#' 
+#' # Calculate correlation between table1 and table2
+#' cor_results = methodical::rapid_cor_test(table1, table2, cor_method = "spearman", 
+#'   table1_name = "feature1", table2_name = "feature2")
+#' head(cor_results)
+#'
 rapid_cor_test = function(table1, table2, cor_method = "p", table1_name = "table1", table2_name = "table2", p_adjust_method = "BH"){
   
   # Check that the length of vec equals the number of rows of df

@@ -10,13 +10,12 @@
 #' on standard sequences (those without "-" in their names). Default is TRUE. 
 #' @return A GRanges object with genomic regions matching the pattern.
 #' @export
-#' @examples \dontrun{
+#' @examples 
 #' # Get human CpG sites for hg38 genome build
 #' hg38_cpgs = methodical::extract_meth_sites_from_genome("BSgenome.Hsapiens.UCSC.hg38")
 #' 
 #' # Find CHG sites in Arabidopsis thaliana
 #' arabidopsis_cphpgs = methodical::extract_meth_sites_from_genome("BSgenome.Athaliana.TAIR.TAIR9", pattern = "CHG")
-#' }
 extract_meth_sites_from_genome = function(genome, pattern = "CG", plus_strand_only = TRUE, 
   meth_site_position = 1, standard_sequences_only = TRUE){
   
@@ -68,13 +67,12 @@ extract_meth_sites_from_genome = function(genome, pattern = "CG", plus_strand_on
 #' Negative values result in upstream end of regions being shortened, however the width of the resulting regions cannot be less than zero. 
 #' @return A GRanges object
 #' @export
-#' @examples \dontrun{
+#' @examples
 #' # Create a GRanges 
 #' gr = GenomicRanges::GRanges(c("chr1:1000:+", "chr1:2000:-"))
 #' 
 #' # Add 500 bp upstream and 200 downstream
 #' gr_expanded = methodical::expand_granges(gr, 500, 200)
-#' }
 expand_granges = function(genomic_regions, upstream = 0, downstream = 0) {
   
   # Check that genomic_regions is a GRanges object
@@ -135,14 +133,13 @@ expand_granges = function(genomic_regions, upstream = 0, downstream = 0) {
 #' @param subject_gr A GRanges object. 
 #' @return A numeric vector of distances
 #' @export
-#' @examples \dontrun{
+#' @examples 
 #' # Create query and subject GRanges 
 #' query_gr = GenomicRanges::GRanges(c("chr1:100-1000:+", "chr1:2000-3000:-"))
 #' subject_gr = GenomicRanges::GRanges(c("chr1:1500-1600:+", "chr1:4000-4500:-"))
 #' 
 #' # Calculate distances between query and subject
 #' methodical::stranded_distance(query_gr, subject_gr)
-#' }
 stranded_distance = function(query_gr, subject_gr){
   
   # Check that query_gr and subject_gr are of the correct length
@@ -175,20 +172,19 @@ stranded_distance = function(query_gr, subject_gr){
 #' Upstream and downstream are relative to strand of tss_gr.
 #' @return A GRanges object where all regions have "relative" as the sequence names.  
 #' @export
-#' @examples \dontrun{
+#' @examples
 #' # Create query and subject GRanges 
 #' genomic_regions = GenomicRanges::GRanges(c("chr1:100-1000:+", "chr1:2000-3000:-"))
 #' tss_gr = GenomicRanges::GRanges(c("chr1:1500:+", "chr1:4000:-"))
 #' 
 #' # Calculate distances between query and subject
 #' methodical::ranges_relative_to_tss(genomic_regions, tss_gr)
-#' }
 ranges_relative_to_tss = function(genomic_regions, tss_gr){
   
   # Check that all tss ranges have width 1 and resize them with a warning if not
   if(!all(width(tss_gr) == 1)){
     warning("All regions in tss_gr should have a width of 1. Shortening each region so that it consists of only the most upstream position")
-    tss_gr = GenomicRanges::resize(gr, 1, fix = "start")
+    tss_gr = GenomicRanges::resize(tss_gr, 1, fix = "start")
   }
 
   # Get distances from start and end of ranges in gr from tss_gr
@@ -272,13 +268,12 @@ calculate_regions_intersections = function(gr1, gr2, ignore.strand = TRUE, overl
 #' @param max_tries The maximum number of attempts to make to find non-overlapping regions which do not overlap masked_regions. Default value is 100. 
 #' @return A GRanges object
 #' @export 
-#' @examples \dontrun{
+#' @examples 
 #' # Set random seed
 #' set.seed(123)
 #' 
 #' # Create 10,000 random non-overlapping regions with width 1,000 for hg38
 #' random_regions = methodical::create_random_regions(genome = "BSgenome.Hsapiens.UCSC.hg38", n_regions = 10000)
-#' }
 create_random_regions = function(genome, n_regions = 1000, region_widths = 1000, sequences = NULL, all_sequences_equally_likely = FALSE,
    stranded = FALSE, masked_regions = NULL, allow_overlapping_regions = FALSE, ignore.strand = TRUE, max_tries = 100){
   

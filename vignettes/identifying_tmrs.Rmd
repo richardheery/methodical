@@ -1,5 +1,5 @@
 ---
-title: "identifying_tmrs"
+title: "Identifying TSS-Proximal Methylation Controlled Regulatory Regions"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{identifying_tmrs}
@@ -16,4 +16,175 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(methodical)
+```
+
+## Introduction
+
+`methodical` includes a method for identifying genomic regions where DNA methylation is 
+strongly correlated with the transcriptional activity of nearby transcription start sites. We refer to these regions 
+as TSS-proximal methylation-controlled regulatory regions - TMRs for short. This vignette walks through
+the identification of TMRs for the TUBB6 gene. The process is easily scaled-up to search for
+TMRs associated with a large number of TSS of interest using parallel computing.
+
+We start by loading the objects we need for this analysis: The location of the TUBB6 TSS
+(based on the ENST00000591909 isoform), a RangedSummarizedExperiment object housing
+methylation values for all CpGs within +/- 5,000 base pairs of the TSS and normalized
+counts for the TUBB6 transcript.
+
+```{r, eval=TRUE}
+data("tubb6_tss", package = "methodical")
+data("tubb6_meth_rse", package = "methodical")
+data("tubb6_transcript_counts", package = "methodical")
+```
+
+## Calculation of correlation values between DNA methylation and transcription
+
+The first step in the identifcation of TMRs is to calculate the correlation values between methylation
+of CpG sites close to a TSS and the expression of the associated transcript. We do this using the 
+`calculate_meth_site_transcript_cors` function which takes a RangedSummarizedExperiment with DNA 
+methylation data, a GRanges object with TSS of interest and a table with counts for the transcripts 
+associated with each TSS.  We can choose the maximum distance of CpGs we want to consider upstream 
+and downstream  of the TSS. Here we use 5,000 bp upstream and downstream. 
+
+`calculate_meth_site_transcript_cors` returns a list of tables with the correlation results 
+for each TSS, which is just a single TSS in our case. Each table has an attribute `tss_range` 
+which is a GRanges object with the location of the associated TSS.
+
+```{r, eval=TRUE}
+# Calculate correlation values between methylation values and transcript values for TUBB6
+cpg_meth_transcript_cors = calculate_meth_site_transcript_cors(meth_rse = tubb6_meth_rse, 
+  transcript_expression_table = tubb6_transcript_counts, tss_gr = tubb6_tss, expand_upstream = 5000, expand_downstream = 5000)
+
+# Since cpg_meth_transcript_cors is just a list of with 1 table, we'll extract this table from the list 
+tubb6_cpg_meth_transcript_cors = cpg_meth_transcript_cors$ENST00000591909
+
+# Take a look at the results
+head(tubb6_cpg_meth_transcript_cors)
+
+# Extract the location of the TSS from the results
+attributes(tubb6_cpg_meth_transcript_cors)$tss_range
+```
+## Plotting CpG Values
+
+We'll next create a plot of the correlation values using `plot_meth_site_values` so that we can 
+visually inspect if there are any interesting patterns. On the x-axis we can show the chromosomal 
+coordinates of the CpG sites or alternatively their distance to the TSS if we provide a 
+GRanges object with the TSS location to the argument `reference_region`. 
+
+```{r, eval=TRUE}
+# Plot methylation-transcription correlation values showing chromosomal coordinates of CpG sites.
+tubb6_correlation_plot_chrom_coords = plot_meth_site_values(tubb6_cpg_meth_transcript_cors, 
+  column_name = "cor", ylabel = "Spearman Correlation", low_colour = "#7B5C90", high_colour = "#bfab25") +
+  geom_hline(yintercept = 0, linetype = "dashed")
+print(tubb6_correlation_plot_chrom_coords)
+
+# Plot methylation-transcription correlation values showing distance of CpG sites to TSS. 
+tubb6_correlation_plot_tss_dist = plot_meth_site_values(tubb6_cpg_meth_transcript_cors, 
+  column_name = "cor", ylabel = "Spearman Correlation", low_colour = "#7B5C90", high_colour = "#bfab25", 
+  reference_region = attributes(tubb6_cpg_meth_transcript_cors)$tss_range) +
+  geom_hline(yintercept = 0, linetype = "dashed")
+print(tubb6_correlation_plot_tss_dist)
+```
+
+## Identification of TMRs
+
+We'll now identify TMRs using the correlation values for CpG methylation and the TUBB6 transcript counts and 
+the statistical significance of the correlations. This is achieved by using the correlation values and their
+associated p-values to calculate a Methodical score which is the the log10 of the p-value multiplied by the
+opposite if the sign of the correlation (i.e. -1 for a positive correlation and 1 for a negative correlation)
+Thus, negative correlations will have a negative Methodical score and positive correlations will have a
+positive Methodical score, with the significance of the correlations determining their magnitude. 
+
+We'll show the Methodical scores for the TUBB6 CpG correlation values using the `plot_meth_site_values` function.
+
+```{r, eval=TRUE}
+# Plot methodical scores for CpGs near TUBB6 TSS
+tubb6_methodical_scores_plot = plot_methodical_scores(meth_site_values = tubb6_cpg_meth_transcript_cors, 
+  p_value_threshold = NULL, smooth_scores = FALSE) +
+  geom_hline(yintercept = 0, linetype = "dashed")
+print(tubb6_methodical_scores_plot)
+```
+
+We smooth the Methodical scores using an exponential moving average to avoid single CpGs having
+too much influence during the identification of TMRs. This smoothing involves taking the 
+mean methodical score of a central CpG and an equal number of CpGs upstream and downstream of it, 
+with weights that decay exponentially moving away from the central CpG.  
+
+We set the `smooth_scores` parameter to TRUE to add a curve going through the smoothed values to the plot.
+The arguments `offset_length` and `smoothing_factor` control the number of CpGs considered upstream 
+and downstream of the central CpG and the exponential decay rate, respectively. 
+
+```{r, eval=TRUE}
+# Smooth Methodical scores
+tubb6_smoothed_methodical_scores_plot = plot_methodical_scores(meth_site_values = tubb6_cpg_meth_transcript_cors, 
+  p_value_threshold = NULL, smooth_scores = TRUE, smoothed_curve_colour = "hotpink2", offset_length = 10, smoothing_factor = 0.75) +
+  geom_hline(yintercept = 0, linetype = "dashed")
+print(tubb6_smoothed_methodical_scores_plot)
+```
+
+We use two significance thresholds to identify TMRs: one for TMRs where DNA methylation is negatively associated 
+with transcription (negative TMRs) and another for TMRs where DNA methylation is positively associated 
+with transcription (positive TMRs). These thresholds are defined with a p-value which is converted into 
+negative and positive Methodical scores thresholds. We'll use a p-value of 0.005 for the thresholds here
+which results in TMR thresholds of 2.30 and -2.30 for positive and negative TMRs respectively. We
+can then visualize if the smoothed Methodical scores breach these thresholds anywhere and identify TMRs. 
+
+
+```{r, eval=TRUE}
+# Add significance thresholds to plot
+tubb6_smoothed_methodical_scores_plot = plot_methodical_scores(meth_site_values = tubb6_cpg_meth_transcript_cors, 
+  p_value_threshold = 0.005, smooth_scores = TRUE, smoothed_curve_colour = "hotpink2") +
+  geom_hline(yintercept = 0, linetype = "dashed")
+print(tubb6_smoothed_methodical_scores_plot)
+```
+
+We can see two regions where the Methodical scores breach the thresholds: one region around 
+12,305,000 where the positive threshold is breahced and another just before 12,307,500 where the 
+negative threshold is breached. Thus, we should find one negative and one positive TMR for TUBB6.
+
+The calculation of Methodical scores, their smoothing and identification of TMRs is all 
+done using the `find_tmrs` function which takes the correlation results from `calculate_meth_site_transcript_cors`
+as input. We can set the p-value threshold as well as the parameters for the smoothing,
+`offset_length` and `smoothing_factor`, which behave the same as they do in `plot_methodical_scores`.
+
+We can also specify the minimum number of CpG sites a TMR contain using `min_meth_sites` and merge TMRs
+with the same direction within a minimum distance using `min_gapwidth`. There are no close TMRs 
+with the same direction for TUBB6 so this argument has no effect, but it can prove useful since it would
+generally be desirable to have one large TMR rather than several shorter TMRs occurring in the same region 
+since the intervening CpGs will likely also display strong correlations.
+
+`find_tmrs` returns a GRanges with metadata columns giving the TMR direction, the name of the TMRs,
+the number of CpG sites they overlap (meth_site_count), their distance to the TSS and the location of 
+the TSS as a character which can be converted to a GRanges by calling `GRanges` on it.  
+
+```{r, eval=TRUE}
+# Identify TMRs for TUBB6
+tubb6_tmrs = find_tmrs(correlation_df = tubb6_cpg_meth_transcript_cors, offset_length = 10, smoothing_factor = 0.75, 
+  min_meth_sites = 5, min_gapwidth = 150)
+print(tubb6_tmrs)
+```
+
+We can add these TMRs to either the plot of correlation values or Methodical scores using
+`plot_tmrs` to visualize where they are located in relation to these values. We'll 
+plot the TMRs on the Methodical scores first and then the correlation values. As with
+`plot_meth_site_values`, we can add a reference_positive so that we can see where the TMRs 
+are located relative to the TSS, provided the plot used the same reference_position. We
+can clearly see that the TMRs overlap regions where many CpG sites display strong
+correlation values between their methylation and expression of TUBB6. 
+
+```{r, eval=TRUE}
+# Show location of TMRs on Methodical scores plot
+plot_tmrs(meth_site_plot = tubb6_smoothed_methodical_scores_plot, tmrs_gr = tubb6_tmrs)
+
+# Show location of TMRs on correlation value plot
+plot_tmrs(meth_site_plot = tubb6_correlation_plot_tss_dist, tmrs_gr = tubb6_tmrs,
+  reference_region = GRanges(tubb6_tmrs$tss_location[1]))
+```
+
+We can see that the negative TMR is centred around 1,000 base pairs upstream of the TSS
+and that the positive TMR is centred around 3,000 base pairs upstream. 
+
+## SessionInfo
+```{r}
+sessionInfo()
 ```

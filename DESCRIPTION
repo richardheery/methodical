@@ -42,8 +42,10 @@ Imports:
     tibble,
     tidyr
 Suggests: 
+    AnnotationHub,
     BSgenome.Athaliana.TAIR.TAIR9,
     BSgenome.Hsapiens.UCSC.hg38,
     knitr,
+    methrix,
     rmarkdown
 VignetteBuilder: knitr

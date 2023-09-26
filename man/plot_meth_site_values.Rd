@@ -6,7 +6,7 @@
 \usage{
 plot_meth_site_values(
   meth_site_values,
-  column_name = NULL,
+  column_name,
   reference_region = NULL,
   title = NULL,
   xlabel = "Genomic Position",
@@ -16,9 +16,11 @@ plot_meth_site_values(
 )
 }
 \arguments{
-\item{meth_site_values}{A data.frame with values associated with methylation sites. row.names should be the names of methylation sites and all methylation sites must be located on the same sequence.}
+\item{meth_site_values}{A data.frame with values associated with methylation sites.
+First column should be called meth_site and give the names of methylation sites.
+All methylation sites must be located on the same sequence.}
 
-\item{column_name}{Name of column in meth_site_values to plot. If not provided, will attempt to use the first column.}
+\item{column_name}{Name of column in meth_site_values to plot.}
 
 \item{reference_region}{An optional GRanges object with a single range. If provided, the x-axis will
 show the distance of methylation sites to the start of this region with methylation sites upstream
@@ -39,4 +41,16 @@ A ggplot object
 }
 \description{
 Create plot of methylation values
+}
+\examples{
+# Load methylation-transcript correlation results for TUBB6 gene
+data("tubb6_cpg_meth_transcript_cors", package = "methodical")
+
+# Plot methylation-transcript correlation values around TUBB6 TSS
+methodical::plot_meth_site_values(tubb6_cpg_meth_transcript_cors, column_name = "cor", ylabel = "Spearman Correlation")
+
+# Create same plot but showing the distance to the TUBB6 TSS on the x-axis
+methodical::plot_meth_site_values(tubb6_cpg_meth_transcript_cors, column_name = "cor", 
+  ylabel = "Spearman Correlation", reference_region = attributes(tubb6_cpg_meth_transcript_cors)$tss_range)
+
 }

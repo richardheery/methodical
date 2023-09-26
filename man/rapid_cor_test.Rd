@@ -33,3 +33,15 @@ A data.frame with the correlation and its significance for all pairs consisting 
 \description{
 Rapidly calculate the correlation and the significance of pairs of columns from two data.frames
 }
+\examples{
+
+# Divide mtcars into two tables
+table1 = mtcars[1:5]
+table2 = mtcars[6:11]
+
+# Calculate correlation between table1 and table2
+cor_results = methodical::rapid_cor_test(table1, table2, cor_method = "spearman", 
+  table1_name = "feature1", table2_name = "feature2")
+head(cor_results)
+
+}

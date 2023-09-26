@@ -7,11 +7,17 @@
 plot_methodical_scores(
   meth_site_values,
   reference_region = NULL,
+  p_value_threshold = 0.005,
+  smooth_scores = TRUE,
+  offset_length = 10,
+  smoothing_factor = 0.75,
+  smoothed_curve_colour = "black",
+  linewidth = 1,
+  curve_alpha = 0.75,
   title = NULL,
   xlabel = "Genomic Position",
   low_colour = "#7B5C90",
-  high_colour = "#BFAB25",
-  p_value_threshold = 0.005
+  high_colour = "#BFAB25"
 )
 }
 \arguments{
@@ -21,6 +27,20 @@ and another called "p_val" which are used to calculate the Methodical score. row
 \item{reference_region}{An optional GRanges object with a single range. If provided, the x-axis will show the distance of methylation sites to the start of this region with methylation sites upstream.
 relative to the reference_region shown first. If not, the x-axis will show the start site coordinate of the methylation site.}
 
+\item{p_value_threshold}{The p-value threshold used to identify TMRs. Default value is 0.005. Set to NULL to turn off significance thresholds.}
+
+\item{smooth_scores}{A logical value indicating whether to display a curve of smoothed Methodical scores on top of the plot. Default is TRUE.}
+
+\item{offset_length}{Offset length to be supplied to calculate_smoothed_methodical_scores.}
+
+\item{smoothing_factor}{Smoothing factor to be provided to calculate_smoothed_methodical_scores.}
+
+\item{smoothed_curve_colour}{Colour of the smoothed curve. Default is "black".}
+
+\item{linewidth}{Line width of the smoothed curve. Default value is 1.}
+
+\item{curve_alpha}{Alpha value for the curve. Default value is 0.75.}
+
 \item{title}{Title of the plot. Default is no title.}
 
 \item{xlabel}{Label for the X axis in the plot. Default is "Genomic Position".}
@@ -28,12 +48,17 @@ relative to the reference_region shown first. If not, the x-axis will show the s
 \item{low_colour}{Colour to use for low values. Default value is "#7B5C90".}
 
 \item{high_colour}{Colour to use for high values. Default value is "#BFAB25".}
-
-\item{p_value_threshold}{The p-value threshold used to identify TMRs. Default value is 0.005. Set to NULL to not display thresholds.}
 }
 \value{
 A ggplot object
 }
 \description{
 Create plot of Methodical score values for methylation sites around a TSS
+}
+\examples{
+# Load methylation-transcript correlation results for TUBB6 gene
+data("tubb6_cpg_meth_transcript_cors", package = "methodical")
+  
+# Calculate and plot Methodical scores from correlation values
+methodical::plot_methodical_scores(tubb6_cpg_meth_transcript_cors, reference_region = attributes(tubb6_cpg_meth_transcript_cors)$tss_range)
 }

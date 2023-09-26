@@ -3,7 +3,7 @@
 #' @param genomic_regions A GRanges object. 
 #' @param genomic_region_names Names for genomic_regions. If not provided, attempts to use genomic_regions$name. 
 #' @param genomic_region_transcripts Names of transcripts associated with each region in genomic_regions. 
-#' If not provided, attempts to use genomic_regions$transcript_name. All transcripts must be present in transcript_table.
+#' If not provided, attempts to use genomic_regions$transcript_id. All transcripts must be present in transcript_table.
 #' @param meth_rse A RangedSummarizedExperiment with methylation values for CpG sites which will be used to calculate methylation values for genomic_regions. 
 #' There must be at least 3 samples in common between meth_rse and transcript_table
 #' @param transcript_table A table with the expression values for different transcripts in different samples. 
@@ -20,6 +20,18 @@
 #' @param ncores Number of cores to use for parallel processing. Default is 1.
 #' @return A data.frame with the correlation values between the methylation of genomic regions and expression of transcripts associated with them
 #' @export
+#' @examples 
+#' 
+#' # Load TUBB6 TMRs, RangedSummarizedExperiment with methylation values for CpGs around TUBB6 TSS and TUBB6 transcript counts
+#' data(tubb6_tmrs, package = "methodical")
+#' data(tubb6_meth_rse, package = "methodical")
+#' data(tubb6_transcript_counts, package = "methodical")
+#' 
+#' # Calculate correlation values between TMRs identified for TUBB6 and transcript expression
+#' tubb6_tmrs_transcript_cors = methodical::calculate_region_methylation_transcript_cors(
+#'   genomic_regions = tubb6_tmrs, genomic_region_names = tubb6_tmrs$tmr_name, meth_rse = tubb6_meth_rse, transcript_table = tubb6_transcript_counts)
+#' tubb6_tmrs_transcript_cors
+#'  
 calculate_region_methylation_transcript_cors = function(genomic_regions, genomic_region_names = NULL, 
   genomic_region_transcripts = NULL, meth_rse, transcript_table, genomic_region_methylation = NULL,
   samples_subset = NULL, cor_method = "spearman", p_adjust_method = "BH", region_methylation_summary_function = colMeans, ncores = 1){
@@ -51,9 +63,9 @@ calculate_region_methylation_transcript_cors = function(genomic_regions, genomic
     genomic_region_names = genomic_regions$name
   }
   
-  # If genomic_region_transcripts not provided, set to genomic_regions$transcript_name
+  # If genomic_region_transcripts not provided, set to genomic_regions$transcript_id
   if(is.null(genomic_region_transcripts)){
-    genomic_region_transcripts = genomic_regions$transcript_name
+    genomic_region_transcripts = genomic_regions$transcript_id
   }
   
   # Check that all genomic_region_transcripts are in transcript_table
@@ -103,10 +115,10 @@ calculate_region_methylation_transcript_cors = function(genomic_regions, genomic
   
   # Create a data.frame matching genomic_region_names and transcript_names
   feature_matches_df = 
-    data.frame(genomic_region_names = genomic_region_names, transcript_name = genomic_region_transcripts)
+    data.frame(genomic_region_names = genomic_region_names, transcript_id = genomic_region_transcripts)
   
   # Create a list of the transcripts associated with each genomic region
-  feature_matches = split(feature_matches_df$genomic_region_names, feature_matches_df$transcript_name)
+  feature_matches = split(feature_matches_df$genomic_region_names, feature_matches_df$transcript_id)
   
   # Create cluster if ncores greater than 1
   if(ncores > 1){

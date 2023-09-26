@@ -53,11 +53,9 @@ After the maximum number of allowed attempts, the created random regions meeting
 Any random regions that are out-of-bounds relative to their sequence length are trimmed before being returned.
 }
 \examples{
-\dontrun{
 # Set random seed
 set.seed(123)
 
 # Create 10,000 random non-overlapping regions with width 1,000 for hg38
 random_regions = methodical::create_random_regions(genome = "BSgenome.Hsapiens.UCSC.hg38", n_regions = 10000)
-}
 }

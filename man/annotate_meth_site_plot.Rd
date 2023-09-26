@@ -42,3 +42,16 @@ A ggplot object
 \description{
 Can combine the meth site values plot and genomic annotation together into a single plot or return the annotation plot separately.
 }
+\examples{
+# Get CpG islands from UCSC
+ucsc_query = rtracklayer::ucscTableQuery("hg38", table = "cpgIslandExt")
+cpg_islands = rtracklayer::track(ucsc_query) 
+cpg_islands$region_type = "CpG Island"
+
+# Load plot with CpG methylation correlation values for TUBB6
+data("tubb6_correlation_plot", package = "methodical")
+
+# Add positions of CpG islands to tubb6_correlation_plot
+methodical::annotate_meth_site_plot(tubb6_correlation_plot, cpg_islands, annotation_plot_height = 0.3)
+
+}

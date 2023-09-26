@@ -35,3 +35,17 @@ Row names are the coordinates of the sites as a character vector.
 \description{
 Randomly sample methylation sites from a methylation RSE.
 }
+\examples{
+# Load sample RangedSummarizedExperiment with CpG methylation data
+data(tubb6_meth_rse, package = "methodical")
+
+# Create a sample GRanges object to use to mask tubb6_meth_rse
+mask_ranges = GRanges("chr18:12305000-12310000")
+
+# Get 20 random CpG sites outside mask_ranges
+random_cpgs = methodical::sample_meth_sites(tubb6_meth_rse, n_sites = 20, genomic_ranges_filter = mask_ranges, invert_filter = T)
+
+# Check that no CpGs overlap repeats
+intersect(rowRanges(random_cpgs), mask_ranges)
+
+}

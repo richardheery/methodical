@@ -16,7 +16,7 @@ make_meth_rse_from_array_files(
   dataset_name = "beta",
   overwrite = FALSE,
   chunkdim = NULL,
-  temporary_dir,
+  temporary_dir = NULL,
   ncores = 1,
   ...
 )
@@ -62,7 +62,6 @@ A RangedSummarizedExperiment with methylation values for all methylation sites i
 Create a HDF5-backed RangedSummarizedExperiment for methylation values in array files
 }
 \examples{
-\dontrun{
 # Get human CpG sites for hg38 genome build
 data("infinium_450k_probe_granges_hg19", package = "methodical")
 
@@ -79,13 +78,12 @@ sample_metadata = data.frame(
 
 # Create a HDF5-backed RangedSummarizedExperiment from array files using default chumk dimensions
 meth_rse = methodical::make_meth_rse_from_array_files(array_files = array_files, 
- probe_sites = infinium_450k_probe_granges_hg19, 
- sample_metadata = sample_metadata, hdf5_dir = "array_file_hdf5")
+ probe_ranges = infinium_450k_probe_granges_hg19, 
+ sample_metadata = sample_metadata, hdf5_dir = "array_file_hdf5_1")
 
 # Create an HDF5-backed RangedSummarizedExperiment from array files specifying chunk dimensions
 meth_rse2 = methodical::make_meth_rse_from_array_files(array_files = array_files, 
- probe_sites = infinium_450k_probe_granges_hg19, 
- sample_metadata = sample_metadata, hdf5_dir = "array_file_hdf5", chunkdim = c(50000, 1))
+ probe_ranges = infinium_450k_probe_granges_hg19, 
+ sample_metadata = sample_metadata, hdf5_dir = "array_file_hdf5_2", chunkdim = c(50000, 1))
 
-}
 }

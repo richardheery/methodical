@@ -9,8 +9,8 @@ mask_ranges_in_rse(rse, mask_ranges, assay = 1)
 \arguments{
 \item{rse}{A RangedSummarizedExperiment.}
 
-\item{mask_ranges}{Either a GRanges with regions to be masked in all samples or a GRangesList object with
-different regions to mask in each sample. If using a GRangesList object, names of the list
+\item{mask_ranges}{Either a GRanges with regions to be masked in all samples (e.g. repetitive sequences)
+or a GRangesList object with different regions to mask in each sample (e.g. mutations). If using a GRangesList object, names of the list
 elements should be the names of samples in rse.}
 
 \item{assay}{Assay to perform masking. Default is first assay}
@@ -20,4 +20,18 @@ A RangedSummarizedExperiment with the regions present in mask_ranges masked
 }
 \description{
 Mask regions in a ranged summarized experiment
+}
+\examples{
+# Load sample RangedSummarizedExperiment with CpG methylation data
+data(tubb6_meth_rse, package = "methodical")
+
+# Create a sample GRanges object to use to mask tubb6_meth_rse
+mask_ranges = GRanges("chr18:12305000-12310000")
+
+# Mask regions in tubb6_meth_rse
+tubb6_meth_rse_masked = methodical::mask_ranges_in_rse(tubb6_meth_rse, mask_ranges)
+
+# Count the number of NA values before and after masking
+sum(is.na(assay(tubb6_meth_rse)))
+sum(is.na(assay(tubb6_meth_rse_masked)))
 }

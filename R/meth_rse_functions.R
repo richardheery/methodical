@@ -7,6 +7,15 @@
 #' @return A data.frame with the methylation site values for all sites in meth_rse which overlap genomic_ranges. 
 #' Row names are the coordinates of the sites as a character vector. 
 #' @export
+#' @examples 
+#' # Load sample RangedSummarizedExperiment with CpG methylation data
+#' data(tubb6_meth_rse, package = "methodical")
+#' 
+#' # Create a sample GRanges object to use
+#' test_region = GRanges("chr18:12305000-12310000")
+#' 
+#' # Get methylation values for CpG sites overlapping HDAC1 gene
+#' test_region_methylation = methodical::extract_granges_meth_site_values(tubb6_meth_rse, genomic_regions = test_region)
 extract_granges_meth_site_values = function(meth_rse, genomic_regions, samples_subset = NULL, assay_number = 1){
   
   # If samples_subset provided, check that all samples present in meth_rse and then subset meth_rse for those samples
@@ -46,6 +55,19 @@ extract_granges_meth_site_values = function(meth_rse, genomic_regions, samples_s
 #' @return A data.frame with the methylation site values for all sites in meth_rse which overlap genomic_ranges. 
 #' Row names are the coordinates of the sites as a character vector. 
 #' @export
+#' @examples 
+#' # Load sample RangedSummarizedExperiment with CpG methylation data
+#' data(tubb6_meth_rse, package = "methodical")
+#' 
+#' # Create a sample GRanges object to use to mask tubb6_meth_rse
+#' mask_ranges = GRanges("chr18:12305000-12310000")
+#' 
+#' # Get 20 random CpG sites outside mask_ranges
+#' random_cpgs = methodical::sample_meth_sites(tubb6_meth_rse, n_sites = 20, genomic_ranges_filter = mask_ranges, invert_filter = T)
+#' 
+#' # Check that no CpGs overlap repeats
+#' intersect(rowRanges(random_cpgs), mask_ranges)
+#' 
 sample_meth_sites = function(meth_rse, n_sites = 1000, genomic_ranges_filter = NULL, 
   invert_filter = FALSE, samples_subset = NULL, assay_number = 1){
   
@@ -82,32 +104,21 @@ sample_meth_sites = function(meth_rse, n_sites = 1000, genomic_ranges_filter = N
 #' for example CpG sites from the target genome. Any regions which do not overlap permitted_target_regions will be removed.  
 #' GRangesList to GRanges if all remaining source regions can be uniquely mapped to the target genome. 
 #' @return A RangedSummarizedExperiment with rowRanges lifted over to the genome build indicated by chain. 
-#' @examples \dontrun{
-#' 
-#' # Get CpG sites for hg38
-#' hg38_cpgs = methodical::extract_meth_sites_from_genome("BSgenome.Hsapiens.UCSC.hg38")
-#' 
-#' # Get paths to bedGraphs
-#' bedgraphs = list.files(path = system.file('extdata', package = 'methodical'), 
-#'   pattern = ".bg.gz", full.names = TRUE)
-#' 
-#' # Create a HDF5-backed RangedSummarizedExperiment for 
-#' meth_rse_hg38 = methodical::make_meth_rse_from_bedgraphs(bedgraphs = bedgraphs, meth_sites = hg38_cpgs, 
-#'   hdf5_dir = "test_hdf5")
+#' @examples
+#' # Load sample RangedSummarizedExperiment with CpG methylation data
+#' data(tubb6_meth_rse, package = "methodical")
 #'   
 #' # Get CpG sites for hg19
 #' hg19_cpgs = methodical::extract_meth_sites_from_genome("BSgenome.Hsapiens.UCSC.hg19")
 #' 
 #' # Get liftover chain for mapping hg38 to hg19
-#' download.file("http://hgdownload.cse.ucsc.edu/gbdb/hg38/liftOver/hg38ToHg19.over.chain.gz")
-#' R.utils::gunzip("hg38ToHg19.over.chain.gz")
-#' chain = rtracklayer::import.chain("hg38ToHg19.over.chain")
+#' library(AnnotationHub)
+#' ah = AnnotationHub()
+#' chain = ah[["AH14108"]]
 #'   
-#' # Liftover meth_rse_hg38 from hg38 to hg19, keeping only sites that were mapped to CpG sites in hg19
-#' meth_rse_hg19 = methodical::liftover_meth_rse(meth_rse_hg38, chain = chain, 
+#' # Liftover tubb6_meth_rse from hg38 to hg19, keeping only sites that were mapped to CpG sites in hg19
+#' tubb6_meth_rse_hg19 = methodical::liftover_meth_rse(tubb6_meth_rse, chain = chain, 
 #'   permitted_target_regions = hg19_cpgs)
-#' 
-#' }
 #' @export
 liftover_meth_rse = function(meth_rse, chain, remove_one_to_many_mapping = TRUE, permitted_target_regions = NULL){
   
@@ -161,12 +172,25 @@ liftover_meth_rse = function(meth_rse, chain, remove_one_to_many_mapping = TRUE,
 #' Mask regions in a ranged summarized experiment
 #'
 #' @param rse A RangedSummarizedExperiment.
-#' @param mask_ranges Either a GRanges with regions to be masked in all samples or a GRangesList object with 
-#' different regions to mask in each sample. If using a GRangesList object, names of the list
+#' @param mask_ranges Either a GRanges with regions to be masked in all samples (e.g. repetitive sequences) 
+#' or a GRangesList object with different regions to mask in each sample (e.g. mutations). If using a GRangesList object, names of the list
 #' elements should be the names of samples in rse.
 #' @param assay Assay to perform masking. Default is first assay
 #' @return A RangedSummarizedExperiment with the regions present in mask_ranges masked
 #' @export
+#' @examples 
+#' # Load sample RangedSummarizedExperiment with CpG methylation data
+#' data(tubb6_meth_rse, package = "methodical")
+#' 
+#' # Create a sample GRanges object to use to mask tubb6_meth_rse
+#' mask_ranges = GRanges("chr18:12305000-12310000")
+#' 
+#' # Mask regions in tubb6_meth_rse
+#' tubb6_meth_rse_masked = methodical::mask_ranges_in_rse(tubb6_meth_rse, mask_ranges)
+#' 
+#' # Count the number of NA values before and after masking
+#' sum(is.na(assay(tubb6_meth_rse)))
+#' sum(is.na(assay(tubb6_meth_rse_masked)))
 mask_ranges_in_rse = function(rse, mask_ranges, assay = 1){
   
   # Create a copy of rse for masking
@@ -199,7 +223,7 @@ mask_ranges_in_rse = function(rse, mask_ranges, assay = 1){
     mask_indices = unique(queryHits(findOverlaps(rse_masked, mask_ranges)))
     
     # Set values to be masked as NA
-    assay(rse_masked, assay)[mask_indices, sample] = NA
+    SummarizedExperiment::assay(rse_masked, assay)[mask_indices, ] = NA
     
     
   } else {

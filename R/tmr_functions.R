@@ -6,6 +6,15 @@
 #' @param smoothing_factor Smoothing factor for exponential moving average. Should be a value between 0 and 1 with higher 
 #' values resulting in a greater degree of smoothing. Default is 0.75. 
 #' @return A GRanges object
+#' @export
+#' @examples 
+#' 
+#' # Load data.frame with CpG methylation-transcription correlation results for TUBB6
+#' data("tubb6_cpg_meth_transcript_cors", package = "methodical")
+#' 
+#' # Calculate smoothed Methodical scores from correlation values
+#' smoothed_methodical_scores = methodical::calculate_smoothed_methodical_scores(tubb6_cpg_meth_transcript_cors)
+#' 
 calculate_smoothed_methodical_scores = function(correlation_df, offset_length = 10, smoothing_factor = 0.75){
   
   # Check that smoothing_factor is between 0 and 1
@@ -101,14 +110,14 @@ test_tmrs = function(meth_sites_gr, smoothed_methodical_scores, p_value_threshol
 #' @param min_meth_sites Minimum number of methylation sites that TMRs can contain. Default value is 5. 
 #' @return A GRanges object with the location of TMRs.
 #' @export
-#' @examples \dontrun{
+#' @examples
 #' # Load methylation-transcript correlation results for TUBB6 gene
-#' data("example_meth_transcript_cors", package = "methodical")
+#' data("tubb6_cpg_meth_transcript_cors", package = "methodical")
 #' 
 #' # Find TMRs for 
-#' tubb6_tmrs = find_tmrs(correlation_df = example_meth_transcript_cors)
+#' tubb6_tmrs = find_tmrs(correlation_df = tubb6_cpg_meth_transcript_cors)
 #' print(tubb6_tmrs)
-#' }
+#' 
 find_tmrs = function(correlation_df, offset_length = 10, smoothing_factor = 0.75, p_value_threshold = 0.005, min_gapwidth = 150, min_meth_sites = 5){
   
   # If correlation_df is a character vector, try to read it as an RDS file and 
@@ -200,11 +209,11 @@ find_tmrs = function(correlation_df, offset_length = 10, smoothing_factor = 0.75
   
 }
 
-#' example_meth_transcript_cors
+#' tubb6_cpg_meth_transcript_cors
 #'
 #' A data.frame with the correlation results for CpG sites within +/- 5 KB of the TUBB6 (ENST00000591909) TSS.
 #'
 #'@format A data.frame with 5 columns giving the name of the CpG site (meth_site), name of the transcript associated with the TSS, 
 #'Spearman correlation value between the methylation of the CpG site and expression of the transcript, 
 #'p-value associated with the correlations and distance from the CpG site to the TSS. 
-"example_meth_transcript_cors"
+"tubb6_cpg_meth_transcript_cors"

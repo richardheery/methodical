@@ -27,3 +27,13 @@ Row names are the coordinates of the sites as a character vector.
 \description{
 Extract values for methylation sites overlapping genomic regions from a methylation RSE.
 }
+\examples{
+# Load sample RangedSummarizedExperiment with CpG methylation data
+data(tubb6_meth_rse, package = "methodical")
+
+# Create a sample GRanges object to use
+test_region = GRanges("chr18:12305000-12310000")
+
+# Get methylation values for CpG sites overlapping HDAC1 gene
+test_region_methylation = methodical::extract_granges_meth_site_values(tubb6_meth_rse, genomic_regions = test_region)
+}

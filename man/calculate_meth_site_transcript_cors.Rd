@@ -2,7 +2,7 @@
 % Please edit documentation in R/calculate_meth_site_transcript_cors.R
 \name{calculate_meth_site_transcript_cors}
 \alias{calculate_meth_site_transcript_cors}
-\title{Calculate correlation between expression of a transcript and methylation of sites surrounding its TSS}
+\title{Calculate correlation between expression of transcripts and methylation of sites surrounding their TSS}
 \usage{
 calculate_meth_site_transcript_cors(
   meth_rse,
@@ -65,5 +65,17 @@ Distance of the methylation sites upstream or downstream to the center of the re
 If results_dir is provided, instead returns a list with the paths to the RDS files with the results.
 }
 \description{
-Calculate correlation between expression of a transcript and methylation of sites surrounding its TSS
+Calculate correlation between expression of transcripts and methylation of sites surrounding their TSS
+}
+\examples{
+
+# Load TUBB6 TSS GRanges, RangedSummarizedExperiment with methylation values for CpGs around TUBB6 TSS and TUBB6 transcript counts
+data(tubb6_tss, package = "methodical")
+data(tubb6_meth_rse, package = "methodical")
+data(tubb6_transcript_counts, package = "methodical")
+
+# Calculate correlation values between methylation values and transcript values for TUBB6
+tubb6_cpg_meth_transcript_cors = methodical::calculate_meth_site_transcript_cors(meth_rse = tubb6_meth_rse, 
+  transcript_expression_table = tubb6_transcript_counts, tss_gr = tubb6_tss, expand_upstream = 5000, expand_downstream = 5000)
+  
 }

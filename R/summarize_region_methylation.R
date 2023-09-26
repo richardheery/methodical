@@ -15,8 +15,33 @@
 #' @param na.rm A logical value indicating whether to remove NA values when calculating summaries. Default value is TRUE. 
 #' @param n_chunks_parallel Number of chunks of methylation sites to process in parallel. Default is to just process a single chunk at a time. 
 #' @param ... Additional arguments to be passed to summary_function. 
-#' @return A data.frame with the summary of methylation of each region in genomic_regions for each sample.
+#' @return A data.table with the summary of methylation of each region in genomic_regions for each sample.
 #' @export
+#' @examples 
+#' 
+#' # Download RangedSummarizedExperiment for hg38 chr1 WGBS data from 
+#' # "DNA methylation loss in late-replicating domains is linked to mitotic cell division"
+#' dir.create("test_meth_h5")
+#' options(timeout = 300)
+#' download.file("https://zenodo.org/record/8377108/files/assays.h5?download=1", destfile = "test_meth_h5/assays.h5")
+#' download.file("https://zenodo.org/record/8377108/files/se.rds?download=1", destfile = "test_meth_h5/se.rds")
+#' 
+#' # Load RangedSummarizedExperiment
+#' meth_rse = HDF5Array::loadHDF5SummarizedExperiment("test_meth_h5/")
+#' 
+#' # Get CpG islands from UCSC
+#' ucsc_query = rtracklayer::ucscTableQuery("hg38", table = "cpgIslandExt")
+#' cpg_islands = rtracklayer::track(ucsc_query) 
+#' names(cpg_islands) = paste("cpg_island", 1:length(cpg_islands), sep = "_")
+#' 
+#' # Subset for islands on chromosome 1
+#' chr1_cpg_islands = cpg_islands[seqnames(cpg_islands) == "chr1"]
+#' seqlevels(chr1_cpg_islands, pruning.mode = "coarse") = "chr1"
+#' 
+#' # Calculate mean methylation values for chr1 CpG islands in meth_h5 
+#' cpg_island_methylation = methodical::summarize_region_methylation(meth_rse, genomic_regions = chr1_cpg_islands,
+#'   genomic_regions_names = names(chr1_cpg_islands))
+#' 
 summarize_region_methylation = function(meth_rse, assay_number = 1, genomic_regions, genomic_regions_names = NULL, 
   keep_metadata_cols = FALSE, max_sites_per_chunk = NULL, summary_function = base::colMeans, na.rm = TRUE, n_chunks_parallel = 1, ...){
   

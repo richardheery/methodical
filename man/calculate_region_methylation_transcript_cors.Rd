@@ -24,7 +24,7 @@ calculate_region_methylation_transcript_cors(
 \item{genomic_region_names}{Names for genomic_regions. If not provided, attempts to use genomic_regions$name.}
 
 \item{genomic_region_transcripts}{Names of transcripts associated with each region in genomic_regions.
-If not provided, attempts to use genomic_regions$transcript_name. All transcripts must be present in transcript_table.}
+If not provided, attempts to use genomic_regions$transcript_id. All transcripts must be present in transcript_table.}
 
 \item{meth_rse}{A RangedSummarizedExperiment with methylation values for CpG sites which will be used to calculate methylation values for genomic_regions.
 There must be at least 3 samples in common between meth_rse and transcript_table}
@@ -53,4 +53,17 @@ A data.frame with the correlation values between the methylation of genomic regi
 }
 \description{
 Calculate the correlation values between the methylation of genomic regions and the expression of associated transcripts
+}
+\examples{
+
+# Load TUBB6 TMRs, RangedSummarizedExperiment with methylation values for CpGs around TUBB6 TSS and TUBB6 transcript counts
+data(tubb6_tmrs, package = "methodical")
+data(tubb6_meth_rse, package = "methodical")
+data(tubb6_transcript_counts, package = "methodical")
+
+# Calculate correlation values between TMRs identified for TUBB6 and transcript expression
+tubb6_tmrs_transcript_cors = methodical::calculate_region_methylation_transcript_cors(
+  genomic_regions = tubb6_tmrs, genomic_region_names = tubb6_tmrs$tmr_name, meth_rse = tubb6_meth_rse, transcript_table = tubb6_transcript_counts)
+tubb6_tmrs_transcript_cors
+ 
 }
