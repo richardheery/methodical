@@ -1,21 +1,23 @@
 ---
 title: "Identifying TSS-Proximal Methylation Controlled Regulatory Regions"
-output: rmarkdown::html_vignette
+output: html_document
 vignette: >
   %\VignetteIndexEntry{identifying_tmrs}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
-
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.width = 12,
+  fig.height = 6.75
 )
 ```
 
-```{r setup}
+```{r setup, message = F}
 library(methodical)
+library(HDF5Array)
 ```
 
 ## Introduction
@@ -32,6 +34,7 @@ methylation values for all CpGs within +/- 5,000 base pairs of the TSS and norma
 counts for the TUBB6 transcript.
 
 ```{r, eval=TRUE}
+# Load required objects
 data("tubb6_tss", package = "methodical")
 data("tubb6_meth_rse", package = "methodical")
 data("tubb6_transcript_counts", package = "methodical")
@@ -55,7 +58,8 @@ which is a GRanges object with the location of the associated TSS.
 cpg_meth_transcript_cors = calculate_meth_site_transcript_cors(meth_rse = tubb6_meth_rse, 
   transcript_expression_table = tubb6_transcript_counts, tss_gr = tubb6_tss, expand_upstream = 5000, expand_downstream = 5000)
 
-# Since cpg_meth_transcript_cors is just a list of with 1 table, we'll extract this table from the list 
+# Since cpg_meth_transcript_cors is just a list of with 1 table, we'll extract this table 
+# from the list 
 tubb6_cpg_meth_transcript_cors = cpg_meth_transcript_cors$ENST00000591909
 
 # Take a look at the results
@@ -71,18 +75,20 @@ visually inspect if there are any interesting patterns. On the x-axis we can sho
 coordinates of the CpG sites or alternatively their distance to the TSS if we provide a 
 GRanges object with the TSS location to the argument `reference_region`. 
 
-```{r, eval=TRUE}
+```{r, eval=TRUE, fig.align="center"}
 # Plot methylation-transcription correlation values showing chromosomal coordinates of CpG sites.
 tubb6_correlation_plot_chrom_coords = plot_meth_site_values(tubb6_cpg_meth_transcript_cors, 
-  column_name = "cor", ylabel = "Spearman Correlation", low_colour = "#7B5C90", high_colour = "#bfab25") +
-  geom_hline(yintercept = 0, linetype = "dashed")
+  column_name = "cor", ylabel = "Spearman Correlation", 
+  low_colour = "#7B5C90", high_colour = "#bfab25") + 
+geom_hline(yintercept = 0, linetype = "dashed")
 print(tubb6_correlation_plot_chrom_coords)
 
 # Plot methylation-transcription correlation values showing distance of CpG sites to TSS. 
 tubb6_correlation_plot_tss_dist = plot_meth_site_values(tubb6_cpg_meth_transcript_cors, 
-  column_name = "cor", ylabel = "Spearman Correlation", low_colour = "#7B5C90", high_colour = "#bfab25", 
+  column_name = "cor", ylabel = "Spearman Correlation", 
+  low_colour = "#7B5C90", high_colour = "#bfab25", 
   reference_region = attributes(tubb6_cpg_meth_transcript_cors)$tss_range) +
-  geom_hline(yintercept = 0, linetype = "dashed")
+geom_hline(yintercept = 0, linetype = "dashed")
 print(tubb6_correlation_plot_tss_dist)
 ```
 
@@ -99,9 +105,10 @@ We'll show the Methodical scores for the TUBB6 CpG correlation values using the 
 
 ```{r, eval=TRUE}
 # Plot methodical scores for CpGs near TUBB6 TSS
-tubb6_methodical_scores_plot = plot_methodical_scores(meth_site_values = tubb6_cpg_meth_transcript_cors, 
+tubb6_methodical_scores_plot = plot_methodical_scores(
+  meth_site_values = tubb6_cpg_meth_transcript_cors, 
   p_value_threshold = NULL, smooth_scores = FALSE) +
-  geom_hline(yintercept = 0, linetype = "dashed")
+geom_hline(yintercept = 0, linetype = "dashed")
 print(tubb6_methodical_scores_plot)
 ```
 
@@ -116,9 +123,11 @@ and downstream of the central CpG and the exponential decay rate, respectively.
 
 ```{r, eval=TRUE}
 # Smooth Methodical scores
-tubb6_smoothed_methodical_scores_plot = plot_methodical_scores(meth_site_values = tubb6_cpg_meth_transcript_cors, 
-  p_value_threshold = NULL, smooth_scores = TRUE, smoothed_curve_colour = "hotpink2", offset_length = 10, smoothing_factor = 0.75) +
-  geom_hline(yintercept = 0, linetype = "dashed")
+tubb6_smoothed_methodical_scores_plot = plot_methodical_scores(
+  meth_site_values = tubb6_cpg_meth_transcript_cors, p_value_threshold = NULL, 
+  smooth_scores = TRUE, smoothed_curve_colour = "hotpink2", offset_length = 10, 
+  smoothing_factor = 0.75) +
+geom_hline(yintercept = 0, linetype = "dashed")
 print(tubb6_smoothed_methodical_scores_plot)
 ```
 
@@ -132,8 +141,9 @@ can then visualize if the smoothed Methodical scores breach these thresholds any
 
 ```{r, eval=TRUE}
 # Add significance thresholds to plot
-tubb6_smoothed_methodical_scores_plot = plot_methodical_scores(meth_site_values = tubb6_cpg_meth_transcript_cors, 
-  p_value_threshold = 0.005, smooth_scores = TRUE, smoothed_curve_colour = "hotpink2") +
+tubb6_smoothed_methodical_scores_plot = plot_methodical_scores(meth_site_values = 
+  tubb6_cpg_meth_transcript_cors, p_value_threshold = 0.005, smooth_scores = TRUE, 
+  smoothed_curve_colour = "hotpink2") +
   geom_hline(yintercept = 0, linetype = "dashed")
 print(tubb6_smoothed_methodical_scores_plot)
 ```
@@ -159,8 +169,8 @@ the TSS as a character which can be converted to a GRanges by calling `GRanges` 
 
 ```{r, eval=TRUE}
 # Identify TMRs for TUBB6
-tubb6_tmrs = find_tmrs(correlation_df = tubb6_cpg_meth_transcript_cors, offset_length = 10, smoothing_factor = 0.75, 
-  min_meth_sites = 5, min_gapwidth = 150)
+tubb6_tmrs = find_tmrs(correlation_df = tubb6_cpg_meth_transcript_cors, offset_length = 10, 
+  smoothing_factor = 0.75, min_meth_sites = 5, min_gapwidth = 150)
 print(tubb6_tmrs)
 ```
 
