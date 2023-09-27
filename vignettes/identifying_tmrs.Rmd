@@ -25,8 +25,8 @@ library(HDF5Array)
 `methodical` includes a method for identifying genomic regions where DNA methylation is 
 strongly correlated with the transcriptional activity of nearby transcription start sites. We refer to these regions 
 as TSS-proximal methylation-controlled regulatory regions - TMRs for short. This vignette walks through
-the identification of TMRs for the TUBB6 gene. The process is easily scaled-up to search for
-TMRs associated with a large number of TSS of interest using parallel computing.
+the identification of TMRs for the TUBB6 gene in normal prostate samples. The process is easily 
+scaled-up to search for TMRs associated with a large number of TSS simultaneously using parallel computing. 
 
 We start by loading the objects we need for this analysis: The location of the TUBB6 TSS
 (based on the ENST00000591909 isoform), a RangedSummarizedExperiment object housing
@@ -36,7 +36,8 @@ counts for the TUBB6 transcript.
 ```{r, eval=TRUE}
 # Load required objects
 data("tubb6_tss", package = "methodical")
-data("tubb6_meth_rse", package = "methodical")
+data("tubb6_meth_rse", package = "methodical"); tubb6_meth_rse = eval(tubb6_meth_rse)
+tubb6_meth_rse = eval(tubb6_meth_rse)
 data("tubb6_transcript_counts", package = "methodical")
 ```
 

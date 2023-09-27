@@ -29,7 +29,7 @@ Extract values for methylation sites overlapping genomic regions from a methylat
 }
 \examples{
 # Load sample RangedSummarizedExperiment with CpG methylation data
-data(tubb6_meth_rse, package = "methodical")
+data(tubb6_meth_rse, package = "methodical"); tubb6_meth_rse = eval(tubb6_meth_rse)
 
 # Create a sample GRanges object to use
 test_region = GRanges("chr18:12305000-12310000")

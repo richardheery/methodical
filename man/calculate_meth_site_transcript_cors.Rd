@@ -71,7 +71,7 @@ Calculate correlation between expression of transcripts and methylation of sites
 
 # Load TUBB6 TSS GRanges, RangedSummarizedExperiment with methylation values for CpGs around TUBB6 TSS and TUBB6 transcript counts
 data(tubb6_tss, package = "methodical")
-data(tubb6_meth_rse, package = "methodical")
+data(tubb6_meth_rse, package = "methodical"); tubb6_meth_rse = eval(tubb6_meth_rse)
 data(tubb6_transcript_counts, package = "methodical")
 
 # Calculate correlation values between methylation values and transcript values for TUBB6

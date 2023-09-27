@@ -33,7 +33,7 @@ map to allowed regions in the target genome e.g. CpG sites.
 }
 \examples{
 # Load sample RangedSummarizedExperiment with CpG methylation data
-data(tubb6_meth_rse, package = "methodical")
+data(tubb6_meth_rse, package = "methodical"); tubb6_meth_rse = eval(tubb6_meth_rse)
   
 # Get CpG sites for hg19
 hg19_cpgs = methodical::extract_meth_sites_from_genome("BSgenome.Hsapiens.UCSC.hg19")

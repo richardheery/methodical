@@ -5,8 +5,9 @@
 \alias{tubb6_meth_rse}
 \title{tubb6_meth_rse}
 \format{
-A RangedSummarizzedExperiment with methylation data for 355 CpG sites within +/- 5,000
+A call to create a RangedSummarizedExperiment with methylation data for 355 CpG sites within +/- 5,000
 base pairs of the TUBB6 TSS in 126 normal prostate samples.
+Should be evaluated after loading using \code{tubb6_meth_rse = tubb6_meth_rse = eval(tubb6_meth_rse)} to restore the RangedSummarizedExperiment.
 }
 \source{
 WGBS data from 'Li, Jing, et al. "A genomic and epigenomic atlas of prostate cancer in Asian populations."

@@ -37,7 +37,7 @@ Randomly sample methylation sites from a methylation RSE.
 }
 \examples{
 # Load sample RangedSummarizedExperiment with CpG methylation data
-data(tubb6_meth_rse, package = "methodical")
+data(tubb6_meth_rse, package = "methodical"); tubb6_meth_rse = eval(tubb6_meth_rse)
 
 # Create a sample GRanges object to use to mask tubb6_meth_rse
 mask_ranges = GRanges("chr18:12305000-12310000")

@@ -9,7 +9,7 @@
 #' @export
 #' @examples 
 #' # Load sample RangedSummarizedExperiment with CpG methylation data
-#' data(tubb6_meth_rse, package = "methodical")
+#' data(tubb6_meth_rse, package = "methodical"); tubb6_meth_rse = eval(tubb6_meth_rse)
 #' 
 #' # Create a sample GRanges object to use
 #' test_region = GRanges("chr18:12305000-12310000")
@@ -57,7 +57,7 @@ extract_granges_meth_site_values = function(meth_rse, genomic_regions, samples_s
 #' @export
 #' @examples 
 #' # Load sample RangedSummarizedExperiment with CpG methylation data
-#' data(tubb6_meth_rse, package = "methodical")
+#' data(tubb6_meth_rse, package = "methodical"); tubb6_meth_rse = eval(tubb6_meth_rse)
 #' 
 #' # Create a sample GRanges object to use to mask tubb6_meth_rse
 #' mask_ranges = GRanges("chr18:12305000-12310000")
@@ -107,7 +107,7 @@ sample_meth_sites = function(meth_rse, n_sites = 1000, genomic_ranges_filter = N
 #' @return A RangedSummarizedExperiment with rowRanges lifted over to the genome build indicated by chain. 
 #' @examples
 #' # Load sample RangedSummarizedExperiment with CpG methylation data
-#' data(tubb6_meth_rse, package = "methodical")
+#' data(tubb6_meth_rse, package = "methodical"); tubb6_meth_rse = eval(tubb6_meth_rse)
 #'   
 #' # Get CpG sites for hg19
 #' hg19_cpgs = methodical::extract_meth_sites_from_genome("BSgenome.Hsapiens.UCSC.hg19")
@@ -181,7 +181,7 @@ liftover_meth_rse = function(meth_rse, chain, remove_one_to_many_mapping = TRUE,
 #' @export
 #' @examples 
 #' # Load sample RangedSummarizedExperiment with CpG methylation data
-#' data(tubb6_meth_rse, package = "methodical")
+#' data(tubb6_meth_rse, package = "methodical"); tubb6_meth_rse = eval(tubb6_meth_rse)
 #' 
 #' # Create a sample GRanges object to use to mask tubb6_meth_rse
 #' mask_ranges = GRanges("chr18:12305000-12310000")

@@ -20,7 +20,7 @@
 #' @examples 
 #' 
 #' # Load sample RangedSummarizedExperiment with CpG methylation data
-#' data(tubb6_meth_rse, package = "methodical")
+#' data(tubb6_meth_rse, package = "methodical"); tubb6_meth_rse = eval(tubb6_meth_rse)
 #' 
 #' # Create a sample GRanges
 #' test_gr = GRanges(c("chr18:12303400-12303500", "chr18:12303600-12303750", "chr18:12304000-12306000"))

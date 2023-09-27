@@ -58,7 +58,7 @@ Calculate the correlation values between the methylation of genomic regions and 
 
 # Load TUBB6 TMRs, RangedSummarizedExperiment with methylation values for CpGs around TUBB6 TSS and TUBB6 transcript counts
 data(tubb6_tmrs, package = "methodical")
-data(tubb6_meth_rse, package = "methodical")
+data(tubb6_meth_rse, package = "methodical"); tubb6_meth_rse = eval(tubb6_meth_rse)
 data(tubb6_transcript_counts, package = "methodical")
 
 # Calculate correlation values between TMRs identified for TUBB6 and transcript expression
