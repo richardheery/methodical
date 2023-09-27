@@ -63,7 +63,8 @@ extract_granges_meth_site_values = function(meth_rse, genomic_regions, samples_s
 #' mask_ranges = GRanges("chr18:12305000-12310000")
 #' 
 #' # Get 20 random CpG sites outside mask_ranges
-#' random_cpgs = methodical::sample_meth_sites(tubb6_meth_rse, n_sites = 20, genomic_ranges_filter = mask_ranges, invert_filter = T)
+#' random_cpgs = methodical::sample_meth_sites(tubb6_meth_rse, n_sites = 20, genomic_ranges_filter = mask_ranges, 
+#' invert_filter = TRUE)
 #' 
 #' # Check that no CpGs overlap repeats
 #' intersect(rowRanges(random_cpgs), mask_ranges)

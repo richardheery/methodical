@@ -86,11 +86,7 @@ sample_metadata = data.frame(
 )
 
 # Create a HDF5-backed RangedSummarizedExperiment from bedGraphs
-meth_rse = methodical::make_meth_rse_from_bedgraphs(bedgraphs = bedgraphs, meth_sites = hg38_cpgs, 
+meth_rse = make_meth_rse_from_bedgraphs(bedgraphs = bedgraphs, meth_sites = hg38_cpgs, 
   sample_metadata = sample_metadata, hdf5_dir = "bedgraph_hdf5_1")
-
-# Create a HDF5-backed RangedSummarizedExperiment from bedGraphs specifying chunk dimensions
-meth_rse2 = methodical::make_meth_rse_from_bedgraphs(bedgraphs = bedgraphs, meth_sites = hg38_cpgs, 
-  sample_metadata = sample_metadata, hdf5_dir = "bedgraph_hdf5_2", chunkdim = c(50000, 1))
   
 }

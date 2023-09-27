@@ -48,7 +48,7 @@ Any probes in array_files that are not in probe_ranges are ignored.}
 \item{chunkdim}{The dimensions of the chunks for the HDF5 file. Should be a vector of length 2 giving the number of rows and then the number of columns in each chunk.}
 
 \item{temporary_dir}{Name to give a temporary directory to store intermediate files. A directory with this name cannot already exist.
-Will be deleted after completion.}
+Default is to create a name using tempfile("temporary_meth_chunks_").}
 
 \item{ncores}{Number of array files to process at a time in parallel. Default is 1.}
 
@@ -77,13 +77,8 @@ sample_metadata = data.frame(
 )
 
 # Create a HDF5-backed RangedSummarizedExperiment from array files using default chumk dimensions
-meth_rse = methodical::make_meth_rse_from_array_files(array_files = array_files, 
+meth_rse = make_meth_rse_from_array_files(array_files = array_files, 
  probe_ranges = infinium_450k_probe_granges_hg19, 
  sample_metadata = sample_metadata, hdf5_dir = "array_file_hdf5_1")
-
-# Create an HDF5-backed RangedSummarizedExperiment from array files specifying chunk dimensions
-meth_rse2 = methodical::make_meth_rse_from_array_files(array_files = array_files, 
- probe_ranges = infinium_450k_probe_granges_hg19, 
- sample_metadata = sample_metadata, hdf5_dir = "array_file_hdf5_2", chunkdim = c(50000, 1))
 
 }
