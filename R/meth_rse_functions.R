@@ -1,7 +1,7 @@
 #' Extract values for methylation sites overlapping genomic regions from a methylation RSE. 
 #' 
 #' @param meth_rse A RangedSummarizedExperiment for methylation data.
-#' @param genomic_regions A GRanges object.
+#' @param genomic_regions A GRanges object. If set to NULL, returns all methylation sites in meth_rse
 #' @param samples_subset Optional sample names used to subset meth_rse.
 #' @param assay_number The assay from meth_rse to extract values from. Default is the first assay.
 #' @return A data.frame with the methylation site values for all sites in meth_rse which overlap genomic_ranges. 
@@ -16,7 +16,7 @@
 #' 
 #' # Get methylation values for CpG sites overlapping HDAC1 gene
 #' test_region_methylation = methodical::extract_granges_meth_site_values(tubb6_meth_rse, genomic_regions = test_region)
-extract_granges_meth_site_values = function(meth_rse, genomic_regions, samples_subset = NULL, assay_number = 1){
+extract_granges_meth_site_values = function(meth_rse, genomic_regions = NULL, samples_subset = NULL, assay_number = 1){
   
   # If samples_subset provided, check that all samples present in meth_rse and then subset meth_rse for those samples
   if(!is.null(samples_subset)){
@@ -26,6 +26,9 @@ extract_granges_meth_site_values = function(meth_rse, genomic_regions, samples_s
       meth_rse = meth_rse[, samples_subset]
     }
   }
+  
+  # Set genomic_regions to all regions in meth_rse if not provided
+  if(is.null(genomic_regions)){genomic_regions = rowRanges(meth_rse)}
   
   # Subset meth_rse for sites overlapping genomic_ranges
   meth_rse_subset = IRanges::subsetByOverlaps(meth_rse, genomic_regions)
