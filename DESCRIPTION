@@ -49,3 +49,4 @@ Suggests:
     methrix,
     rmarkdown
 VignetteBuilder: knitr
+SystemRequirements: kallisto
