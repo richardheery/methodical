@@ -47,6 +47,10 @@ extract_meth_sites_from_genome = function(genome, pattern = "CG", plus_strand_on
   # Set strand as "*" if plus_strand_only is TRUE 
   if(plus_strand_only){GenomicRanges::strand(meth_sites_gr) = "*"}
   
+  # Resize meth_sites_gr so that it covers just the meth site position
+  meth_sites_gr = resize(meth_sites_gr, meth_site_position, fix = "start")
+  start(meth_sites_gr) = end(meth_sites_gr)
+  
   # Return meth_sites_gr
   return(meth_sites_gr)
   
