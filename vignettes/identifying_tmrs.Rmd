@@ -54,7 +54,7 @@ and downstream  of the TSS. Here we use 5,000 bp upstream and downstream.
 for each TSS, which is just a single TSS in our case. Each table has an attribute `tss_range` 
 which is a GRanges object with the location of the associated TSS.
 
-```{r, eval=TRUE}
+```{r, eval=TRUE, fig.show='hide'}
 # Calculate correlation values between methylation values and transcript values for TUBB6
 cpg_meth_transcript_cors = calculate_meth_site_transcript_cors(meth_rse = tubb6_meth_rse, 
   transcript_expression_table = tubb6_transcript_counts, tss_gr = tubb6_tss, expand_upstream = 5000, expand_downstream = 5000)
@@ -76,7 +76,7 @@ visually inspect if there are any interesting patterns. On the x-axis we can sho
 coordinates of the CpG sites or alternatively their distance to the TSS if we provide a 
 GRanges object with the TSS location to the argument `reference_region`. 
 
-```{r, eval=TRUE, fig.align="center"}
+```{r, eval=TRUE, fig.align="center", fig.show='hide'}
 # Plot methylation-transcription correlation values showing chromosomal coordinates of CpG sites.
 tubb6_correlation_plot_chrom_coords = plot_meth_site_values(tubb6_cpg_meth_transcript_cors, 
   column_name = "cor", ylabel = "Spearman Correlation", 
@@ -104,7 +104,7 @@ positive Methodical score, with the significance of the correlations determining
 
 We'll show the Methodical scores for the TUBB6 CpG correlation values using the `plot_meth_site_values` function.
 
-```{r, eval=TRUE}
+```{r, eval=TRUE, fig.show='hide'}
 # Plot methodical scores for CpGs near TUBB6 TSS
 tubb6_methodical_scores_plot = plot_methodical_scores(
   meth_site_values = tubb6_cpg_meth_transcript_cors, 
@@ -122,7 +122,7 @@ We set the `smooth_scores` parameter to TRUE to add a curve going through the sm
 The arguments `offset_length` and `smoothing_factor` control the number of CpGs considered upstream 
 and downstream of the central CpG and the exponential decay rate, respectively. 
 
-```{r, eval=TRUE}
+```{r, eval=TRUE, fig.show='hide'}
 # Smooth Methodical scores
 tubb6_smoothed_methodical_scores_plot = plot_methodical_scores(
   meth_site_values = tubb6_cpg_meth_transcript_cors, p_value_threshold = NULL, 
@@ -140,7 +140,7 @@ which results in TMR thresholds of 2.30 and -2.30 for positive and negative TMRs
 can then visualize if the smoothed Methodical scores breach these thresholds anywhere and identify TMRs. 
 
 
-```{r, eval=TRUE}
+```{r, eval=TRUE, fig.show='hide'}
 # Add significance thresholds to plot
 tubb6_smoothed_methodical_scores_plot = plot_methodical_scores(meth_site_values = 
   tubb6_cpg_meth_transcript_cors, p_value_threshold = 0.005, smooth_scores = TRUE, 
@@ -168,7 +168,7 @@ since the intervening CpGs will likely also display strong correlations.
 the number of CpG sites they overlap (meth_site_count), their distance to the TSS and the location of 
 the TSS as a character which can be converted to a GRanges by calling `GRanges` on it.  
 
-```{r, eval=TRUE}
+```{r, eval=TRUE, fig.show='hide'}
 # Identify TMRs for TUBB6
 tubb6_tmrs = find_tmrs(correlation_df = tubb6_cpg_meth_transcript_cors, offset_length = 10, 
   smoothing_factor = 0.75, min_meth_sites = 5, min_gapwidth = 150)
@@ -183,7 +183,7 @@ are located relative to the TSS, provided the plot used the same reference_posit
 can clearly see that the TMRs overlap regions where many CpG sites display strong
 correlation values between their methylation and expression of TUBB6. 
 
-```{r, eval=TRUE}
+```{r, eval=TRUE, fig.show='hide'}
 # Show location of TMRs on Methodical scores plot
 plot_tmrs(meth_site_plot = tubb6_smoothed_methodical_scores_plot, tmrs_gr = tubb6_tmrs)
 
