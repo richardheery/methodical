@@ -1,6 +1,6 @@
 Package: methodical
 Title: Discovering genomic regions where methylation is strongly associated with transcriptional activity
-Version: 0.99.1
+Version: 0.99.2
 Authors@R: 
     person("Richard", "Heery", , "richardheery@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-8067-3114"))
@@ -48,6 +48,7 @@ Suggests:
     BSgenome.Hsapiens.UCSC.hg38,
     knitr,
     methrix,
+    R.utils,
     rmarkdown
 VignetteBuilder: knitr
 SystemRequirements: kallisto
