@@ -5,7 +5,7 @@
 #' @param max_sites_per_chunk The maximum number of methylation sites to load into memory at once for each chunk. 
 #' @param ncores The number of cores that will be used. 
 #' @return A GRangesList where each GRanges object overlaps approximately the number of methylation sites given by max_sites_per_chunk 
-chunk_regions = function(meth_rse, genomic_regions, max_sites_per_chunk = NULL, ncores = 1){
+.chunk_regions = function(meth_rse, genomic_regions, max_sites_per_chunk = NULL, ncores = 1){
   
   # Make seqlevels of genomic_regions the same as meth_rse
   GenomeInfoDb::seqlevels(genomic_regions, pruning.mode = "coarse") = GenomeInfoDb::seqlevels(meth_rse)

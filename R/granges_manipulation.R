@@ -213,7 +213,7 @@ ranges_relative_to_tss = function(genomic_regions, tss_gr){
 #'
 #' @param gr A GRanges object
 #' @return An numeric value
-count_covered_bases = function(gr){
+.count_covered_bases = function(gr){
   
   return(sum(width(reduce(gr, ignore.strand = TRUE))))
 
@@ -228,7 +228,7 @@ count_covered_bases = function(gr){
 #' the absolute size of the intersection in base pairs, the proportion base paris of gr1 overlapping gr2 
 #' or the Jaccard index of the intersection in terms of base pairs. Default value is "absolute".
 #' @return An numeric value
-calculate_regions_intersections = function(gr1, gr2, ignore.strand = TRUE, overlap_measure = "absolute"){
+.calculate_regions_intersections = function(gr1, gr2, ignore.strand = TRUE, overlap_measure = "absolute"){
   
   # Check allowed value provided for overlap_measure
   match.arg(overlap_measure, c("absolute", "proportion", "jaccard"))
@@ -239,11 +239,11 @@ calculate_regions_intersections = function(gr1, gr2, ignore.strand = TRUE, overl
   
   # Caluclate proportion, Jaccard index or absolute overlap depending on overlap_measure
   if(overlap_measure == "proportion"){
-    return(count_covered_bases(intersection)/count_covered_bases(gr1))
+    return(.count_covered_bases(intersection)/.count_covered_bases(gr1))
   } else if(overlap_measure == "jaccard"){
-    return(count_covered_bases(intersection)/count_covered_bases(union))
+    return(.count_covered_bases(intersection)/.count_covered_bases(union))
   } else {
-    return(count_covered_bases(intersection))
+    return(.count_covered_bases(intersection))
   }
 
 }

@@ -1,0 +1,129 @@
+---
+title: "Calculating Methylation Transcription Correlations"
+output: html_document
+vignette: >
+  %\VignetteIndexEntry{calculating_methylation_transcription_correlations}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, message = F}
+library(methodical)
+library(TumourMethDatasets)
+library(DESeq2)
+```
+
+```{r, eval=TRUE}
+# delete
+mcrpc_wgbs_hg38_rse = HDF5Array::loadHDF5SummarizedExperiment("~/wgbs/mcrpc/wgbs/mcrpc_wgbs_hg38/")
+mcrpc_transcript_counts = data.frame(data.table::fread("~/wgbs/mcrpc/rnaseq/kallisto_tables/kallisto_transcript_quantification_pcg_counts.tsv.gz"), row.names = 1)
+```
+
+## Introduction
+
+`methodical` facilitates the study of the association between DNA methylation 
+and expression of associated transcripts. It can calculate correlation values
+between individual methylation sites (e.g. CpG sites) or the methylation 
+of wider genomic regions (e.g. expected promoter regions, gene bodies) and
+the expression of associated transcripts. We will demonstrate both cases in 
+this vignette. 
+
+## Import of RangedSummarizedExperiment for tumour WGBS methylation data
+
+We now first download a RangedSummarizedExperiment with WGBS data for prostate
+tumour metastases from TumourMethDatasets.
+
+```{r, eval=TRUE}
+# Download mcrpc_wgbs_hg38 from TumourMethDatasets. This may take a while... 
+mcrpc_wgbs_hg38_rse = download_dataset(dataset = "mcrpc_wgbs_hg38", dir = ".")
+```
+
+## Preparation of TSS annotation
+
+We now load annotation for our transcripts of interest, in this case
+all protein-coding transcripts annotated by Gencode.
+
+```{r, eval=TRUE}
+# Download Gencode annotation 
+download.file("https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_38/gencode.v38.annotation.gff3.gz", 
+    destfile = "gencode.v38.annotation.gff3.gz")
+
+# Import the Gencode annotation and subset for transcript annotation for non-mitochondrial protein-coding genes
+transcript_annotation = rtracklayer::import.gff3("gencode.v38.annotation.gff3.gz")
+transcript_annotation = transcript_annotation[transcript_annotation$type == "transcript"]
+transcript_annotation =  transcript_annotation[transcript_annotation$transcript_type == "protein_coding"]
+transcript_annotation = transcript_annotation[seqnames(transcript_annotation) != "chrM"]
+
+# Remove transcript version from ID
+transcript_annotation$ID = gsub("\\.[0-9]*", "", transcript_annotation$ID)
+
+# Get the TSS for each transcript set ID as names
+transcript_tss = resize(transcript_annotation, 1, fix = "start")
+names(transcript_tss) = transcript_tss$ID
+
+# Filter for transcripts on chromosome 11
+transcript_tss_chr11 = transcript_tss[seqnames(transcript_tss) == "chr11"]
+```
+
+## Preparation of count data
+
+Next we will normalize counts data for these transcripts from 
+prostate cancer metastases samples using DESeq2. 
+
+```{r, eval=TRUE}
+# Load the transcript count values in prostate cancer metastases samples
+data("mcrpc_transcript_counts")
+
+# Subset mcrpc_transcript_counts for protein-coding transcripts
+mcrpc_transcript_counts = mcrpc_transcript_counts[transcript_tss$ID, ]
+
+# Create a DESeqDataSet from Kallisto counts. 
+mcrpc_transcript_counts_dds = DESeqDataSetFromMatrix(countData = mcrpc_transcript_counts, 
+    colData = data.frame(sample = names(mcrpc_transcript_counts)), design = ~ 1)
+mcrpc_transcript_counts_dds  = estimateSizeFactors(mcrpc_transcript_counts_dds) 
+mcrpc_transcript_counts_normalized = data.frame(counts(mcrpc_transcript_counts_dds, normalized = T))
+```
+
+## Calculating CpG methylation-transcript expression correlation
+
+We'll now calculate the correlation values between all transcripts on 
+chromosome 11 and the methylation of all CpG sites within 5 KB of their TSS.
+We do this with the `calculate_meth_site_transcript_cors` function, which takes
+a methylation RangedSummarizedExperiment and a table with transcript counts as 
+input.
+
+It also takes a GRanges object with the TSS of interest. The arguments 
+`expand_upstream` and `expand_downstream` define the regions around the TSS
+where we want to examine CpG sites. We set these to 5KB upstream and downstream. 
+
+We can also provide a subset of samples that we want to use to calculate the 
+correlation values with the `samples_subset` parameter. 
+The default behaviour is to use try to use all samples, but we use 
+`common_mcprc_samples` since not all samples in `mcrpc_wgbs_hg38_rse` are 
+also present in `mcrpc_transcript_counts_normalized`.  
+
+Finally, we can control the memory usage and parallelization
+
+
+```{r, eval=TRUE}
+
+# Find samples with both WGBS and RNA-seq count data
+common_mcprc_samples = intersect(names(mcrpc_transcript_counts), colnames(mcrpc_wgbs_hg38_rse))
+
+# Calculate methylation-transcription correlations for 
+system.time({transcript_meth_cors_mcrpc_samples_5kb = calculate_meth_site_transcript_cors(
+  meth_rse = mcrpc_wgbs_hg38_rse, 
+  transcript_expression_table = mcrpc_transcript_counts_normalized, 
+  samples_subset = common_mcprc_samples, 
+  tss_gr = transcript_tss_chr11, 
+  cor_method = "pearson", 
+  expand_upstream = 5000, expand_downstream = 5000, ncores = 4)})
+```
+

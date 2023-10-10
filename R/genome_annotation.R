@@ -22,7 +22,7 @@ annotate_granges = function(genomic_regions, annotation_ranges, annotation_colum
   
   # Calculate the intersection between genomic_regions and different groups of regions defined by annotation_ranges. 
   annotation_overlaps = sapply(annotation_ranges, function(x) 
-    calculate_regions_intersections(gr1 = genomic_regions, gr2 = x, ignore.strand = ignore.strand, overlap_measure = overlap_measure))
+    .calculate_regions_intersections(gr1 = genomic_regions, gr2 = x, ignore.strand = ignore.strand, overlap_measure = overlap_measure))
   
   return(annotation_overlaps)
   

@@ -11,7 +11,7 @@
 #' @param temporary_dir Name to give a temporary directory to store intermediate files. A directory with this name cannot already exist. 
 #' @param ... Additional arguments to be passed to HDF5Array::HDF5RealizationSink. 
 #' @return A list describing the setup to be used for meth_rse_from_bedgraphs
-make_meth_rse_setup = function(meth_files, meth_sites, sample_metadata, hdf5_dir, 
+.make_meth_rse_setup = function(meth_files, meth_sites, sample_metadata, hdf5_dir, 
   dataset_name, overwrite, chunkdim, temporary_dir, ...){
   
   # If chunkdim not provided, use default values
@@ -112,7 +112,7 @@ make_meth_rse_setup = function(meth_files, meth_sites, sample_metadata, hdf5_dir
 #' @param decimal_places Integer indicating the number of decimal places to round beta values to. 
 #' @param ncores Number of cores to use. 
 #' @return A data.table with the methylation sites sorted by seqnames and start.
-split_bedgraphs_into_chunks = function(bedgraphs, seqnames_column, start_column, end_column, value_column,
+.split_bedgraphs_into_chunks = function(bedgraphs, seqnames_column, start_column, end_column, value_column,
   file_grid_columns, meth_sites, meth_site_groups, temp_chunk_dirs, zero_based, convert_percentages, decimal_places, ncores){
   
   # Create cluster if ncores greater than 1 and set dt_threads accordingly
@@ -214,7 +214,7 @@ split_bedgraphs_into_chunks = function(bedgraphs, seqnames_column, start_column,
 #' @param decimal_places Integer indicating the number of decimal places to round beta values to. 
 #' @param ncores Number of cores to use. 
 #' @return A data.table with the probe sites sorted by seqnames, start and probe name.
-split_meth_array_files_into_chunks = function(array_files, probe_name_column, beta_value_column, 
+.split_meth_array_files_into_chunks = function(array_files, probe_name_column, beta_value_column, 
   file_grid_columns, probe_ranges, probe_groups, temp_chunk_dirs, convert_percentages, decimal_places, ncores){
   
   # Create cluster if ncores greater than 1 and set dt_threads accordingly
@@ -305,7 +305,7 @@ split_meth_array_files_into_chunks = function(array_files, probe_name_column, be
 #' @param hdf5_sink A HDF5RealizationSink.
 #' @param hdf5_grid A RegularArrayGrid.
 #' @return Invisibly returns TRUE. 
-write_chunks_to_hdf5 = function(temp_chunk_dirs, files_in_chunks, hdf5_sink, hdf5_grid){
+.write_chunks_to_hdf5 = function(temp_chunk_dirs, files_in_chunks, hdf5_sink, hdf5_grid){
   
   # Define %do% from foreach
   `%do%` = foreach::`%do%`
@@ -349,7 +349,7 @@ write_chunks_to_hdf5 = function(temp_chunk_dirs, files_in_chunks, hdf5_sink, hdf
 #' @param sample_metadata A data.frame with sample metadata
 #' @param hdf5_dir The path to the HDF5 directory. 
 #' @return A RangedSummarizedExperiment with methylation values
-create_meth_rse_from_hdf5 = function(hdf5_filepath, hdf5_dir, meth_sites_df, sample_metadata){
+.create_meth_rse_from_hdf5 = function(hdf5_filepath, hdf5_dir, meth_sites_df, sample_metadata){
   
   # Get the names of the assays in hdf5_filepath
   assay_names = rhdf5::h5ls(hdf5_filepath)$name

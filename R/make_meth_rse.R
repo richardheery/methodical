@@ -67,22 +67,22 @@ make_meth_rse_from_bedgraphs = function(bedgraphs,
   }
   
   # Perform setup
-  setup = make_meth_rse_setup(meth_files = bedgraphs, meth_sites = meth_sites, sample_metadata = sample_metadata, 
+  setup = .make_meth_rse_setup(meth_files = bedgraphs, meth_sites = meth_sites, sample_metadata = sample_metadata, 
     hdf5_dir = hdf5_dir, dataset_name = dataset_name, overwrite = overwrite, chunkdim = chunkdim, 
     temporary_dir = temporary_dir, ...)
   
   # Read in bedGraphs and write data from chunks to appropriate temporary directory
-  meth_sites_df = split_bedgraphs_into_chunks(bedgraphs = bedgraphs, 
+  meth_sites_df = .split_bedgraphs_into_chunks(bedgraphs = bedgraphs, 
     seqnames_column = seqnames_column, start_column = start_column, end_column = end_column, value_column = value_column,
     file_grid_columns = setup$file_grid_columns, meth_sites = meth_sites, meth_site_groups = setup$meth_site_groups, temp_chunk_dirs = setup$temp_chunk_dirs, 
     zero_based = zero_based, convert_percentages = convert_percentages, decimal_places = decimal_places, ncores = ncores)
   
   # Write the chunks to the HDF5 file
-  write_chunks_to_hdf5(temp_chunk_dirs = setup$temp_chunk_dirs, files_in_chunks = setup$files_in_chunks, 
+  .write_chunks_to_hdf5(temp_chunk_dirs = setup$temp_chunk_dirs, files_in_chunks = setup$files_in_chunks, 
     hdf5_sink = setup$hdf5_sink, hdf5_grid = setup$hdf5_grid)
   
   # Create a RangedSummarizedExperiment
-  rse = create_meth_rse_from_hdf5(hdf5_filepath = setup$hdf5_filepath, hdf5_dir = hdf5_dir,
+  rse = .create_meth_rse_from_hdf5(hdf5_filepath = setup$hdf5_filepath, hdf5_dir = hdf5_dir,
     meth_sites_df = meth_sites_df, sample_metadata = sample_metadata)
   
   # Delete temporary_dir if it is empty
@@ -166,22 +166,22 @@ make_meth_rse_from_array_files = function(array_files, probe_name_column = 1, be
   }
   
   # Perform setup
-  setup = make_meth_rse_setup(meth_files = array_files, meth_sites = probe_ranges, sample_metadata = sample_metadata, 
+  setup = .make_meth_rse_setup(meth_files = array_files, meth_sites = probe_ranges, sample_metadata = sample_metadata, 
     hdf5_dir = hdf5_dir, dataset_name = dataset_name, overwrite = overwrite, chunkdim = chunkdim, 
     temporary_dir = temporary_dir, ...)
   
   # Read in array files and write data from chunks to appropriate temporary directory
-  probe_sites_df = split_meth_array_files_into_chunks(array_files = array_files, probe_name_column = probe_name_column, 
+  probe_sites_df = .split_meth_array_files_into_chunks(array_files = array_files, probe_name_column = probe_name_column, 
     beta_value_column = beta_value_column, file_grid_columns = setup$file_grid_columns, probe_ranges = probe_ranges,
     probe_groups = setup$meth_site_groups, temp_chunk_dirs = setup$temp_chunk_dirs, 
     convert_percentages = convert_percentages, decimal_places = decimal_places, ncores = ncores)
   
   # Write the chunks to the HDF5 file
-  write_chunks_to_hdf5(hdf5_sink = setup$hdf5_sink, hdf5_grid = setup$hdf5_grid, 
+  .write_chunks_to_hdf5(hdf5_sink = setup$hdf5_sink, hdf5_grid = setup$hdf5_grid, 
     temp_chunk_dirs = setup$temp_chunk_dirs, files_in_chunks = setup$files_in_chunks)
   
   # Create a RangedSummarizedExperiment
-  rse = create_meth_rse_from_hdf5(hdf5_filepath = setup$hdf5_filepath, hdf5_dir = hdf5_dir,
+  rse = .create_meth_rse_from_hdf5(hdf5_filepath = setup$hdf5_filepath, hdf5_dir = hdf5_dir,
     meth_sites_df = probe_sites_df, sample_metadata = sample_metadata)
   
   # Delete temporary_dir if it is empty

@@ -52,7 +52,7 @@ calculate_smoothed_methodical_scores = function(correlation_df, offset_length = 
 #' @param tss_gr An optional GRanges object giving the location of the TSS meth_sites_gr is associated with. 
 #' @param transcript_id Name of the transcript associated with the TSS. 
 #' @return A GRanges object with the location of TMRs. 
-test_tmrs = function(meth_sites_gr, smoothed_methodical_scores, p_value_threshold = 0.005, 
+.test_tmrs = function(meth_sites_gr, smoothed_methodical_scores, p_value_threshold = 0.005, 
   tss_gr = NULL, transcript_id = NULL){
   
   # Create upper and lower bounds using the log of p_value_threshold
@@ -146,7 +146,7 @@ find_tmrs = function(correlation_df, offset_length = 10, smoothing_factor = 0.75
   transcript_id = tss_gr$transcript_id
   
   # Find TMRs where smoothed methodical scores exceed thresholds
-  tmr_gr_list = test_tmrs(meth_sites_gr = meth_sites_gr, smoothed_methodical_scores = smoothed_methodical_scores, 
+  tmr_gr_list = .test_tmrs(meth_sites_gr = meth_sites_gr, smoothed_methodical_scores = smoothed_methodical_scores, 
     p_value_threshold = 0.005, tss_gr = tss_gr, transcript_id = transcript_id)
   
   # If there are no TMRs, return an empty GRanges
