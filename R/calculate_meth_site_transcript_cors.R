@@ -74,6 +74,13 @@ calculate_meth_site_transcript_cors = function(meth_rse, assay_number = 1, trans
     "Sample names in meth_rse and transcript_expression_table do not match")
   }
   
+  # Check that there are at least three samples and give a warning if there are less than 20 samples
+  n_samples = ncol(meth_rse) 
+  if(n_samples < 3){stop("There are not enough samples to calculate correlations")}
+  if(n_samples < 20){
+    warning(paste("There are only", n_samples, "samples. It is recommended to have at least 20 samples to calculate correlations"))
+  }
+  
   # Create results_dir is it doesn't exist
   if(!is.null(results_dir)){
     if(!dir.exists(results_dir)){
