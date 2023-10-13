@@ -80,7 +80,7 @@ prostate cancer metastases samples using DESeq2.
 data("mcrpc_transcript_counts")
 
 # Subset mcrpc_transcript_counts for protein-coding transcripts
-mcrpc_transcript_counts = mcrpc_transcript_counts[transcript_tss$ID, ]
+mcrpc_transcript_counts = mcrpc_transcript_counts[transcript_tss_chr11$ID, ]
 
 # Create a DESeqDataSet from Kallisto counts. 
 mcrpc_transcript_counts_dds = DESeqDataSetFromMatrix(countData = mcrpc_transcript_counts, 
@@ -231,7 +231,7 @@ transcription for all transcripts on chromosome 11.
 
 ```{r, eval=TRUE}
 # Calculate gene body methylation-transcription correlations for all TSS on chromosome 11
-system.time({transcript_body_meth_cors_mcrpc_samples_5kb = calculate_region_methylation_transcript_cors(
+system.time({transcript_body_meth_cors_mcrpc_samples = calculate_region_methylation_transcript_cors(
   meth_rse = mcrpc_wgbs_hg38_rse, 
   transcript_expression_table = mcrpc_transcript_counts_normalized, 
   samples_subset = common_mcprc_samples, 
@@ -242,15 +242,32 @@ system.time({transcript_body_meth_cors_mcrpc_samples_5kb = calculate_region_meth
   ncores = 4)})
 
 # Show the top of the results table
-head(transcript_body_meth_cors_mcrpc_samples_5kb)
+head(transcript_body_meth_cors_mcrpc_samples)
+
+# We'll filter for significant correlation values and plot their distribution
+transcript_body_meth_cors_significant = 
+  dplyr::filter(transcript_body_meth_cors_mcrpc_samples, q_val < 0.05)
+
+ggplot(transcript_body_meth_cors_significant, aes(x = cor)) +
+  geom_histogram() + theme_bw() + 
+  scale_y_continuous(expand = expansion(mult = c(0, 0.2), add = 0)) +
+  labs(x = "Correlation Values", y = "Number of Significant Correlation Values")
+  
+
 ```
 
 ## Conclusion
 
-Within just a few minutes, we calculated all the relevant correlations and their 
-p-values for TSS on chromosome 11. Thus, in under an hour we could easily 
-analyse the correlations for TSS in the genome on a desktop computer or even a 
-laptop using just a few cores. 
+Within minutes, we calculated all the correlation values for the methylation of 
+CpG sites within 5KB of TSS on chromosome 11 and expression of the associated
+transcripts as well as the p-values for the correlations. We then analysed the 
+relationship between mean gene body methylation and transcript expression, first 
+calculating the mean methylation of CpGs overlapping gene bodies on chromosome 
+11 and then computing the correlation values, again in short time using just a 
+few cores. 
+
+Thus, in under an hour we could easily analyse the correlations for all TSS in 
+the genome on a desktop computer or even a laptop using just a few cores. 
 
 ## SessionInfo
 ```{r}
