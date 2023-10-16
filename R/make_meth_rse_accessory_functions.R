@@ -156,7 +156,7 @@
     # Convert values from percentages to proportions if specified
     if(!is.null(normalization_factor)){
       if(max(bg$value, na.rm = TRUE) > 1){
-        bg$value = bg$value/normalization_facor
+        bg$value = bg$value/normalization_factor
       }
     }
     
@@ -254,7 +254,7 @@
     # Convert values from percentages to proportions if specified
     if(!is.null(normalization_factor)){
       if(max(array_file$value, na.rm = TRUE) > 1){
-        array_file$value = array_file$value/normalization_facor
+        array_file$value = array_file$value/normalization_factor
       }
     }
     
