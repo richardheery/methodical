@@ -41,7 +41,7 @@ tumour metastases from TumourMethDatasets.
 
 ```{r, eval=TRUE}
 # Download mcrpc_wgbs_hg38 from TumourMethDatasets. This may take a while... 
-mcrpc_wgbs_hg38_rse = download_dataset(dataset = "mcrpc_wgbs_hg38", dir = ".")
+mcrpc_wgbs_hg38_chr11 = download_meth_dataset(dataset = "mcrpc_wgbs_hg38_chr11")
 ```
 
 ## Preparation of TSS annotation
