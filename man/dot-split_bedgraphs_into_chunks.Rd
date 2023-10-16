@@ -15,7 +15,7 @@
   meth_site_groups,
   temp_chunk_dirs,
   zero_based,
-  convert_percentages,
+  normalization_factor,
   decimal_places,
   ncores
 )
@@ -41,7 +41,8 @@
 
 \item{zero_based}{A logical value indicating if files are zero-based.}
 
-\item{convert_percentages}{A logical value indicating whether bedGraph values should be converted from percentages to proportions if the maximum value is greater than 1.}
+\item{normalization_factor}{An optional numerical value to divide methylation values by to convert them to fractions e.g. 100 if they are percentages.
+Default is not to leave values as they are in the input files.}
 
 \item{decimal_places}{Integer indicating the number of decimal places to round beta values to.}
 

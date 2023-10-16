@@ -11,7 +11,7 @@ make_meth_rse_from_bedgraphs(
   end_column = 3,
   value_column = 4,
   zero_based = TRUE,
-  convert_percentages = TRUE,
+  normalization_factor = NULL,
   decimal_places = NA,
   meth_sites,
   sample_metadata = NULL,
@@ -37,8 +37,8 @@ make_meth_rse_from_bedgraphs(
 
 \item{zero_based}{A logical value indicating if files are zero-based. Default value is TRUE.}
 
-\item{convert_percentages}{A logical value indicating whether bedGraph values should be converted from percentages to proportions if the maximum value is greater than 1.
-Default is TRUE.}
+\item{normalization_factor}{An optional numerical value to divide methylation values by to convert them to fractions e.g. 100 if they are percentages.
+Default is not to leave values as they are in the input files.}
 
 \item{decimal_places}{Optional integer indicating the number of decimal places to round beta values to. Default is not to round.}
 

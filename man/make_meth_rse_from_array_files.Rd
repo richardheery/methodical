@@ -8,7 +8,7 @@ make_meth_rse_from_array_files(
   array_files,
   probe_name_column = 1,
   beta_value_column = 2,
-  convert_percentages = TRUE,
+  normalization_factor = NULL,
   decimal_places = NA,
   probe_ranges,
   sample_metadata = NULL,
@@ -28,8 +28,8 @@ make_meth_rse_from_array_files(
 
 \item{beta_value_column}{The number of the column which corresponds to the beta values . Default is 2nd column.}
 
-\item{convert_percentages}{A logical value indicating whether bedGraph values should be converted from percentages to proportions if the maximum value is greater than 1.
-Default is TRUE.}
+\item{normalization_factor}{An optional numerical value to divide methylation values by to convert them to fractions e.g. 100 if they are percentages.
+Default is not to leave values as they are in the input files.}
 
 \item{decimal_places}{Integer indicating the number of decimal places to round beta values to. Default is 2.}
 
