@@ -57,7 +57,8 @@ which is a GRanges object with the location of the associated TSS.
 ```{r, eval=TRUE, fig.show='hide'}
 # Calculate correlation values between methylation values and transcript values for TUBB6
 cpg_meth_transcript_cors = calculate_meth_site_transcript_cors(meth_rse = tubb6_meth_rse, 
-  transcript_expression_table = tubb6_transcript_counts, tss_gr = tubb6_tss, expand_upstream = 5000, expand_downstream = 5000)
+  transcript_expression_table = tubb6_transcript_counts, tss_gr = tubb6_tss, 
+  expand_upstream = 5000, expand_downstream = 5000, cor_method = "spearman")
 
 # Since cpg_meth_transcript_cors is just a list of with 1 table, we'll extract this table 
 # from the list 
@@ -79,16 +80,14 @@ GRanges object with the TSS location to the argument `reference_region`.
 ```{r, eval=TRUE, fig.align="center", fig.show='hide'}
 # Plot methylation-transcription correlation values showing chromosomal coordinates of CpG sites.
 tubb6_correlation_plot_chrom_coords = plot_meth_site_values(tubb6_cpg_meth_transcript_cors, 
-  column_name = "cor", ylabel = "Spearman Correlation", 
-  low_colour = "#7B5C90", high_colour = "#bfab25") + 
+  column_name = "cor", ylabel = "Spearman Correlation", value_colours = "set2") + 
 geom_hline(yintercept = 0, linetype = "dashed")
 print(tubb6_correlation_plot_chrom_coords)
 
 # Plot methylation-transcription correlation values showing distance of CpG sites to TSS. 
 tubb6_correlation_plot_tss_dist = plot_meth_site_values(tubb6_cpg_meth_transcript_cors, 
-  column_name = "cor", ylabel = "Spearman Correlation", 
-  low_colour = "#7B5C90", high_colour = "#bfab25", 
-  reference_region = attributes(tubb6_cpg_meth_transcript_cors)$tss_range) +
+  column_name = "cor", ylabel = "Spearman Correlation", value_colours = "set2", 
+  reference_tss = attributes(tubb6_cpg_meth_transcript_cors)$tss_range) +
 geom_hline(yintercept = 0, linetype = "dashed")
 print(tubb6_correlation_plot_tss_dist)
 ```
@@ -139,7 +138,6 @@ negative and positive Methodical scores thresholds. We'll use a p-value of 0.005
 which results in TMR thresholds of 2.30 and -2.30 for positive and negative TMRs respectively. We
 can then visualize if the smoothed Methodical scores breach these thresholds anywhere and identify TMRs. 
 
-
 ```{r, eval=TRUE, fig.show='hide'}
 # Add significance thresholds to plot
 tubb6_smoothed_methodical_scores_plot = plot_methodical_scores(meth_site_values = 
@@ -189,7 +187,7 @@ plot_tmrs(meth_site_plot = tubb6_smoothed_methodical_scores_plot, tmrs_gr = tubb
 
 # Show location of TMRs on correlation value plot
 plot_tmrs(meth_site_plot = tubb6_correlation_plot_tss_dist, tmrs_gr = tubb6_tmrs,
-  reference_region = GRanges(tubb6_tmrs$tss_location[1]))
+  reference_tss = GRanges(tubb6_tmrs$tss_location[1]))
 ```
 
 We can see that the negative TMR is centred around 1,000 base pairs upstream of the TSS
