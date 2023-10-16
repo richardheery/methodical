@@ -19,11 +19,6 @@ library(methodical)
 library(DESeq2)
 ```
 
-```{r, eval=TRUE}
-# delete
-mcrpc_transcript_counts = data.frame(data.table::fread("~/wgbs/mcrpc/rnaseq/kallisto_tables/kallisto_transcript_quantification_pcg_counts.tsv.gz"), row.names = 1)
-```
-
 ## Introduction
 
 `methodical` facilitates the rapid analysis of the association between DNA 
@@ -39,8 +34,12 @@ We now first download a RangedSummarizedExperiment with WGBS data for prostate
 tumour metastases from TumourMethDatasets.
 
 ```{r, eval=TRUE}
-# Download mcrpc_wgbs_hg38 from TumourMethDatasets. This may take a while... 
+# Download mcrpc_wgbs_hg38 from TumourMethDatasets.
 mcrpc_wgbs_hg38_chr11 = download_meth_dataset(dataset = "mcrpc_wgbs_hg38_chr11")
+
+# Download transcript counts
+download.file("https://zenodo.org/record/8422703/files/mcrpc_transcript_counts.tsv.gz", destfile = "mcrpc_transcript_counts.tsv.gz")
+mcrpc_transcript_counts = data.frame(data.table::fread("mcrpc_transcript_counts.tsv.gz"), row.names = 1)
 ```
 
 ## Preparation of TSS annotation
