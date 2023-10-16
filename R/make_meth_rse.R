@@ -229,7 +229,6 @@ methrix_to_rse = function(methrix, assays = c("beta", "cov")){
   # Create a RangedSummarizedExperiment from methrix
   rse = SummarizedExperiment::SummarizedExperiment(
     assays = SummarizedExperiment::assays(methrix)[assays], 
-    metadata = S4Vectors::metadata(methrix), 
     colData = SummarizedExperiment::colData(methrix), 
     rowRanges = methrix_ranges)
   
