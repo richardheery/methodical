@@ -6,8 +6,8 @@
 #' @param end_column The column number in bedgraphs which corresponds to the end positions. Default is 3rd column. 
 #' @param value_column The column number in bedgraphs which corresponds to the methylation values. Default is 4th column. 
 #' @param zero_based A logical value indicating if files are zero-based. Default value is TRUE. 
-#' @param convert_percentages A logical value indicating whether bedGraph values should be converted from percentages to proportions if the maximum value is greater than 1. 
-#' Default is TRUE. 
+#' @param normalization_factor An optional numerical value to divide methylation values by to convert them to fractions e.g. 100 if they are percentages. 
+#' Default is not to leave values as they are in the input files. 
 #' @param decimal_places Optional integer indicating the number of decimal places to round beta values to. Default is not to round. 
 #' @param meth_sites A GRanges object with the locations of the methylation sites of interest. Any methylation sites in bedGraphs that are not in meth_sites are ignored.
 #' @param sample_metadata Sample metadata to be used as colData for the RangedSummarizedExperiment.
@@ -45,9 +45,16 @@
 #'   
 make_meth_rse_from_bedgraphs = function(bedgraphs, 
   seqnames_column = 1, start_column = 2, end_column = 3, value_column = 4,
-  zero_based = TRUE, convert_percentages = TRUE, decimal_places = NA, 
+  zero_based = TRUE, normalization_factor = NULL, decimal_places = NA, 
   meth_sites, sample_metadata = NULL, hdf5_dir, dataset_name = "beta", overwrite = FALSE, chunkdim = NULL, 
   temporary_dir = NULL, ncores = 1, ...){
+  
+  # Check that normalization_factor is a whole integer if provided
+  if(!is.null(normalization_factor)){
+    if(length(normalization_factor) != 1 | normalization_factor %% 1 != 0 | normalization_factor < 0){
+      stop("normalization_factor should be single whole number")
+    }
+  }
   
   # If temporary_dir not provided, set it to a directory in tempdir()
   if(is.null(temporary_dir)){
@@ -75,7 +82,7 @@ make_meth_rse_from_bedgraphs = function(bedgraphs,
   meth_sites_df = .split_bedgraphs_into_chunks(bedgraphs = bedgraphs, 
     seqnames_column = seqnames_column, start_column = start_column, end_column = end_column, value_column = value_column,
     file_grid_columns = setup$file_grid_columns, meth_sites = meth_sites, meth_site_groups = setup$meth_site_groups, temp_chunk_dirs = setup$temp_chunk_dirs, 
-    zero_based = zero_based, convert_percentages = convert_percentages, decimal_places = decimal_places, ncores = ncores)
+    zero_based = zero_based, normalization_factor = normalization_factor, decimal_places = decimal_places, ncores = ncores)
   
   # Write the chunks to the HDF5 file
   .write_chunks_to_hdf5(temp_chunk_dirs = setup$temp_chunk_dirs, files_in_chunks = setup$files_in_chunks, 
@@ -99,8 +106,8 @@ make_meth_rse_from_bedgraphs = function(bedgraphs,
 #' @param array_files A vector of paths to bedGraph files. Automatically detects if array_files contain a header if every field in the first line is a character. 
 #' @param probe_name_column The number of the column which corresponds to the name of the probes. Default is 1st column. 
 #' @param beta_value_column The number of the column which corresponds to the beta values . Default is 2nd column.  
-#' @param convert_percentages A logical value indicating whether bedGraph values should be converted from percentages to proportions if the maximum value is greater than 1. 
-#' Default is TRUE. 
+#' @param normalization_factor An optional numerical value to divide methylation values by to convert them to fractions e.g. 100 if they are percentages. 
+#' Default is not to leave values as they are in the input files. 
 #' @param decimal_places Integer indicating the number of decimal places to round beta values to. Default is 2. 
 #' @param probe_ranges A GRanges object giving the genomic locations of probes where each region corresponds to a separate probe. 
 #' There should be a metadata column called name with the name of the probe associated with each region. 
@@ -138,8 +145,15 @@ make_meth_rse_from_bedgraphs = function(bedgraphs,
 #'  sample_metadata = sample_metadata, hdf5_dir = "array_file_hdf5_1")
 #'
 make_meth_rse_from_array_files = function(array_files, probe_name_column = 1, beta_value_column = 2, 
-  convert_percentages = TRUE, decimal_places = NA, probe_ranges, sample_metadata = NULL, hdf5_dir, dataset_name = "beta", 
+  normalization_factor = NULL, decimal_places = NA, probe_ranges, sample_metadata = NULL, hdf5_dir, dataset_name = "beta", 
   overwrite = FALSE, chunkdim = NULL, temporary_dir = NULL, ncores = 1, ...){
+  
+  # Check that normalization_factor is a whole integer if provided
+  if(!is.null(normalization_factor)){
+    if(length(normalization_factor) != 1 | normalization_factor %% 1 != 0 | normalization_factor < 0){
+      stop("normalization_factor should be single whole number")
+    }
+  }
   
   # Check that probe_ranges has a metadata column called name and that there are no duplicate names
   if(!"name" %in% names(mcols(probe_ranges))){
@@ -174,7 +188,7 @@ make_meth_rse_from_array_files = function(array_files, probe_name_column = 1, be
   probe_sites_df = .split_meth_array_files_into_chunks(array_files = array_files, probe_name_column = probe_name_column, 
     beta_value_column = beta_value_column, file_grid_columns = setup$file_grid_columns, probe_ranges = probe_ranges,
     probe_groups = setup$meth_site_groups, temp_chunk_dirs = setup$temp_chunk_dirs, 
-    convert_percentages = convert_percentages, decimal_places = decimal_places, ncores = ncores)
+    normalization_factor = normalization_factor, decimal_places = decimal_places, ncores = ncores)
   
   # Write the chunks to the HDF5 file
   .write_chunks_to_hdf5(hdf5_sink = setup$hdf5_sink, hdf5_grid = setup$hdf5_grid, 

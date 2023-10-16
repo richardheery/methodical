@@ -108,12 +108,13 @@
 #' @param meth_site_groups A list with the indices of the methylation sites in each group. 
 #' @param temp_chunk_dirs A vector giving the temporary directory associated with each chunk.
 #' @param zero_based A logical value indicating if files are zero-based. 
-#' @param convert_percentages A logical value indicating whether bedGraph values should be converted from percentages to proportions if the maximum value is greater than 1. 
+#' @param normalization_factor An optional numerical value to divide methylation values by to convert them to fractions e.g. 100 if they are percentages. 
+#' Default is not to leave values as they are in the input files.  
 #' @param decimal_places Integer indicating the number of decimal places to round beta values to. 
 #' @param ncores Number of cores to use. 
 #' @return A data.table with the methylation sites sorted by seqnames and start.
 .split_bedgraphs_into_chunks = function(bedgraphs, seqnames_column, start_column, end_column, value_column,
-  file_grid_columns, meth_sites, meth_site_groups, temp_chunk_dirs, zero_based, convert_percentages, decimal_places, ncores){
+  file_grid_columns, meth_sites, meth_site_groups, temp_chunk_dirs, zero_based, normalization_factor, decimal_places, ncores){
   
   # Create cluster if ncores greater than 1 and set dt_threads accordingly
   cl = setup_cluster(ncores = ncores, packages = c("methodical"), outfile = "")
@@ -153,9 +154,9 @@
     }
     
     # Convert values from percentages to proportions if specified
-    if(convert_percentages){
+    if(!is.null(normalization_factor)){
       if(max(bg$value, na.rm = TRUE) > 1){
-        bg$value = bg$value/100
+        bg$value = bg$value/normalization_facor
       }
     }
     
@@ -210,12 +211,13 @@
 #' @param probe_ranges A GRanges object giving the genomic locations of probes where each region corresponds to a separate probe.
 #' @param probe_groups A list with the indices of the probes in each group.  
 #' @param temp_chunk_dirs A vector giving the temporary directory associated with each chunk.
-#' @param convert_percentages A logical value indicating whether bedGraph values should be converted from percentages to proportions if the maximum value is greater than 1. 
+#' @param normalization_factor An optional numerical value to divide methylation values by to convert them to fractions e.g. 100 if they are percentages. 
+#' Default is not to leave values as they are in the input files. 
 #' @param decimal_places Integer indicating the number of decimal places to round beta values to. 
 #' @param ncores Number of cores to use. 
 #' @return A data.table with the probe sites sorted by seqnames, start and probe name.
 .split_meth_array_files_into_chunks = function(array_files, probe_name_column, beta_value_column, 
-  file_grid_columns, probe_ranges, probe_groups, temp_chunk_dirs, convert_percentages, decimal_places, ncores){
+  file_grid_columns, probe_ranges, probe_groups, temp_chunk_dirs, normalization_factor, decimal_places, ncores){
   
   # Create cluster if ncores greater than 1 and set dt_threads accordingly
   cl = setup_cluster(ncores = ncores, packages = c("methodical"), outfile = "")
@@ -250,9 +252,9 @@
       select = c(probe_name_column, beta_value_column)), c("name", "value"))
     
     # Convert values from percentages to proportions if specified
-    if(convert_percentages){
+    if(!is.null(normalization_factor)){
       if(max(array_file$value, na.rm = TRUE) > 1){
-        array_file$value = array_file$value/100
+        array_file$value = array_file$value/normalization_facor
       }
     }
     
