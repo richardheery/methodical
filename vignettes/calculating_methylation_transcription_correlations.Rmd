@@ -21,7 +21,6 @@ library(DESeq2)
 
 ```{r, eval=TRUE}
 # delete
-mcrpc_wgbs_hg38_rse = HDF5Array::loadHDF5SummarizedExperiment("~/wgbs/temp/mcrpc_wgbs_hg38_chr11/")
 mcrpc_transcript_counts = data.frame(data.table::fread("~/wgbs/mcrpc/rnaseq/kallisto_tables/kallisto_transcript_quantification_pcg_counts.tsv.gz"), row.names = 1)
 ```
 
