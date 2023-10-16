@@ -15,7 +15,7 @@ BugReports: https://support.bioconductor.org/tag/methodical
 biocViews: DNAMethylation, Transcription, MethylationArray, Software
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.2
+RoxygenNote: 7.2.3
 Depends: 
     GenomicRanges,
     ggplot2,

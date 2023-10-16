@@ -66,6 +66,7 @@ names(transcript_annotation_chr11) = transcript_annotation_chr11$ID
 
 # Get the TSS for each transcript set ID as names
 transcript_tss_chr11 = resize(transcript_annotation_chr11, 1, fix = "start")
+rm(transcript_annotation)
 ```
 
 ## Preparation of count data
@@ -74,9 +75,6 @@ Next we will normalize counts data for these transcripts from
 prostate cancer metastases samples using DESeq2. 
 
 ```{r, eval=TRUE}
-# Load the transcript count values in prostate cancer metastases samples
-data("mcrpc_transcript_counts")
-
 # Subset mcrpc_transcript_counts for protein-coding transcripts
 mcrpc_transcript_counts = mcrpc_transcript_counts[transcript_tss_chr11$ID, ]
 
@@ -132,7 +130,7 @@ system.time({transcript_cpg_meth_cors_mcrpc_samples_5kb = calculate_meth_site_tr
   transcript_expression_table = mcrpc_transcript_counts_normalized, 
   samples_subset = common_mcprc_samples, 
   tss_gr = transcript_tss_chr11, 
-  cor_method = "pearson", 
+  cor_method = "pearson", max_sites_per_chunk = 300000,
   expand_upstream = 5000, expand_downstream = 5000, ncores = 4)})
 ```
 
