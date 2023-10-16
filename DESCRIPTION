@@ -19,7 +19,7 @@ RoxygenNote: 7.2.2
 Depends: 
     GenomicRanges,
     ggplot2,
-    R (>= 4.2),
+    R (>= 4.0),
     SummarizedExperiment
 LazyData: false
 Imports: 
