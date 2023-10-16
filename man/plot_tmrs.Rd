@@ -7,21 +7,21 @@
 plot_tmrs(
   meth_site_plot,
   tmrs_gr,
-  reference_region = NULL,
+  reference_tss = NULL,
   transcript_id = NULL,
   tmr_colours = c("#A28CB1", "#D2C465"),
   linewidth = 5
 )
 }
 \arguments{
-\item{meth_site_plot}{A plot of methylation site values around a TSS.}
+\item{meth_site_plot}{A plot of Value around a TSS.}
 
 \item{tmrs_gr}{A GRanges object giving the position of TMRs.}
 
-\item{reference_region}{An optional GRanges object with a single range. If provided, the x-axis will show the distance of methylation sites to the start of this region with methylation sites upstream.
-relative to the reference_region shown first. If not, the x-axis will show the start site coordinate of the methylation site.}
+\item{reference_tss}{An optional GRanges object with a single range. If provided, the x-axis will show the distance of methylation sites to the start of this region with methylation sites upstream.
+relative to the reference_tss shown first. If not, the x-axis will show the start site coordinate of the methylation site.}
 
-\item{transcript_id}{An optional transcript ID. If provided, will attempt to filter tmrs_gr and reference_region using a metadata column called transcript_id with
+\item{transcript_id}{An optional transcript ID. If provided, will attempt to filter tmrs_gr and reference_tss using a metadata column called transcript_id with
 a value identical to the provided one.}
 
 \item{tmr_colours}{A vector with colours to use for negative and positive TMRs. Defaults to "#7B5C90" for negative and "#BFAB25" for positive TMRs.}

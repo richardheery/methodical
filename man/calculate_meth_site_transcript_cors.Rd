@@ -12,8 +12,7 @@ calculate_meth_site_transcript_cors(
   tss_gr,
   expand_upstream = 5000,
   expand_downstream = 5000,
-  cor_method = "spearman",
-  p_adjust_method = "BH",
+  cor_method = "pearson",
   add_distance_to_region = TRUE,
   max_sites_per_chunk = NULL,
   ncores = 1,
@@ -26,22 +25,20 @@ calculate_meth_site_transcript_cors(
 \item{assay_number}{The assay from meth_rse to extract values from. Default is the first assay.}
 
 \item{transcript_expression_table}{A table with the expression values for transcripts, where row names are transcript names and columns sample names.
-There should be one row for each region in tss_gr. Names of samples must match those in meth_rse unless samples_subset provided.}
+There should be a row corresponding to each transcript associated with each range in tss_gr.
+Names of samples must match those in meth_rse unless samples_subset provided.}
 
 \item{samples_subset}{Sample names used to subset meth_rse and transcript_expression_table. Provided samples must be found in both meth_rse and transcript_expression_table.
 Default is to use all samples in meth_rse and transcript_expression_table.}
 
-\item{tss_gr}{A GRanges object with the locations of transcription start sites (TSS). Each region should have a width of 1 and
-there should be one region for each row in transcript_expression_table. Names of tss_gr must match row.names of transcript_expression_table.}
+\item{tss_gr}{A GRanges object with the locations of transcription start sites (TSS). Each region should have a width of 1.
+names(tss_gr) should give the name of the transcript associated with the TSS, which must be present in transcript_expression_table.}
 
 \item{expand_upstream}{Number of bases to add upstream of each TSS. Must be numeric vector of length 1 or equal to the length of tss_gr. Default is 5000.}
 
 \item{expand_downstream}{Number of bases to add downstream of each TSS. Must be numeric vector of length 1 or equal to the length of tss_gr. Default is 5000.}
 
-\item{cor_method}{A character string indicating which correlation coefficient is to be computed. Identical to methods from cor(). Default is "spearman".}
-
-\item{p_adjust_method}{Method used to adjust p-values. Same as the methods from p.adjust.methods. Default is Benjamini-Hochberg.
-Adjustment is performed separately for the methylation sites associated with each transcript.}
+\item{cor_method}{A character string indicating which correlation coefficient is to be computed. Identical to methods from cor(). Default is "pearson".}
 
 \item{add_distance_to_region}{A logical value indicating whether to add the distance of methylation sites to the TSS. Default value is TRUE.
 Setting to FALSE will roughly half the total running time.}

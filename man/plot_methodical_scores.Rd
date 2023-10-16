@@ -6,7 +6,7 @@
 \usage{
 plot_methodical_scores(
   meth_site_values,
-  reference_region = NULL,
+  reference_tss = NULL,
   p_value_threshold = 0.005,
   smooth_scores = TRUE,
   offset_length = 10,
@@ -24,8 +24,8 @@ plot_methodical_scores(
 \item{meth_site_values}{A data.frame with correlation values for methylation sites. There should be one column called "cor".
 and another called "p_val" which are used to calculate the Methodical score. row.names should be the names of methylation sites and all methylation sites must be located on the same sequence.}
 
-\item{reference_region}{An optional GRanges object with a single range. If provided, the x-axis will show the distance of methylation sites to the start of this region with methylation sites upstream.
-relative to the reference_region shown first. If not, the x-axis will show the start site coordinate of the methylation site.}
+\item{reference_tss}{An optional GRanges object with a single range. If provided, the x-axis will show the distance of methylation sites to the start of this region with methylation sites upstream.
+relative to the reference_tss shown first. If not, the x-axis will show the start site coordinate of the methylation site.}
 
 \item{p_value_threshold}{The p-value threshold used to identify TMRs. Default value is 0.005. Set to NULL to turn off significance thresholds.}
 
@@ -60,5 +60,5 @@ Create plot of Methodical score values for methylation sites around a TSS
 data("tubb6_cpg_meth_transcript_cors", package = "methodical")
   
 # Calculate and plot Methodical scores from correlation values
-methodical::plot_methodical_scores(tubb6_cpg_meth_transcript_cors, reference_region = attributes(tubb6_cpg_meth_transcript_cors)$tss_range)
+methodical::plot_methodical_scores(tubb6_cpg_meth_transcript_cors, reference_tss = attributes(tubb6_cpg_meth_transcript_cors)$tss_range)
 }

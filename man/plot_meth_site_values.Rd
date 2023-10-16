@@ -7,12 +7,11 @@
 plot_meth_site_values(
   meth_site_values,
   column_name,
-  reference_region = NULL,
+  reference_tss = FALSE,
   title = NULL,
-  xlabel = "Genomic Position",
-  ylabel = "Methylation Site Values",
-  low_colour = "cadetblue4",
-  high_colour = "firebrick3"
+  xlabel = NULL,
+  ylabel = "Value",
+  value_colours = "set1"
 )
 }
 \arguments{
@@ -22,19 +21,24 @@ All methylation sites must be located on the same sequence.}
 
 \item{column_name}{Name of column in meth_site_values to plot.}
 
-\item{reference_region}{An optional GRanges object with a single range. If provided, the x-axis will
-show the distance of methylation sites to the start of this region with methylation sites upstream
-relative to the reference_region shown first. If not, the x-axis will show the start site coordinate of the methylation site.}
+\item{reference_tss}{A logical value indicating whether to show distances on the X-axis
+relative to the TSS stored as an attribute \code{tss_range} meth_site_values.
+Alternatively, can provide a GRanges object with a single range for such a TSS site.
+In either case, will show the distance of methylation sites to the start of this region with methylation sites upstream
+relative to the reference_tss shown first.
+If FALSE, the default, the x-axis will instead show the start site coordinate of the methylation site.}
 
 \item{title}{Title of the plot. Default is no title.}
 
-\item{xlabel}{Label for the X axis in the plot. Default is "Genomic Position".}
+\item{xlabel}{Label for the X axis in the plot. Defaults to "Distance to TSS" if reference_tss is used or
+"seqname position" where seqname is the name of the relevant sequence.}
 
-\item{ylabel}{Label for the Y axis in the plot. Default is "Methylation Site Values".}
+\item{ylabel}{Label for the Y axis in the plot. Default is "Value".}
 
-\item{low_colour}{Colour to use for low values. Default value is "cadetblue4".}
-
-\item{high_colour}{Colour to use for high values. Default value is "firebrick3".}
+\item{value_colours}{A vector with two colours to use, one for low values and the other for high values.
+Alternatively, can use one of two predefined colour sets by providing either "set1" or "set2":
+set1 uses "#53868B" (blue) for low values and "#CD2626" (red) for high values
+while set2 uses "#7B5C90" (purple) for low values and ""#bfab25" (gold) for high values. Default is "set1".}
 }
 \value{
 A ggplot object
@@ -51,6 +55,6 @@ methodical::plot_meth_site_values(tubb6_cpg_meth_transcript_cors, column_name = 
 
 # Create same plot but showing the distance to the TUBB6 TSS on the x-axis
 methodical::plot_meth_site_values(tubb6_cpg_meth_transcript_cors, column_name = "cor", 
-  ylabel = "Spearman Correlation", reference_region = attributes(tubb6_cpg_meth_transcript_cors)$tss_range)
+  ylabel = "Spearman Correlation", reference_tss = attributes(tubb6_cpg_meth_transcript_cors)$tss_range)
 
 }

@@ -7,7 +7,7 @@
 annotate_meth_site_plot(
   meth_site_plot,
   annotation_gr,
-  reference_region = NULL,
+  reference_tss = NULL,
   region_class_colours = NULL,
   annotation_line_size = 5,
   annotation_plot_height = 0.5,
@@ -16,15 +16,15 @@ annotate_meth_site_plot(
 )
 }
 \arguments{
-\item{meth_site_plot}{A plot of methylation site values (generally methylation level or correlation of methylation with transcription) around a TSS}
+\item{meth_site_plot}{A plot of Value (generally methylation level or correlation of methylation with transcription) around a TSS}
 
 \item{annotation_gr}{A GRanges object giving the locations of different classes of regions.
 There must be a metadata column named region_type giving the class of each region.
 If this is a factor, the levels will be used to order the region classes in the plot.}
 
-\item{reference_region}{An optional GRanges object with a single range.
+\item{reference_tss}{An optional GRanges object with a single range.
 If provided, the x-axis will show the distance of methylation sites to the start of this region with methylation sites upstream
-relative to the reference_region shown first. If not, the x-axis will show the start site coordinate of the methylation site.}
+relative to the reference_tss shown first. If not, the x-axis will show the start site coordinate of the methylation site.}
 
 \item{region_class_colours}{An optional named vector of colours to use with different region classes. Names of vector match colours to region classes.}
 

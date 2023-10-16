@@ -6,7 +6,7 @@
 \usage{
 extract_granges_meth_site_values(
   meth_rse,
-  genomic_regions,
+  genomic_regions = NULL,
   samples_subset = NULL,
   assay_number = 1
 )
@@ -14,7 +14,7 @@ extract_granges_meth_site_values(
 \arguments{
 \item{meth_rse}{A RangedSummarizedExperiment for methylation data.}
 
-\item{genomic_regions}{A GRanges object.}
+\item{genomic_regions}{A GRanges object. If set to NULL, returns all methylation sites in meth_rse}
 
 \item{samples_subset}{Optional sample names used to subset meth_rse.}
 
