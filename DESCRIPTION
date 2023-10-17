@@ -30,6 +30,7 @@ Imports:
     DelayedArray,
     doParallel,
     dplyr,
+    ExperimentHub,
     foreach,
     GenomeInfoDb,
     HDF5Array,
