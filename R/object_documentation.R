@@ -47,3 +47,10 @@
 #'
 #'@format A ggplot object.  
 "tubb6_correlation_plot"
+
+#' TumourMethDatasets
+#'
+#' A table describing the datasets available from TumourMethData.
+#'
+#'@format A data.frame with one row for each dataset
+"TumourMethDatasets"
