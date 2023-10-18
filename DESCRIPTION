@@ -44,6 +44,7 @@ Imports:
     tidyr
 Suggests: 
     AnnotationHub,
+    annotatr,
     BSgenome.Athaliana.TAIR.TAIR9,
     BSgenome.Hsapiens.UCSC.hg19,
     BSgenome.Hsapiens.UCSC.hg38,

@@ -48,6 +48,13 @@
 #'@format A ggplot object.  
 "tubb6_correlation_plot"
 
+#' hg38_cpgs_subset
+#'
+#' All the CpG sites within the first one million base pairs of chromosome 1.
+#'
+#'@format A GRanges object.  
+"hg38_cpgs_subset"
+
 #' TumourMethDatasets
 #'
 #' A table describing the datasets available from TumourMethData.

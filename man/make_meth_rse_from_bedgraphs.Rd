@@ -71,8 +71,9 @@ A RangedSummarizedExperiment with methylation values for all methylation sites i
 Create a HDF5-backed RangedSummarizedExperiment for methylation values in bedGraphs
 }
 \examples{
-# Get human CpG sites for hg38 genome build
-hg38_cpgs = methodical::extract_meth_sites_from_genome("BSgenome.Hsapiens.UCSC.hg38")
+
+# Load CpGs within first million base pairs of chromosome 1 as a GRanges object
+data("hg38_cpgs_subset", package = "methodical")
 
 # Get paths to bedGraphs
 bedgraphs = list.files(path = system.file('extdata', package = 'methodical'), 
@@ -86,7 +87,8 @@ sample_metadata = data.frame(
 )
 
 # Create a HDF5-backed RangedSummarizedExperiment from bedGraphs
-meth_rse = make_meth_rse_from_bedgraphs(bedgraphs = bedgraphs, meth_sites = hg38_cpgs, 
-  sample_metadata = sample_metadata, hdf5_dir = "bedgraph_hdf5_1")
+meth_rse = make_meth_rse_from_bedgraphs(bedgraphs = bedgraphs, 
+  meth_sites = hg38_cpgs_subset, sample_metadata = sample_metadata, 
+  hdf5_dir = "bedgraph_hdf5_1")
   
 }
