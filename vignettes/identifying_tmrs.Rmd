@@ -36,8 +36,8 @@ counts for the TUBB6 transcript.
 ```{r, eval=TRUE}
 # Load required objects
 data("tubb6_tss", package = "methodical")
-data("tubb6_meth_rse", package = "methodical"); tubb6_meth_rse = eval(tubb6_meth_rse)
-tubb6_meth_rse = eval(tubb6_meth_rse)
+data("tubb6_meth_rse", package = "methodical"); tubb6_meth_rse <- eval(tubb6_meth_rse)
+tubb6_meth_rse <- eval(tubb6_meth_rse)
 data("tubb6_transcript_counts", package = "methodical")
 ```
 
@@ -56,13 +56,13 @@ which is a GRanges object with the location of the associated TSS.
 
 ```{r, eval=TRUE, fig.show='hide'}
 # Calculate correlation values between methylation values and transcript values for TUBB6
-cpg_meth_transcript_cors = calculate_meth_site_transcript_cors(meth_rse = tubb6_meth_rse, 
+cpg_meth_transcript_cors <- calculate_meth_site_transcript_cors(meth_rse = tubb6_meth_rse, 
   transcript_expression_table = tubb6_transcript_counts, tss_gr = tubb6_tss, 
   expand_upstream = 5000, expand_downstream = 5000, cor_method = "spearman")
 
 # Since cpg_meth_transcript_cors is just a list of with 1 table, we'll extract this table 
 # from the list 
-tubb6_cpg_meth_transcript_cors = cpg_meth_transcript_cors$ENST00000591909
+tubb6_cpg_meth_transcript_cors <- cpg_meth_transcript_cors$ENST00000591909
 
 # Take a look at the results
 head(tubb6_cpg_meth_transcript_cors)
@@ -79,13 +79,13 @@ GRanges object with the TSS location to the argument `reference_region`.
 
 ```{r, eval=TRUE, fig.align="center", fig.show='hide'}
 # Plot methylation-transcription correlation values showing chromosomal coordinates of CpG sites.
-tubb6_correlation_plot_chrom_coords = plot_meth_site_values(tubb6_cpg_meth_transcript_cors, 
+tubb6_correlation_plot_chrom_coords <- plot_meth_site_values(tubb6_cpg_meth_transcript_cors, 
   column_name = "cor", ylabel = "Spearman Correlation", value_colours = "set2") + 
 geom_hline(yintercept = 0, linetype = "dashed")
 print(tubb6_correlation_plot_chrom_coords)
 
 # Plot methylation-transcription correlation values showing distance of CpG sites to TSS. 
-tubb6_correlation_plot_tss_dist = plot_meth_site_values(tubb6_cpg_meth_transcript_cors, 
+tubb6_correlation_plot_tss_dist <- plot_meth_site_values(tubb6_cpg_meth_transcript_cors, 
   column_name = "cor", ylabel = "Spearman Correlation", value_colours = "set2", 
   reference_tss = attributes(tubb6_cpg_meth_transcript_cors)$tss_range) +
 geom_hline(yintercept = 0, linetype = "dashed")
@@ -105,7 +105,7 @@ We'll show the Methodical scores for the TUBB6 CpG correlation values using the 
 
 ```{r, eval=TRUE, fig.show='hide'}
 # Plot methodical scores for CpGs near TUBB6 TSS
-tubb6_methodical_scores_plot = plot_methodical_scores(
+tubb6_methodical_scores_plot <- plot_methodical_scores(
   meth_site_values = tubb6_cpg_meth_transcript_cors, 
   p_value_threshold = 0.005, smooth_scores = FALSE) +
 geom_hline(yintercept = 0, linetype = "dashed")
@@ -123,7 +123,7 @@ and downstream of the central CpG and the exponential decay rate, respectively.
 
 ```{r, eval=TRUE, fig.show='hide'}
 # Smooth Methodical scores
-tubb6_smoothed_methodical_scores_plot = plot_methodical_scores(
+tubb6_smoothed_methodical_scores_plot <- plot_methodical_scores(
   meth_site_values = tubb6_cpg_meth_transcript_cors, p_value_threshold = 0.005, 
   smooth_scores = TRUE, smoothed_curve_colour = "hotpink2", offset_length = 10, 
   smoothing_factor = 0.75) +
@@ -140,7 +140,7 @@ can then visualize if the smoothed Methodical scores breach these thresholds any
 
 ```{r, eval=TRUE, fig.show='hide'}
 # Add significance thresholds to plot
-tubb6_smoothed_methodical_scores_plot = plot_methodical_scores(meth_site_values = 
+tubb6_smoothed_methodical_scores_plot <- plot_methodical_scores(meth_site_values = 
   tubb6_cpg_meth_transcript_cors, p_value_threshold = 0.005, smooth_scores = TRUE, 
   smoothed_curve_colour = "hotpink2") +
   geom_hline(yintercept = 0, linetype = "dashed")
@@ -168,7 +168,7 @@ the TSS as a character which can be converted to a GRanges by calling `GRanges` 
 
 ```{r, eval=TRUE, fig.show='hide'}
 # Identify TMRs for TUBB6
-tubb6_tmrs = find_tmrs(correlation_df = tubb6_cpg_meth_transcript_cors, offset_length = 10, 
+tubb6_tmrs <- find_tmrs(correlation_df = tubb6_cpg_meth_transcript_cors, offset_length = 10, 
   smoothing_factor = 0.75, min_meth_sites = 5, min_gapwidth = 150)
 print(tubb6_tmrs)
 ```

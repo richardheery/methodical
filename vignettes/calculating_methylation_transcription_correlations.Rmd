@@ -36,11 +36,11 @@ tumour metastases from TumourMethDatasets.
 
 ```{r}
 # Download mcrpc_wgbs_hg38 from TumourMethDatasets.
-mcrpc_wgbs_hg38_chr11 = download_meth_dataset(dataset = "mcrpc_wgbs_hg38_chr11")
+mcrpc_wgbs_hg38_chr11 <- download_meth_dataset(dataset = "mcrpc_wgbs_hg38_chr11")
 
 # Download transcript counts
 download.file("https://zenodo.org/record/8422703/files/mcrpc_transcript_counts.tsv.gz", destfile = "mcrpc_transcript_counts.tsv.gz")
-mcrpc_transcript_counts = data.frame(data.table::fread("mcrpc_transcript_counts.tsv.gz"), row.names = 1)
+mcrpc_transcript_counts <- data.frame(data.table::fread("mcrpc_transcript_counts.tsv.gz"), row.names = 1)
 ```
 
 ## Preparation of TSS annotation
@@ -51,26 +51,26 @@ all protein-coding transcripts annotated by Gencode.
 ```{r}
 # Download Gencode annotation 
 library(AnnotationHub)
-transcript_annotation = AnnotationHub()[["AH75119"]]
+transcript_annotation <- AnnotationHub()[["AH75119"]]
 
 # Import the Gencode annotation and subset for transcript annotation for non-mitochondrial protein-coding genes
-transcript_annotation = transcript_annotation[transcript_annotation$type == "transcript"]
-transcript_annotation =  transcript_annotation[transcript_annotation$transcript_type == "protein_coding"]
+transcript_annotation <- transcript_annotation[transcript_annotation$type == "transcript"]
+transcript_annotation <-  transcript_annotation[transcript_annotation$transcript_type == "protein_coding"]
 
 # Remove transcript version from ID
-transcript_annotation$ID = gsub("\\.[0-9]*", "", transcript_annotation$ID)
+transcript_annotation$ID <- gsub("\\.[0-9]*", "", transcript_annotation$ID)
 
 # Filter for transcripts on chromosome 11
-transcript_annotation_chr11 = transcript_annotation[seqnames(transcript_annotation) == "chr11"]
+transcript_annotation_chr11 <- transcript_annotation[seqnames(transcript_annotation) == "chr11"]
 
 # Filter for transcripts in the counts table
-transcript_annotation_chr11 = transcript_annotation_chr11[transcript_annotation_chr11$ID %in% row.names(mcrpc_transcript_counts)]
+transcript_annotation_chr11 <- transcript_annotation_chr11[transcript_annotation_chr11$ID %in% row.names(mcrpc_transcript_counts)]
 
 # Set transcript ID as names of ranges
-names(transcript_annotation_chr11) = transcript_annotation_chr11$ID
+names(transcript_annotation_chr11) <- transcript_annotation_chr11$ID
 
 # Get the TSS for each transcript set ID as names
-transcript_tss_chr11 = resize(transcript_annotation_chr11, 1, fix = "start")
+transcript_tss_chr11 <- resize(transcript_annotation_chr11, 1, fix = "start")
 rm(transcript_annotation)
 ```
 
@@ -81,13 +81,13 @@ prostate cancer metastases samples using DESeq2.
 
 ```{r}
 # Subset mcrpc_transcript_counts for protein-coding transcripts
-mcrpc_transcript_counts = mcrpc_transcript_counts[transcript_tss_chr11$ID, ]
+mcrpc_transcript_counts <- mcrpc_transcript_counts[transcript_tss_chr11$ID, ]
 
 # Create a DESeqDataSet from Kallisto counts. 
-mcrpc_transcript_counts_dds = DESeqDataSetFromMatrix(countData = mcrpc_transcript_counts, 
+mcrpc_transcript_counts_dds <- DESeqDataSetFromMatrix(countData = mcrpc_transcript_counts, 
     colData = data.frame(sample = names(mcrpc_transcript_counts)), design = ~ 1)
-mcrpc_transcript_counts_dds  = estimateSizeFactors(mcrpc_transcript_counts_dds) 
-mcrpc_transcript_counts_normalized = data.frame(counts(mcrpc_transcript_counts_dds, normalized = TRUE))
+mcrpc_transcript_counts_dds <- estimateSizeFactors(mcrpc_transcript_counts_dds) 
+mcrpc_transcript_counts_normalized <- data.frame(counts(mcrpc_transcript_counts_dds, normalized = TRUE))
 ```
 
 ## Calculating CpG methylation-transcript expression correlation
@@ -127,10 +127,10 @@ should jsut take a few minutes.
 
 ```{r}
 # Find samples with both WGBS and RNA-seq count data
-common_mcprc_samples = intersect(names(mcrpc_transcript_counts), colnames(mcrpc_wgbs_hg38_chr11))
+common_mcprc_samples <- intersect(names(mcrpc_transcript_counts), colnames(mcrpc_wgbs_hg38_chr11))
 
 # Calculate CpG methylation-transcription correlations for all TSS on chromosome 11
-system.time({transcript_cpg_meth_cors_mcrpc_samples_5kb = calculate_meth_site_transcript_cors(
+system.time({transcript_cpg_meth_cors_mcrpc_samples_5kb <- calculate_meth_site_transcript_cors(
   meth_rse = mcrpc_wgbs_hg38_chr11, 
   transcript_expression_table = mcrpc_transcript_counts_normalized, 
   samples_subset = common_mcprc_samples, 
@@ -153,7 +153,7 @@ attribute called `tss_range`, making it easy to retrieve this information.
 
 ```{r}
 # Extract correlation results for ENST00000398606 transcript
-gstp1_cpg_meth_transcript_cors = transcript_cpg_meth_cors_mcrpc_samples_5kb[["ENST00000398606"]]
+gstp1_cpg_meth_transcript_cors <- transcript_cpg_meth_cors_mcrpc_samples_5kb[["ENST00000398606"]]
 
 # Examine first few rows of the results
 head(gstp1_cpg_meth_transcript_cors)
@@ -182,7 +182,7 @@ whether `reference_tss` is set to TRUE or FALSE.
 ```{r}
 # Plot methylation-transcription correlation values for GSTP1 showing 
 # chromosome 11 position on the x-axis
-meth_cor_plot_absolute_distance = plot_meth_site_values(
+meth_cor_plot_absolute_distance <- plot_meth_site_values(
   meth_site_values = gstp1_cpg_meth_transcript_cors, 
   column_name = "cor", 
   reference_tss = FALSE, 
@@ -192,7 +192,7 @@ print(meth_cor_plot_absolute_distance)
 
 # Plot methylation-transcription correlation values for GSTP1 showing position 
 # distance to the GSTP1 on the x-axis
-meth_cor_plot_relative_distance = plot_meth_site_values(
+meth_cor_plot_relative_distance <- plot_meth_site_values(
   meth_site_values = gstp1_cpg_meth_transcript_cors, 
   column_name = "cor", 
   reference_tss = TRUE,   
@@ -232,7 +232,7 @@ transcription for all transcripts on chromosome 11.
 
 ```{r}
 # Calculate gene body methylation-transcription correlations for all TSS on chromosome 11
-system.time({transcript_body_meth_cors_mcrpc_samples = calculate_region_methylation_transcript_cors(
+system.time({transcript_body_meth_cors_mcrpc_samples <- calculate_region_methylation_transcript_cors(
   meth_rse = mcrpc_wgbs_hg38_chr11, 
   transcript_expression_table = mcrpc_transcript_counts_normalized, 
   samples_subset = common_mcprc_samples, 
@@ -246,7 +246,7 @@ system.time({transcript_body_meth_cors_mcrpc_samples = calculate_region_methylat
 head(transcript_body_meth_cors_mcrpc_samples)
 
 # We'll filter for significant correlation values and plot their distribution
-transcript_body_meth_cors_significant = 
+transcript_body_meth_cors_significant <- 
   dplyr::filter(transcript_body_meth_cors_mcrpc_samples, q_val < 0.05)
 
 ggplot(transcript_body_meth_cors_significant, aes(x = cor)) +
