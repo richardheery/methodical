@@ -19,6 +19,11 @@
 extract_meth_sites_from_genome <- function(genome, pattern = "CG", plus_strand_only = TRUE, 
   meth_site_position = 1, standard_sequences_only = TRUE){
   
+  # Check that inputs have the correct data type
+  stopifnot(is(genome, "character") | is(genome, "BSgenome"), is(pattern, "character"), 
+    is(plus_strand_only, "logical"), is(meth_site_position, "numeric") & meth_site_position >= 1,
+    is(standard_sequences_only, "logical"))
+  
   # If genome is a character, try to load genome with that name
   if(is.character(genome)){genome <- BSgenome::getBSgenome(genome)}
   
@@ -75,6 +80,9 @@ extract_meth_sites_from_genome <- function(genome, pattern = "CG", plus_strand_o
 #' methodical::stranded_distance(query_gr, subject_gr)
 stranded_distance <- function(query_gr, subject_gr){
   
+  # Check that inputs have the correct data type
+  stopifnot(is(query_gr, "GRanges"), is(subject_gr, "GRanges"))
+  
   # Check that query_gr and subject_gr are of the correct length
   if(!length(subject_gr) %in% c(1, length(query_gr))){
     stop("subject_gr should have length 1 or the same length as query_gr")}
@@ -114,6 +122,9 @@ stranded_distance <- function(query_gr, subject_gr){
 #' methodical::ranges_relative_to_tss(genomic_regions, tss_gr)
 ranges_relative_to_tss <- function(genomic_regions, tss_gr){
   
+  # Check that inputs have the correct data type
+  stopifnot(is(genomic_regions, "GRanges"), is(tss_gr, "GRanges"))
+  
   # Check that all tss ranges have width 1 and resize them with a warning if not
   if(!all(width(tss_gr) == 1)){
     warning("All regions in tss_gr should have a width of 1. Shortening each region so that it consists of only the most upstream position")
@@ -144,6 +155,9 @@ ranges_relative_to_tss <- function(genomic_regions, tss_gr){
 #' @return An numeric value
 .count_covered_bases <- function(gr){
   
+  # Check that inputs have the correct data type
+  stopifnot(is(gr, "GRanges"))
+  
   return(sum(width(reduce(gr, ignore.strand = TRUE))))
 
 }
@@ -158,6 +172,10 @@ ranges_relative_to_tss <- function(genomic_regions, tss_gr){
 #' or the Jaccard index of the intersection in terms of base pairs. Default value is "absolute".
 #' @return An numeric value
 .calculate_regions_intersections <- function(gr1, gr2, ignore.strand = TRUE, overlap_measure = "absolute"){
+  
+  # Check that inputs have the correct data type
+  stopifnot(is(gr1, "GRanges"), is(gr2, "GRanges"), 
+    is(ignore.strand, "logical"), is(overlap_measure, "character"))
   
   # Check allowed value provided for overlap_measure
   match.arg(overlap_measure, c("absolute", "proportion", "jaccard"))
@@ -209,6 +227,14 @@ ranges_relative_to_tss <- function(genomic_regions, tss_gr){
 #' random_regions <- methodical::create_random_regions(genome = "BSgenome.Hsapiens.UCSC.hg38", n_regions = 10000)
 create_random_regions <- function(genome, n_regions = 1000, region_widths = 1000, sequences = NULL, all_sequences_equally_likely = FALSE,
    stranded = FALSE, masked_regions = NULL, allow_overlapping_regions = FALSE, ignore.strand = TRUE, max_tries = 100){
+  
+  # Check that inputs have the correct data type
+  stopifnot(is(genome, "character") | is(genome, "BSgenome"), 
+    is(n_regions, "numeric") & n_regions >= 1, is(region_widths, "numeric") & region_widths >= 1,
+    is(sequences, "character") | is.null(sequences), is(all_sequences_equally_likely, "logical"),
+    is(stranded, "logical"), is(masked_regions, "GRanges") | is.null(masked_regions),
+    is(allow_overlapping_regions, "logical"), is(ignore.strand, "logical"), 
+    is(max_tries, "numeric") & n_regions >= 1)
   
   # Check that all region_widths are positive
   if(any(region_widths < 0)){stop("region_widths cannot contain negative values")}

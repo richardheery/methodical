@@ -7,6 +7,12 @@
 #' @return A GRangesList where each GRanges object overlaps approximately the number of methylation sites given by max_sites_per_chunk 
 .chunk_regions <- function(meth_rse, genomic_regions, max_sites_per_chunk = NULL, ncores = 1){
   
+  # Check that inputs have the correct data type
+  stopifnot(is(meth_rse, "RangedSummarizedExperiment"), 
+    is(genomic_regions, "GRanges"), is(genomic_region_names, "character") | is.null(genomic_region_names),
+    is(max_sites_per_chunk, "numeric") & max_sites_per_chunk >= 1 | is.null(max_sites_per_chunk),
+    is(ncores, "numeric") & ncores >= 1)
+  
   # Make seqlevels of genomic_regions the same as meth_rse
   GenomeInfoDb::seqlevels(genomic_regions, pruning.mode = "coarse") <- GenomeInfoDb::seqlevels(meth_rse)
   

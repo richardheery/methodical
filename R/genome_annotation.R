@@ -11,8 +11,11 @@
 #' @export
 annotate_granges <- function(genomic_regions, annotation_ranges, annotation_column = "region_type", ignore.strand = TRUE, overlap_measure = "absolute"){
   
-  # Check that provided annotation_ranges is a GRanges and has a metadata column matching annotation_column
-  if(!is(annotation_ranges, "GRanges")){stop("annotation_ranges must be a GRanges object")}
+  # Check that inputs have the correct data type
+  stopifnot(is(genomic_regions, "GRanges"), is(annotation_ranges, "GRanges"),
+    is(annotation_column, "character"), is(ignore.strand, "logical"), is(overlap_measure, "character"))
+    
+  # Check that provided annotation_ranges has a metadata column matching annotation_column
   if(!annotation_column %in% names(mcols(annotation_ranges))){
       stop(paste(annotation_ranges, "is not the name of a metadata column of annotation_ranges"))
   }

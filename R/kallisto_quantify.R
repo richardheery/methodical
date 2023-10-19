@@ -17,6 +17,10 @@
 #' }
 kallisto_index <- function(path_to_kallisto, transcripts_fasta, index_name = "kallisto_index.idx"){
   
+  # Check that inputs have the correct data type
+  stopifnot(is(path_to_kallisto, "character"), is(transcripts_fasta, "character"),
+    is(index_name, "character"))
+  
   # Get the canonical path to kallisto
   path_to_kallisto <- normalizePath(path_to_kallisto)
   
@@ -46,12 +50,19 @@ kallisto_index <- function(path_to_kallisto, transcripts_fasta, index_name = "ka
 #' {merged_output_prefix}_counts_merged.tsv.gz and {merged_output_prefix}_tpm_merged.tsv.gz. Default prefix is "kallisto_transcript" i.e. default output merged output files are 
 #' kallisto_transcript_counts_merged.tsv.gz and kallisto_transcript_tpm_merged.tsv.gz.
 #' @param messages_file Name of file to save kallisto run messages. If no file name given, information is printed to stdout.
-#' @param n_cores The number of cores to use. Default is 1.
+#' @param ncores The number of cores to use. Default is 1.
 #' @param number_bootstraps The number of bootstrap samples. Default is 100. 
 #' @return The path to the merged counts table. 
 #' @export
 kallisto_quantify <- function(path_to_kallisto, kallisto_index, forward_fastq_files, reverse_fastq_files, 
-  sample_names, output_directory, merged_output_prefix = "kallisto_transcript", messages_file = "", n_cores = 1, number_bootstraps  = 100){
+  sample_names, output_directory, merged_output_prefix = "kallisto_transcript", messages_file = "", ncores = 1, number_bootstraps  = 100){
+  
+  # Check that inputs have the correct data type
+  stopifnot(is(path_to_kallisto, "character"), is(kallisto_index, "character"), 
+    is(forward_fastq_files, "character"), is(reverse_fastq_files, "character"),
+    is(sample_names, "character"), is(output_directory, "character"),
+    is(merged_output_prefix, "character"), is(messages_file, "character"),
+    is(ncores, "numeric") & ncores >= 1, is(number_bootstraps, "numeric") & number_bootstraps >= 1)
   
   # Get the canonical path to kallisto
   path_to_kallisto <- normalizePath(path_to_kallisto)
@@ -108,7 +119,7 @@ kallisto_quantify <- function(path_to_kallisto, kallisto_index, forward_fastq_fi
     message(paste("Starting to process FASTQ pair", pair))
     system2(command = path_to_kallisto,
       args = paste(
-        "quant -i", kallisto_index, "-t", n_cores, "-b", number_bootstraps, "-o", 
+        "quant -i", kallisto_index, "-t", ncores, "-b", number_bootstraps, "-o", 
         sample_directories[pair], forward_fastq_files[pair], reverse_fastq_files[pair]
         ),
       stderr = messages_file)
@@ -149,6 +160,10 @@ kallisto_quantify <- function(path_to_kallisto, kallisto_index, forward_fastq_fi
 #' @return A data.frame with the sum of transcript expression values for genes where rows are genes and columns are samples
 #' @export
 sum_transcript_values_for_genes <- function(transcript_expression_table, gene_to_transcript_list){
+  
+  # Check that inputs have the correct data type
+  stopifnot(is(transcript_expression_table, "data.frame") | is(transcript_expression_table, "matrix"), 
+    is(gene_to_transcript_list, "list"), all(sapply(gene_to_transcript_list, class) = "character"))
   
   # If gene_to_transcript_list is a GRangesList, extract a list of vectors matching genes to transcripts
   if(is(gene_to_transcript_list, "GRangesList")){

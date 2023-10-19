@@ -38,6 +38,17 @@ calculate_region_methylation_transcript_cors <- function(meth_rse, assay_number 
   genomic_regions, genomic_region_names = NULL, genomic_region_transcripts = NULL, genomic_region_methylation = NULL,
   cor_method = "pearson", p_adjust_method = "BH", region_methylation_summary_function = colMeans, ncores = 1){
   
+  # Check that inputs have the correct data type
+  stopifnot(is(meth_rse, "RangedSummarizedExperiment"), is(assay_number, "numeric"),
+    is(transcript_expression_table, "data.frame") | is(transcript_expression_table, "matrix"),
+    is(samples_subset, "character") | is.null(samples_subset), 
+    is(genomic_regions, "GRanges"), is(genomic_region_names, "character") | is.null(genomic_region_names),
+    is(genomic_region_transcripts, "character") | is.null(genomic_region_transcripts), 
+    is(genomic_region_methylation, "data.frame") | is(genomic_region_methylation, "matrix") | is.null(genomic_region_methylation),
+    is(cor_method, "character"), is(p_adjust_method, "character") & p_adjust_method %in% p.adjust.methods,
+    is(region_methylation_summary_function, "function"), is(ncores, "numeric") & ncores >= 1)
+  cor_method = match.arg(cor_method, c("pearson", "kendall", "spearman"))
+  
   # Check that samples_subset are in meth_rse and transcript_expression_table
   if(!is.null(samples_subset)){
     if(any(!samples_subset %in% colnames(meth_rse))){

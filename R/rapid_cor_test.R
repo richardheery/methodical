@@ -22,6 +22,13 @@
 #'
 rapid_cor_test <- function(table1, table2, cor_method = "p", table1_name = "table1", table2_name = "table2", p_adjust_method = "BH"){
   
+  # Check that inputs have the correct data type
+  stopifnot(is(table1, "data.frame") | is(table1, "matrix"), 
+    is(table2, "data.frame") | is(table2, "matrix"),
+    is(table1_name, "character"), is(table2_name, "character"),
+    is(cor_method, "character"), 
+    is(p_adjust_method, "character") & p_adjust_method %in% p.adjust.methods)
+    
   # Check that the length of vec equals the number of rows of df
   if(nrow(table1) != nrow(table2)){
     stop("Number of rows of table1 and table2 must be equal")

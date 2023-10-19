@@ -19,6 +19,11 @@
 #' test_region_methylation <- methodical::extract_granges_meth_site_values(tubb6_meth_rse, genomic_regions = test_region)
 extract_granges_meth_site_values <- function(meth_rse, genomic_regions = NULL, samples_subset = NULL, assay_number = 1){
   
+  # Check that inputs have the correct data type
+  stopifnot(is(meth_rse, "RangedSummarizedExperiment"), 
+    is(genomic_regions, "GRanges"), is(samples_subset, "character") | is.null(samples_subset),
+    is(assay_number, "numeric")
+  
   # If samples_subset provided, check that all samples present in meth_rse and then subset meth_rse for those samples
   if(!is.null(samples_subset)){
     if(any(!samples_subset %in% colnames(meth_rse))){
@@ -77,6 +82,12 @@ extract_granges_meth_site_values <- function(meth_rse, genomic_regions = NULL, s
 sample_meth_sites <- function(meth_rse, n_sites = 1000, genomic_ranges_filter = NULL, 
   invert_filter = FALSE, samples_subset = NULL, assay_number = 1){
   
+  # Check that inputs have the correct data type
+  stopifnot(is(meth_rse, "RangedSummarizedExperiment"), is(n_sites, "numeric") & n_sites >= 1,
+    is(genomic_ranges_filter, "GRanges") | is.null(genomic_ranges_filter), 
+    is(invert_filter, "logical"), is(samples_subset, "character") | is.null(samples_subset),
+    is(assay_number, "numeric"))
+  
   # If genomic_ranges_filter provided, subset meth_rse with it
   if(!is.null(genomic_ranges_filter)){
     meth_rse <- IRanges::subsetByOverlaps(meth_rse, genomic_ranges_filter, invert = invert_filter)
@@ -128,6 +139,11 @@ sample_meth_sites <- function(meth_rse, n_sites = 1000, genomic_ranges_filter = 
 #'   permitted_target_regions = hg19_cpgs)
 #' @export
 liftover_meth_rse <- function(meth_rse, chain, remove_one_to_many_mapping = TRUE, permitted_target_regions = NULL){
+  
+  # Check that inputs have the correct data type
+  stopifnot(is(meth_rse, "RangedSummarizedExperiment"), is(chain, "Chain"),
+    is(remove_one_to_many_mapping, "logical"), 
+    is(permitted_target_regions, "GRanges") | is.null(permitted_target_regions))
   
   # Liftover rowRanges for meth_rse using specified liftover chain file
   liftover_ranges <- rtracklayer::liftOver(SummarizedExperiment::rowRanges(meth_rse), chain)
@@ -199,7 +215,12 @@ liftover_meth_rse <- function(meth_rse, chain, remove_one_to_many_mapping = TRUE
 #' # Count the number of NA values before and after masking
 #' sum(is.na(assay(tubb6_meth_rse)))
 #' sum(is.na(assay(tubb6_meth_rse_masked)))
-mask_ranges_in_rse <- function(rse, mask_ranges, assay = 1){
+mask_ranges_in_rse <- function(rse, mask_ranges, assay_number = 1){
+  
+  # Check that inputs have the correct data type
+  stopifnot(is(meth_rse, "RangedSummarizedExperiment"), 
+    is(mask_ranges, "GRanges") | is(mask_ranges, "GRangesList"),
+    is(assay_number, "numeric"))
   
   # Create a copy of rse for masking
   rse_masked <- rse
@@ -222,7 +243,7 @@ mask_ranges_in_rse <- function(rse, mask_ranges, assay = 1){
       mask_indices <- unique(queryHits(findOverlaps(rse_masked, mask_ranges[[sample]])))
       
       # Set values to be masked as NA
-      assay(rse_masked, assay)[mask_indices, sample] <- NA
+      assay(rse_masked, assay_number)[mask_indices, sample] <- NA
     }
     
   } else if(is(mask_ranges, "GRanges")){
@@ -231,7 +252,7 @@ mask_ranges_in_rse <- function(rse, mask_ranges, assay = 1){
     mask_indices <- unique(queryHits(findOverlaps(rse_masked, mask_ranges)))
     
     # Set values to be masked as NA
-    SummarizedExperiment::assay(rse_masked, assay)[mask_indices, ] <- NA
+    SummarizedExperiment::assay(rse_masked, assay_number)[mask_indices, ] <- NA
     
     
   } else {

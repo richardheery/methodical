@@ -10,6 +10,9 @@
 #' print(mcrpc_wgbs_hg38_chr11)
 download_meth_dataset <- function(dataset, dir = tempdir()){
   
+  # Check that inputs have the correct data type
+  stopifnot(is(dataset, "character"), dir = "character")
+  
   # Load TumourMethDatasets
   data("TumourMethDatasets", package = "methodical")
   

@@ -17,6 +17,9 @@
 #' 
 calculate_smoothed_methodical_scores <- function(correlation_df, offset_length = 10, smoothing_factor = 0.75){
   
+  # Check that inputs have the correct data type
+  stopifnot(is(correlation_df, "data.frame"), is(offset_length, "numeric"), is(smoothing_factor, "numeric"))
+  
   # Check that smoothing_factor is between 0 and 1
   if(smoothing_factor < 0 | smoothing_factor > 1){stop("smoothing_factor should be between 0 and 1")}
   
@@ -119,6 +122,10 @@ calculate_smoothed_methodical_scores <- function(correlation_df, offset_length =
 #' print(tubb6_tmrs)
 #' 
 find_tmrs <- function(correlation_df, offset_length = 10, smoothing_factor = 0.75, p_value_threshold = 0.005, min_gapwidth = 150, min_meth_sites = 5){
+  
+  # Check that inputs have the correct data type
+  stopifnot(is(correlation_df, "data.frame"), is(offset_length, "numeric"), is(smoothing_factor, "numeric"),
+    is(p_value_threshold, "numeric"), is(min_gapwidth, "numeric"), is(min_meth_sites, "numeric"))
   
   # If correlation_df is a character vector, try to read it as an RDS file and 
   # check that it is a data.frame with the correct columns

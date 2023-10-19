@@ -34,6 +34,14 @@
 summarize_region_methylation <- function(meth_rse, assay_number = 1, genomic_regions, genomic_regions_names = NULL, 
   keep_metadata_cols = FALSE, max_sites_per_chunk = NULL, summary_function = base::colMeans, na.rm = TRUE, n_chunks_parallel = 1, ...){
   
+  # Check that inputs have the correct data type
+  stopifnot(is(meth_rse, "RangedSummarizedExperiment"), is(assay_number, "numeric"),
+    is(genomic_regions, "GRanges"), is(genomic_region_names, "character") | is.null(genomic_region_names),
+    is(keep_metadata_cols, "logical"), 
+    (is(max_sites_per_chunk, "numeric") & max_sites_per_chunk >= 1) | is.null(max_sites_per_chunk),
+    is(summary_function, "function"), is(na.rm, "logical"), 
+    is(n_chunks_parallel, "numeric") & n_chunks_parallel >= 1)
+    
   # Check that summary_function is a function
   if(!is(summary_function, "function")){stop("summary_function must be the unquoted name of a function")}
   

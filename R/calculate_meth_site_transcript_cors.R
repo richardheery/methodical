@@ -43,6 +43,16 @@
 calculate_meth_site_transcript_cors <- function(meth_rse, assay_number = 1, transcript_expression_table, samples_subset = NULL, tss_gr, expand_upstream = 5000,
   expand_downstream = 5000, cor_method = "pearson", add_distance_to_region = TRUE, max_sites_per_chunk = NULL, ncores = 1, results_dir = NULL){
   
+  # Check that inputs have the correct data type
+  stopifnot(is(meth_rse, "RangedSummarizedExperiment"), is(assay_number, "numeric"),
+    is(transcript_expression_table, "data.frame") | is(transcript_expression_table, "matrix"),
+    is(samples_subset, "character") | is.null(samples_subset), 
+    is(tss_gr, "GRanges"), is(expand_upstream, "numeric"), is(expand_downstream, "numeric"),
+    is(cor_method, "character"), is(add_distance_to_region, "logical"),
+    is(max_sites_per_chunk, "numeric") & max_sites_per_chunk >= 1 | is.null(max_sites_per_chunk), 
+    is(ncores, "numeric") & ncores >= 1, is(results_dir, "character") | is.null(results_dir))
+  cor_method = match.arg(cor_method, c("pearson", "kendall", "spearman"))
+  
   # Check that all regions in tss_gr have a length of 1 and that they have names
   if(any(width(tss_gr) != 1)){stop("All regions in tss_gr must have a width of 1")}
   if(is.null(names(tss_gr))){stop("names(tss_gr) should be the names of the transcripts associated with each TSS and cannot be NULL")}

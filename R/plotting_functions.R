@@ -34,6 +34,15 @@
 plot_meth_site_values <- function(meth_site_values, column_name, reference_tss = FALSE, 
   title = NULL, xlabel = NULL, ylabel = "Value", value_colours = "set1"){
   
+  # Check that inputs have the correct data type
+  stopifnot(is(meth_site_values, "data.frame"), is(column_name, "character"),
+    is(reference_tss, "logical") | is(reference_tss, "GRanges"), 
+    is(title, "character") | is.null(title), is(xlabel, "character") | is.null(xlabel),
+    is(ylabel, "character") | is.null(ylabel), is(value_colours, "character"))
+    
+    is(max_sites_per_chunk, "numeric") & max_sites_per_chunk >= 1 | is.null(max_sites_per_chunk),
+    is(ncores, "numeric") & ncores >= 1)
+  
   # Check that suitable input provided for value_colours and set low and high value colours if so
   if(length(value_colours) == 1){
     if(value_colours == "set1"){
@@ -155,6 +164,14 @@ plot_meth_site_values <- function(meth_site_values, column_name, reference_tss =
 annotate_meth_site_plot <- function(meth_site_plot, annotation_gr, reference_tss = NULL, region_class_colours = NULL, 
   annotation_line_size = 5, annotation_plot_height = 0.5, keep_meth_site_plot_legend = FALSE, annotation_plot_only = FALSE){
   
+  # Check that inputs have the correct data type
+  stopifnot(is(meth_site_plot, "ggplot"), is(annnotation_gr, "GRanges"),
+    is(reference_tss, "logical") | is(reference_tss, "GRanges"), 
+    is(region_class_colours, "character") | is.null(region_class_colours),
+    is(annotation_line_size, "numeric"), is(annotation_line_size, "numeric"),
+    is(annotation_plot_height, "numeric"), is(keep_meth_site_plot_legend, "logical"),
+    is(annotation_plot_only, "logical"))
+    
   # Check that if reference_tss is provided, if has a length of 1
   if(!is.null(reference_tss) & length(reference_tss) > 1){stop("reference_tss should have length of 1 if provided")}
   
@@ -272,6 +289,12 @@ annotate_meth_site_plot <- function(meth_site_plot, annotation_gr, reference_tss
 #' methodical::plot_tmrs(tubb6_correlation_plot, tmrs_gr = tubb6_tmrs)
 plot_tmrs <- function(meth_site_plot, tmrs_gr, reference_tss = NULL, transcript_id = NULL, tmr_colours = c("#A28CB1", "#D2C465"), linewidth = 5){
   
+  # Check that inputs have the correct data type
+  stopifnot(is(meth_site_plot, "ggplot"), is(tmrs_gr, "GRanges"),
+    is(reference_tss, "logical") | is(reference_tss, "GRanges"),
+    is(transcript_id, "character") ! is.null(transcript_id),
+    is(tmr_colours, "character"), is(linewidth, "numeric"))
+    
   # Filter tmrs_gr and reference_tss for transcript_id if provided
   if(!is.null(transcript_id)){
     tmrs_gr <- tmrs_gr[tmrs_gr$transcript_id == transcript_id]
@@ -290,7 +313,6 @@ plot_tmrs <- function(meth_site_plot, tmrs_gr, reference_tss = NULL, transcript_
   } else {
       tmrs_df <- data.frame(tmrs_gr)
   }
-  
   
   # Add TMRs to meth_site_plot
   meth_site_plot_with_tmrs <- meth_site_plot +
@@ -331,6 +353,16 @@ plot_methodical_scores <- function(meth_site_values, reference_tss = NULL, p_val
   smooth_scores = TRUE, offset_length = 10, smoothing_factor = 0.75, 
   smoothed_curve_colour = "black", linewidth = 1, curve_alpha = 0.75, 
   title = NULL, xlabel = "Genomic Position", low_colour = "#7B5C90", high_colour = "#BFAB25"){
+  
+  # Check that inputs have the correct data type
+  stopifnot(is(meth_site_values, "data.frame"), 
+    is(reference_tss, "logical") | is(reference_tss, "GRanges"),
+    is(p_value_threshold, "numeric"), is(smooth_scores, "logical"),
+    is(offset_length, "numeric"), is(smoothing_factor, "numeric"),
+    is(smoothed_curve_colour, "character"), is(linewidth, "numeric"),
+    is(curve_alpha, "numeric"), is(title, "character") | is.null(title),
+    is(xlabel, "character") | is.null(xlabel), is(low_colour, "character"), 
+    is(high_colour, "character"))
   
   # Change meth_site column to row names
   meth_site_values_plot_df <- tibble::column_to_rownames(meth_site_values, "meth_site")

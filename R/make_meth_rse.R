@@ -51,6 +51,16 @@ make_meth_rse_from_bedgraphs <- function(bedgraphs,
   meth_sites, sample_metadata = NULL, hdf5_dir, dataset_name = "beta", overwrite = FALSE, chunkdim = NULL, 
   temporary_dir = NULL, ncores = 1, ...){
   
+  # Check that inputs have the correct data type
+  stopifnot(is(bedgraphs, "character"), is(seqnames_column, "numeric") & seqnames_column >= 1,
+    is(start_column, "numeric") & start_column >= 1, is(end_column, "numeric") & end_column >= 1,
+    is(value_column, "numeric") & value_column >= 1, is(zero_based, "logical"),
+    is(normalization_factor, "numeric") | is.null(normalization_factor),
+    is(decimal_places, numeric) | is.na(decimal_places), is(meth_sites, "GRanges"),
+    is(sample_metadata, "data.frame") | is.null(sample_metadata), is(hdf5_dir, "character"),
+    is(dataset_name, "character"), is(overwrite, "logical"), is(chunkdim, "numeric") | is.null(chunkdim),
+    is(temporary_dir, "character") | is.null(temporary_dir), is(ncores, "numeric") & ncores >= 1)
+    
   # Check that normalization_factor is a whole integer if provided
   if(!is.null(normalization_factor)){
     if(length(normalization_factor) != 1 | normalization_factor %% 1 != 0 | normalization_factor < 0){
@@ -150,6 +160,15 @@ make_meth_rse_from_array_files <- function(array_files, probe_name_column = 1, b
   normalization_factor = NULL, decimal_places = NA, probe_ranges, sample_metadata = NULL, hdf5_dir, dataset_name = "beta", 
   overwrite = FALSE, chunkdim = NULL, temporary_dir = NULL, ncores = 1, ...){
   
+  # Check that inputs have the correct data type
+  stopifnot(is(array_files, "character"), is(probe_name_column, "numeric") & probe_name_column >= 1,
+    is(beta_value_column, "numeric") & beta_value_column >= 1, 
+    is(normalization_factor, "numeric") | is.null(normalization_factor),
+    is(decimal_places, numeric) | is.na(decimal_places), is(probe_ranges, "GRanges"),
+    is(sample_metadata, "data.frame") | is.null(sample_metadata), is(hdf5_dir, "character"),
+    is(dataset_name, "character"), is(overwrite, "logical"), is(chunkdim, "numeric") | is.null(chunkdim),
+    is(temporary_dir, "character") | is.null(temporary_dir), is(ncores, "numeric") & ncores >= 1)
+  
   # Check that normalization_factor is a whole integer if provided
   if(!is.null(normalization_factor)){
     if(length(normalization_factor) != 1 | normalization_factor %% 1 != 0 | normalization_factor < 0){
@@ -232,6 +251,9 @@ make_meth_rse_from_array_files <- function(array_files, probe_name_column = 1, b
 #' meth_rse <- methodical::methrix_to_rse(methrix_data, assays = "beta")
 #' 
 methrix_to_rse <- function(methrix, assays = c("beta", "cov")){
+  
+  # Check that inputs have the correct data type
+  stopifnot(is(methrix, "methrix"), is(assays, "character"))
   
   # Check that allowed values are provided for assays
   if(any(!assays %in% c("beta", "cov"))){stop("assays should only be one or both of \"beta\" and \"cov\"")}
