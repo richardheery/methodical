@@ -107,7 +107,7 @@ We'll show the Methodical scores for the TUBB6 CpG correlation values using the 
 # Plot methodical scores for CpGs near TUBB6 TSS
 tubb6_methodical_scores_plot = plot_methodical_scores(
   meth_site_values = tubb6_cpg_meth_transcript_cors, 
-  p_value_threshold = NULL, smooth_scores = FALSE) +
+  p_value_threshold = 0.005, smooth_scores = FALSE) +
 geom_hline(yintercept = 0, linetype = "dashed")
 print(tubb6_methodical_scores_plot)
 ```
@@ -124,7 +124,7 @@ and downstream of the central CpG and the exponential decay rate, respectively.
 ```{r, eval=TRUE, fig.show='hide'}
 # Smooth Methodical scores
 tubb6_smoothed_methodical_scores_plot = plot_methodical_scores(
-  meth_site_values = tubb6_cpg_meth_transcript_cors, p_value_threshold = NULL, 
+  meth_site_values = tubb6_cpg_meth_transcript_cors, p_value_threshold = 0.005, 
   smooth_scores = TRUE, smoothed_curve_colour = "hotpink2", offset_length = 10, 
   smoothing_factor = 0.75) +
 geom_hline(yintercept = 0, linetype = "dashed")

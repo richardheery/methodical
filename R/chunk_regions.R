@@ -1,7 +1,7 @@
 #' Split genomic regions into balanced chunks based on the number of methylation sites that they cover
 #' 
 #' @param meth_rse A RangedSummarizedExperiment with methylation values.
-#' @param genomic_regions A GRanges object
+#' @param genomic_regions A GRanges object.
 #' @param max_sites_per_chunk The maximum number of methylation sites to load into memory at once for each chunk. 
 #' @param ncores The number of cores that will be used. 
 #' @return A GRangesList where each GRanges object overlaps approximately the number of methylation sites given by max_sites_per_chunk 
@@ -9,7 +9,7 @@
   
   # Check that inputs have the correct data type
   stopifnot(is(meth_rse, "RangedSummarizedExperiment"), 
-    is(genomic_regions, "GRanges"), is(genomic_region_names, "character") | is.null(genomic_region_names),
+    is(genomic_regions, "GRanges"), 
     is(max_sites_per_chunk, "numeric") & max_sites_per_chunk >= 1 | is.null(max_sites_per_chunk),
     is(ncores, "numeric") & ncores >= 1)
   

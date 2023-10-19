@@ -5,11 +5,11 @@
 #' All methylation sites must be located on the same sequence. 
 #' @param column_name Name of column in meth_site_values to plot. 
 #' @param reference_tss A logical value indicating whether to show distances on the X-axis
-#' relative to the TSS stored as an attribute `tss_range` meth_site_values. 
+#' relative to the TSS stored as an attribute `tss_range` of meth_site_values. 
 #' Alternatively, can provide a GRanges object with a single range for such a TSS site. 
 #' In either case, will show the distance of methylation sites to the start of this region with methylation sites upstream 
 #' relative to the reference_tss shown first. 
-#' If FALSE, the default, the x-axis will instead show the start site coordinate of the methylation site. 
+#' If FALSE (the default), the x-axis will instead show the start site coordinate of the methylation site. 
 #' @param title Title of the plot. Default is no title. 
 #' @param xlabel Label for the X axis in the plot. Defaults to "Distance to TSS" if reference_tss is used or
 #' "seqname position" where seqname is the name of the relevant sequence.
@@ -163,7 +163,7 @@ annotate_meth_site_plot <- function(meth_site_plot, annotation_gr, reference_tss
   
   # Check that inputs have the correct data type
   stopifnot(is(meth_site_plot, "ggplot"), is(annnotation_gr, "GRanges"),
-    is(reference_tss, "logical") | is(reference_tss, "GRanges"), 
+    is(reference_tss, "GRanges") | is.null(reference_tss), 
     is(region_class_colours, "character") | is.null(region_class_colours),
     is(annotation_line_size, "numeric"), is(annotation_line_size, "numeric"),
     is(annotation_plot_height, "numeric"), is(keep_meth_site_plot_legend, "logical"),
@@ -264,7 +264,8 @@ annotate_meth_site_plot <- function(meth_site_plot, annotation_gr, reference_tss
 #'
 #' @param meth_site_plot A plot of Value around a TSS.
 #' @param tmrs_gr A GRanges object giving the position of TMRs.
-#' @param reference_tss An optional GRanges object with a single range. If provided, the x-axis will show the distance of methylation sites to the start of this region with methylation sites upstream. 
+#' @param reference_tss An optional GRanges object with a single range. If provided, the x-axis will 
+#' show the distance of methylation sites to the start of this region with methylation sites upstream
 #' relative to the reference_tss shown first. If not, the x-axis will show the start site coordinate of the methylation site.
 #' @param transcript_id An optional transcript ID. If provided, will attempt to filter tmrs_gr and reference_tss using a metadata column called transcript_id with 
 #' a value identical to the provided one. 
@@ -288,7 +289,7 @@ plot_tmrs <- function(meth_site_plot, tmrs_gr, reference_tss = NULL, transcript_
   
   # Check that inputs have the correct data type
   stopifnot(is(meth_site_plot, "ggplot"), is(tmrs_gr, "GRanges"),
-    is(reference_tss, "logical") | is(reference_tss, "GRanges"),
+    is(reference_tss, "GRanges") | is.null(reference_tss), 
     is(transcript_id, "character") | is.null(transcript_id),
     is(tmr_colours, "character"), is(linewidth, "numeric"))
     
@@ -353,7 +354,7 @@ plot_methodical_scores <- function(meth_site_values, reference_tss = NULL, p_val
   
   # Check that inputs have the correct data type
   stopifnot(is(meth_site_values, "data.frame"), 
-    is(reference_tss, "logical") | is(reference_tss, "GRanges"),
+    is(reference_tss, "GRanges") | is.null(reference_tss), 
     is(p_value_threshold, "numeric"), is(smooth_scores, "logical"),
     is(offset_length, "numeric"), is(smoothing_factor, "numeric"),
     is(smoothed_curve_colour, "character"), is(linewidth, "numeric"),
