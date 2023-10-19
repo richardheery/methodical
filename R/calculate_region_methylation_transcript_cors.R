@@ -114,7 +114,7 @@ calculate_region_methylation_transcript_cors <- function(meth_rse, assay_number 
     cat("Summarizing region methylation\n")
     genomic_region_methylation <- methodical::summarize_region_methylation(
       meth_rse = meth_rse, assay_number = assay_number, genomic_regions = genomic_regions, 
-      genomic_regions_names = genomic_region_names, 
+      genomic_region_names = genomic_region_names, 
       summary_function = region_methylation_summary_function, n_chunks_parallel = ncores
     )
     

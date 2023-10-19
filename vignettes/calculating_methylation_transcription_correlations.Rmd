@@ -11,7 +11,7 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  eval = FALSE
+  eval = TRUE
 )
 ```
 
@@ -62,6 +62,11 @@ transcript_annotation$ID = gsub("\\.[0-9]*", "", transcript_annotation$ID)
 
 # Filter for transcripts on chromosome 11
 transcript_annotation_chr11 = transcript_annotation[seqnames(transcript_annotation) == "chr11"]
+
+# Filter for transcripts in the counts table
+transcript_annotation_chr11 = transcript_annotation_chr11[transcript_annotation_chr11$ID %in% row.names(mcrpc_transcript_counts)]
+
+# Set transcript ID as names of ranges
 names(transcript_annotation_chr11) = transcript_annotation_chr11$ID
 
 # Get the TSS for each transcript set ID as names

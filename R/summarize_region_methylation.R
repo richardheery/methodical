@@ -4,7 +4,7 @@
 #' @param assay_number The assay from meth_rse to extract values from. Default is the first assay. 
 #' @param genomic_regions GRanges object with regions to summarize methylation values for. 
 #' @param keep_metadata_cols A logical value indicating whether to add the metadata columns of genomic_regions to the output. Default is FALSE.
-#' @param genomic_regions_names Names to give genomic_regions. Cannot be any duplicates. Default is to name them region_1, region_2, etc. if no names provided.
+#' @param genomic_region_names Names to give genomic_regions. Cannot be any duplicates. Default is to name them region_1, region_2, etc. if no names provided.
 #' @param max_sites_per_chunk The approximate maximum number of methylation sites to try to load into memory at once. 
 #' The actual number loaded may vary depending on the number of methylation sites overlapping each region, 
 #' but so long as the size of any individual regions is not enormous (>= several MB), it should vary only very slightly. 
@@ -29,9 +29,9 @@
 #' 
 #' # Calculate mean methylation values for chr1 CpG islands in meth_h5 
 #' test_gr_methylation <- methodical::summarize_region_methylation(tubb6_meth_rse, genomic_regions = test_gr,
-#'   genomic_regions_names = names(test_gr))
+#'   genomic_region_names = names(test_gr))
 #' 
-summarize_region_methylation <- function(meth_rse, assay_number = 1, genomic_regions, genomic_regions_names = NULL, 
+summarize_region_methylation <- function(meth_rse, assay_number = 1, genomic_regions, genomic_region_names = NULL, 
   keep_metadata_cols = FALSE, max_sites_per_chunk = NULL, summary_function = base::colMeans, na.rm = TRUE, n_chunks_parallel = 1, ...){
   
   # Check that inputs have the correct data type
@@ -46,17 +46,17 @@ summarize_region_methylation <- function(meth_rse, assay_number = 1, genomic_reg
   if(!is(summary_function, "function")){stop("summary_function must be the unquoted name of a function")}
   
   # Add names to genomic_regions if they are not already present and also check that no names are duplicated. 
-  if(is.null(genomic_regions_names)){
-    genomic_regions_names <- paste0("region_", 1:length(genomic_regions))
-    names(genomic_regions) <- genomic_regions_names
+  if(is.null(genomic_region_names)){
+    genomic_region_names <- paste0("region_", 1:length(genomic_regions))
+    names(genomic_regions) <- genomic_region_names
   } else {
-    if(length(genomic_regions_names) != length(genomic_regions)){
-      stop("genomic_regions_names must be the same length as genomic_regions")
+    if(length(genomic_region_names) != length(genomic_regions)){
+      stop("genomic_region_names must be the same length as genomic_regions")
     } 
-    if(anyDuplicated(genomic_regions_names)){
-      stop("genomic_regions_names cannot contain duplicates")
+    if(anyDuplicated(genomic_region_names)){
+      stop("genomic_region_names cannot contain duplicates")
     } else {
-      names(genomic_regions) <- genomic_regions_names
+      names(genomic_regions) <- genomic_region_names
     }
   }
   
@@ -128,10 +128,10 @@ summarize_region_methylation <- function(meth_rse, assay_number = 1, genomic_reg
   region_methylation <- data.table::data.table(tibble::rownames_to_column(region_methylation, "region_name"))
   
   # Create a data.table with the genomic_region_names in the correct order
-  genomic_regions_names_df <- data.table::data.table(region_name = genomic_regions_names)
+  genomic_region_names_df <- data.table::data.table(region_name = genomic_region_names)
   
   # Put rows in same order as regions in genomic_regions. Adds rows with NA values for regions which didn't overlap any methylation sites. 
-  region_methylation <- data.table::merge.data.table(genomic_regions_names_df, region_methylation, 
+  region_methylation <- data.table::merge.data.table(genomic_region_names_df, region_methylation, 
     by = "region_name", all.x = TRUE, sort = FALSE)
 
   # Add metadata from genomic_regions if specified
