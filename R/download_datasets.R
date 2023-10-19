@@ -6,9 +6,9 @@
 #' @return A RangedSummarizedExperiment with methylation values from the specified dataset. 
 #' @export
 #' @examples
-#' mcrpc_wgbs_hg38_chr11 <- methodical::download_meth_dataset(dataset = "mcrpc_wgbs_hg38_chr11")
+#' mcrpc_wgbs_hg38_chr11 <- methodical::downloadMethDataset(dataset = "mcrpc_wgbs_hg38_chr11")
 #' print(mcrpc_wgbs_hg38_chr11)
-download_meth_dataset <- function(dataset, dir = tempdir()){
+downloadMethDataset <- function(dataset, dir = tempdir()){
   
   # Check that inputs have the correct data type
   stopifnot(is(dataset, "character"), dir = "character")

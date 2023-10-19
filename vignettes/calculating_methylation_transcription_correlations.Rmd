@@ -36,7 +36,7 @@ tumour metastases from TumourMethDatasets.
 
 ```{r}
 # Download mcrpc_wgbs_hg38 from TumourMethDatasets.
-mcrpc_wgbs_hg38_chr11 <- download_meth_dataset(dataset = "mcrpc_wgbs_hg38_chr11")
+mcrpc_wgbs_hg38_chr11 <- downloadMethDataset(dataset = "mcrpc_wgbs_hg38_chr11")
 
 # Download transcript counts
 download.file("https://zenodo.org/record/8422703/files/mcrpc_transcript_counts.tsv.gz", destfile = "mcrpc_transcript_counts.tsv.gz")
@@ -95,7 +95,7 @@ mcrpc_transcript_counts_normalized <- data.frame(counts(mcrpc_transcript_counts_
 We'll first demonstrate calculating the correlation values between all transcripts 
 on chromosome 11 and the methylation of all CpG sites within 5 KB of their TSS
 and also the significance of these correlation values. We do this with the 
-`calculate_meth_site_transcript_cors` function, which takesa methylation 
+`calculateMethSiteTranscriptCors` function, which takesa methylation 
 RangedSummarizedExperiment and a table with transcript counts as input.
 
 It also takes a GRanges object with the TSS of interest. The arguments 
@@ -110,7 +110,7 @@ also present in `mcrpc_transcript_counts_normalized`.
 
 Finally, we can control the memory usage and parallelization with the 
 `max_sites_per_chunk` and `ncores` parameters. 
-`calculate_meth_site_transcript_cors` aims to keep the memory footprint low by
+`calculateMethSiteTranscriptCors` aims to keep the memory footprint low by
 splitting the provided `tss_gr`into chunks of closely-situated TSS and 
 processing these chunks one at a time. The chunks are limited to that they 
 contain an approximate maximum number of CpGs within `expand_upstream` and 
@@ -130,7 +130,7 @@ should jsut take a few minutes.
 common_mcprc_samples <- intersect(names(mcrpc_transcript_counts), colnames(mcrpc_wgbs_hg38_chr11))
 
 # Calculate CpG methylation-transcription correlations for all TSS on chromosome 11
-system.time({transcript_cpg_meth_cors_mcrpc_samples_5kb <- calculate_meth_site_transcript_cors(
+system.time({transcript_cpg_meth_cors_mcrpc_samples_5kb <- calculateMethSiteTranscriptCors(
   meth_rse = mcrpc_wgbs_hg38_chr11, 
   transcript_expression_table = mcrpc_transcript_counts_normalized, 
   samples_subset = common_mcprc_samples, 
@@ -166,7 +166,7 @@ attributes(gstp1_cpg_meth_transcript_cors)$tss_range
 
 Plotting the methylation-transcription correlation values around a TSS enable
 us to visualize how the relationship between DNA methylation and transcription 
-changes around the TSS. We can use the `plot_meth_site_values` function to 
+changes around the TSS. We can use the `plotMethSiteValues` function to 
 plot values for methylation sites, such as their correlation values or 
 methylation levels. It takes a data.frame as input which should have a column 
 called "meth_site" which gives the location of CpG sites as a character string
@@ -182,7 +182,7 @@ whether `reference_tss` is set to TRUE or FALSE.
 ```{r}
 # Plot methylation-transcription correlation values for GSTP1 showing 
 # chromosome 11 position on the x-axis
-meth_cor_plot_absolute_distance <- plot_meth_site_values(
+meth_cor_plot_absolute_distance <- plotMethSiteValues(
   meth_site_values = gstp1_cpg_meth_transcript_cors, 
   column_name = "cor", 
   reference_tss = FALSE, 
@@ -192,7 +192,7 @@ print(meth_cor_plot_absolute_distance)
 
 # Plot methylation-transcription correlation values for GSTP1 showing position 
 # distance to the GSTP1 on the x-axis
-meth_cor_plot_relative_distance <- plot_meth_site_values(
+meth_cor_plot_relative_distance <- plotMethSiteValues(
   meth_site_values = gstp1_cpg_meth_transcript_cors, 
   column_name = "cor", 
   reference_tss = TRUE,   
@@ -218,10 +218,10 @@ meth_cor_plot_relative_distance + ggplot2::geom_hline(yintercept = 0, linetype =
 We'll now demonstrate calculating the correlation values between transcript 
 expression and methylation of wider regions associated them instead of just 
 single CpG sites, e.g. promoters, gene bodies or enhancers. We use the 
-`calculate_region_methylation_transcript_cors` function for this, which takes a 
+`calculateRegionMethylationTranscriptCors` function for this, which takes a 
 angedSummarizedExperiment with methylation values and a table with transcript 
-expression values, like `calculate_meth_site_transcript_cors`. However, 
-`calculate_region_methylation_transcript_cors` takes a GRanges object with wider
+expression values, like `calculateMethSiteTranscriptCors`. However, 
+`calculateRegionMethylationTranscriptCors` takes a GRanges object with wider
 regions which are associated with the transcripts. More than one region may be
 associated with a given transcript, for example we could analyse the correlation
 between transcript expression and methylation of its exons separately for each 
@@ -232,7 +232,7 @@ transcription for all transcripts on chromosome 11.
 
 ```{r}
 # Calculate gene body methylation-transcription correlations for all TSS on chromosome 11
-system.time({transcript_body_meth_cors_mcrpc_samples <- calculate_region_methylation_transcript_cors(
+system.time({transcript_body_meth_cors_mcrpc_samples <- calculateRegionMethylationTranscriptCors(
   meth_rse = mcrpc_wgbs_hg38_chr11, 
   transcript_expression_table = mcrpc_transcript_counts_normalized, 
   samples_subset = common_mcprc_samples, 

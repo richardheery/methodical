@@ -1,6 +1,6 @@
 #' Calculate methodical score and smooth it using a exponential weighted moving average
 #' 
-#' @param correlation_df A data.frame with correlation values between methylation sites and a transcript as returned by calculate_meth_site_transcript_cors. 
+#' @param correlation_df A data.frame with correlation values between methylation sites and a transcript as returned by calculateMethSiteTranscriptCors. 
 #' @param offset_length Number of methylation sites added upstream and downstream of a central methylation site to form a window, resulting in a window size of 2*offset_length + 1.
 #' Default value is 10.
 #' @param smoothing_factor Smoothing factor for exponential moving average. Should be a value between 0 and 1 with higher 
@@ -13,9 +13,9 @@
 #' data("tubb6_cpg_meth_transcript_cors", package = "methodical")
 #' 
 #' # Calculate smoothed Methodical scores from correlation values
-#' smoothed_methodical_scores <- methodical::calculate_smoothed_methodical_scores(tubb6_cpg_meth_transcript_cors)
+#' smoothed_methodical_scores <- methodical::calculateSmoothedMethodicalScores(tubb6_cpg_meth_transcript_cors)
 #' 
-calculate_smoothed_methodical_scores <- function(correlation_df, offset_length = 10, smoothing_factor = 0.75){
+calculateSmoothedMethodicalScores <- function(correlation_df, offset_length = 10, smoothing_factor = 0.75){
   
   # Check that inputs have the correct data type
   stopifnot(is(correlation_df, "data.frame"), is(offset_length, "numeric"), is(smoothing_factor, "numeric"))
@@ -103,7 +103,7 @@ calculate_smoothed_methodical_scores <- function(correlation_df, offset_length =
 #' Find TSS-Proximal Methylation-Controlled Regulatory Sites (TMRs)
 #' 
 #' @param correlation_df A data.frame with correlation values between methylation sites and a transcript 
-#' or a path to an RDS file containing such a data.frame as returned by calculate_meth_site_transcript_cors. 
+#' or a path to an RDS file containing such a data.frame as returned by calculateMethSiteTranscriptCors. 
 #' @param offset_length Number of methylation sites added upstream and downstream of a central methylation site to form a window, resulting in a window size of 2*offset_length + 1.
 #' Default value is 10.
 #' @param smoothing_factor Smoothing factor for exponential moving average. Should be a value between 0 and 1 with higher 
@@ -118,10 +118,10 @@ calculate_smoothed_methodical_scores <- function(correlation_df, offset_length =
 #' data("tubb6_cpg_meth_transcript_cors", package = "methodical")
 #' 
 #' # Find TMRs for 
-#' tubb6_tmrs <- find_tmrs(correlation_df = tubb6_cpg_meth_transcript_cors)
+#' tubb6_tmrs <- find_TMRs(correlation_df = tubb6_cpg_meth_transcript_cors)
 #' print(tubb6_tmrs)
 #' 
-find_tmrs <- function(correlation_df, offset_length = 10, smoothing_factor = 0.75, p_value_threshold = 0.005, min_gapwidth = 150, min_meth_sites = 5){
+find_TMRs <- function(correlation_df, offset_length = 10, smoothing_factor = 0.75, p_value_threshold = 0.005, min_gapwidth = 150, min_meth_sites = 5){
   
   # Check that inputs have the correct data type
   stopifnot(is(correlation_df, "data.frame"), is(offset_length, "numeric"), is(smoothing_factor, "numeric"),
@@ -142,7 +142,7 @@ find_tmrs <- function(correlation_df, offset_length = 10, smoothing_factor = 0.7
   if(sum(correlation_df$p_val > p_value_threshold, na.rm = TRUE) == 0){return(GenomicRanges::GRanges())}
   
   # Calculate smoothed methodical scores 
-  smoothed_methodical_scores <- calculate_smoothed_methodical_scores(
+  smoothed_methodical_scores <- calculateSmoothedMethodicalScores(
     correlation_df = correlation_df, offset_length = offset_length, smoothing_factor = smoothing_factor)
   
   # Create a GRanges with methylation sites from correlation_df
@@ -199,7 +199,7 @@ find_tmrs <- function(correlation_df, offset_length = 10, smoothing_factor = 0.7
   tmr_gr$meth_site_count <- GenomicRanges::countOverlaps(tmr_gr, meth_sites_gr)
   
   # Add the distance to the TSS
-  tmr_gr$distance_to_tss <- methodical::stranded_distance(query_gr = tmr_gr, subject_gr = tss_gr)
+  tmr_gr$distance_to_tss <- methodical::strandedDistance(query_gr = tmr_gr, subject_gr = tss_gr)
   
   # Add the TSS location as a character vector
   tmr_gr$tss_location <- as.character(tss_gr)

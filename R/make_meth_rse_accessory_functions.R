@@ -1,4 +1,4 @@
-#' Perform setup for make_meth_rse_from_bedgaphs or make_meth_rse_from_array_files
+#' Perform setup for make_meth_rse_from_bedgaphs or makeMethRSEFromArrayFiles
 #'
 #' @param meth_files A vector of paths to files with methylation values. 
 #' Automatically detects if meth_files contain a header if every field in the first line is a character. 

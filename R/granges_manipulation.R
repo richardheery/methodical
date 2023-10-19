@@ -12,11 +12,11 @@
 #' @export
 #' @examples 
 #' # Get human CpG sites for hg38 genome build
-#' hg38_cpgs <- methodical::extract_meth_sites_from_genome("BSgenome.Hsapiens.UCSC.hg38")
+#' hg38_cpgs <- methodical::extractMethSitesFromGenome("BSgenome.Hsapiens.UCSC.hg38")
 #' 
 #' # Find CHG sites in Arabidopsis thaliana
-#' arabidopsis_cphpgs <- methodical::extract_meth_sites_from_genome("BSgenome.Athaliana.TAIR.TAIR9", pattern = "CHG")
-extract_meth_sites_from_genome <- function(genome, pattern = "CG", plus_strand_only = TRUE, 
+#' arabidopsis_cphpgs <- methodical::extractMethSitesFromGenome("BSgenome.Athaliana.TAIR.TAIR9", pattern = "CHG")
+extractMethSitesFromGenome <- function(genome, pattern = "CG", plus_strand_only = TRUE, 
   meth_site_position = 1, standard_sequences_only = TRUE){
   
   # Check that inputs have the correct data type
@@ -77,8 +77,8 @@ extract_meth_sites_from_genome <- function(genome, pattern = "CG", plus_strand_o
 #' subject_gr <- GenomicRanges::GRanges(c("chr1:1500-1600:+", "chr1:4000-4500:-"))
 #' 
 #' # Calculate distances between query and subject
-#' methodical::stranded_distance(query_gr, subject_gr)
-stranded_distance <- function(query_gr, subject_gr){
+#' methodical::strandedDistance(query_gr, subject_gr)
+strandedDistance <- function(query_gr, subject_gr){
   
   # Check that inputs have the correct data type
   stopifnot(is(query_gr, "GRanges"), is(subject_gr, "GRanges"))
@@ -119,8 +119,8 @@ stranded_distance <- function(query_gr, subject_gr){
 #' tss_gr <- GenomicRanges::GRanges(c("chr1:1500:+", "chr1:4000:-"))
 #' 
 #' # Calculate distances between query and subject
-#' methodical::ranges_relative_to_tss(genomic_regions, tss_gr)
-ranges_relative_to_tss <- function(genomic_regions, tss_gr){
+#' methodical::rangesRelativeToTSS(genomic_regions, tss_gr)
+rangesRelativeToTSS <- function(genomic_regions, tss_gr){
   
   # Check that inputs have the correct data type
   stopifnot(is(genomic_regions, "GRanges"), is(tss_gr, "GRanges"))
@@ -132,8 +132,8 @@ ranges_relative_to_tss <- function(genomic_regions, tss_gr){
   }
 
   # Get distances from start and end of ranges in gr from tss_gr
-  relative_start <- methodical::stranded_distance(query_gr = resize(genomic_regions, 1, fix = "start"), subject_gr = tss_gr)
-  relative_end <- methodical::stranded_distance(query_gr = resize(genomic_regions, 1, fix = "end"), subject_gr = tss_gr)
+  relative_start <- methodical::strandedDistance(query_gr = resize(genomic_regions, 1, fix = "start"), subject_gr = tss_gr)
+  relative_end <- methodical::strandedDistance(query_gr = resize(genomic_regions, 1, fix = "end"), subject_gr = tss_gr)
   
   # Create an IRanges with the relative distances
   relative_iranges <- IRanges::IRanges(pmin(relative_start, relative_end), pmax(relative_start, relative_end))
@@ -224,8 +224,8 @@ ranges_relative_to_tss <- function(genomic_regions, tss_gr){
 #' set.seed(123)
 #' 
 #' # Create 10,000 random non-overlapping regions with width 1,000 for hg38
-#' random_regions <- methodical::create_random_regions(genome = "BSgenome.Hsapiens.UCSC.hg38", n_regions = 10000)
-create_random_regions <- function(genome, n_regions = 1000, region_widths = 1000, sequences = NULL, all_sequences_equally_likely = FALSE,
+#' random_regions <- methodical::createRandomRegions(genome = "BSgenome.Hsapiens.UCSC.hg38", n_regions = 10000)
+createRandomRegions <- function(genome, n_regions = 1000, region_widths = 1000, sequences = NULL, all_sequences_equally_likely = FALSE,
    stranded = FALSE, masked_regions = NULL, allow_overlapping_regions = FALSE, ignore.strand = TRUE, max_tries = 100){
   
   # Check that inputs have the correct data type

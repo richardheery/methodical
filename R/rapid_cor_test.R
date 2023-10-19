@@ -16,11 +16,11 @@
 #' table2 <- mtcars[6:11]
 #' 
 #' # Calculate correlation between table1 and table2
-#' cor_results <- methodical::rapid_cor_test(table1, table2, cor_method = "spearman", 
+#' cor_results <- methodical::rapidCorTest(table1, table2, cor_method = "spearman", 
 #'   table1_name = "feature1", table2_name = "feature2")
 #' head(cor_results)
 #'
-rapid_cor_test <- function(table1, table2, cor_method = "p", table1_name = "table1", table2_name = "table2", p_adjust_method = "BH"){
+rapidCorTest <- function(table1, table2, cor_method = "p", table1_name = "table1", table2_name = "table2", p_adjust_method = "BH"){
   
   # Check that inputs have the correct data type
   stopifnot(is(table1, "data.frame") | is(table1, "matrix"), 

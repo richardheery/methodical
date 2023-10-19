@@ -13,7 +13,7 @@
 #' @param genomic_region_transcripts Names of transcripts associated with each region in genomic_regions. 
 #' If not provided, attempts to use genomic_regions$transcript_id. All transcripts must be present in transcript_expression_table.
 #' @param genomic_region_methylation Optional preprovided table with methylation values for genomic_regions 
-#' such as created using summarize_region_methylation(). Table will be created if it is not provided which will increase running time.
+#' such as created using summarizeRegionMethylation(). Table will be created if it is not provided which will increase running time.
 #' Row names should match genomic_region_names and column names should match those of transcript_expression_table 
 #' @param cor_method A character string indicating which correlation coefficient is to be computed. Identical to methods from cor(). Default is "pearson".
 #' @param p_adjust_method Method used to adjust p-values. Same as the methods from p.adjust.methods. Default is Benjamini-Hochberg.
@@ -30,11 +30,11 @@
 #' data(tubb6_transcript_counts, package = "methodical")
 #' 
 #' # Calculate correlation values between TMRs identified for TUBB6 and transcript expression
-#' tubb6_tmrs_transcript_cors <- methodical::calculate_region_methylation_transcript_cors(
+#' tubb6_tmrs_transcript_cors <- methodical::calculateRegionMethylationTranscriptCors(
 #'   genomic_regions = tubb6_tmrs, genomic_region_names = tubb6_tmrs$tmr_name, meth_rse = tubb6_meth_rse, transcript_expression_table = tubb6_transcript_counts)
 #' tubb6_tmrs_transcript_cors
 #'  
-calculate_region_methylation_transcript_cors <- function(meth_rse, assay_number = 1, transcript_expression_table, samples_subset = NULL, 
+calculateRegionMethylationTranscriptCors <- function(meth_rse, assay_number = 1, transcript_expression_table, samples_subset = NULL, 
   genomic_regions, genomic_region_names = NULL, genomic_region_transcripts = NULL, genomic_region_methylation = NULL,
   cor_method = "pearson", p_adjust_method = "BH", region_methylation_summary_function = colMeans, ncores = 1){
   
@@ -112,7 +112,7 @@ calculate_region_methylation_transcript_cors <- function(meth_rse, assay_number 
   
     # Summarize methylation values for genomic_regions
     cat("Summarizing region methylation\n")
-    genomic_region_methylation <- methodical::summarize_region_methylation(
+    genomic_region_methylation <- methodical::summarizeRegionMethylation(
       meth_rse = meth_rse, assay_number = assay_number, genomic_regions = genomic_regions, 
       genomic_region_names = genomic_region_names, 
       summary_function = region_methylation_summary_function, n_chunks_parallel = ncores
@@ -147,7 +147,7 @@ calculate_region_methylation_transcript_cors <- function(meth_rse, assay_number 
   # For each transcript, calculate the correlation between its expression and the methylation of regions associated with it
   methylation_transcript_correlations <- foreach::foreach(transcript = names(feature_matches)) %dopar% {
     
-    methodical::rapid_cor_test(
+    methodical::rapidCorTest(
       table1 = t(genomic_region_methylation[feature_matches[[transcript]], ]), 
       table2 = setNames(data.frame(unlist(transcript_expression_table[transcript, ])), transcript),
       table1_name = "genomic_region_name", table2_name = "transcript_name",

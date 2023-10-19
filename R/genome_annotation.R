@@ -9,7 +9,7 @@
 #' or the Jaccard index of the intersection in terms of base pairs. Default value is "absolute".
 #' @return A numeric vector with the overlap measure for genomic_regions with each type of region in annotation_ranges
 #' @export
-annotate_granges <- function(genomic_regions, annotation_ranges, annotation_column = "region_type", ignore.strand = TRUE, overlap_measure = "absolute"){
+annotateGRanges <- function(genomic_regions, annotation_ranges, annotation_column = "region_type", ignore.strand = TRUE, overlap_measure = "absolute"){
   
   # Check that inputs have the correct data type
   stopifnot(is(genomic_regions, "GRanges"), is(annotation_ranges, "GRanges"),

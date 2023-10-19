@@ -28,10 +28,10 @@
 #' names(test_gr) <- paste("region", 1:3, sep = "_")
 #' 
 #' # Calculate mean methylation values for chr1 CpG islands in meth_h5 
-#' test_gr_methylation <- methodical::summarize_region_methylation(tubb6_meth_rse, genomic_regions = test_gr,
+#' test_gr_methylation <- methodical::summarizeRegionMethylation(tubb6_meth_rse, genomic_regions = test_gr,
 #'   genomic_region_names = names(test_gr))
 #' 
-summarize_region_methylation <- function(meth_rse, assay_number = 1, genomic_regions, genomic_region_names = NULL, 
+summarizeRegionMethylation <- function(meth_rse, assay_number = 1, genomic_regions, genomic_region_names = NULL, 
   keep_metadata_cols = FALSE, max_sites_per_chunk = NULL, summary_function = base::colMeans, na.rm = TRUE, n_chunks_parallel = 1, ...){
   
   # Check that inputs have the correct data type

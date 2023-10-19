@@ -37,10 +37,10 @@
 #' data(tubb6_transcript_counts, package = "methodical")
 #' 
 #' # Calculate correlation values between methylation values and transcript values for TUBB6
-#' tubb6_cpg_meth_transcript_cors <- methodical::calculate_meth_site_transcript_cors(meth_rse = tubb6_meth_rse, 
+#' tubb6_cpg_meth_transcript_cors <- methodical::calculateMethSiteTranscriptCors(meth_rse = tubb6_meth_rse, 
 #'   transcript_expression_table = tubb6_transcript_counts, tss_gr = tubb6_tss, expand_upstream = 5000, expand_downstream = 5000)
 #'   
-calculate_meth_site_transcript_cors <- function(meth_rse, assay_number = 1, transcript_expression_table, samples_subset = NULL, tss_gr, expand_upstream = 5000,
+calculateMethSiteTranscriptCors <- function(meth_rse, assay_number = 1, transcript_expression_table, samples_subset = NULL, tss_gr, expand_upstream = 5000,
   expand_downstream = 5000, cor_method = "pearson", add_distance_to_region = TRUE, max_sites_per_chunk = NULL, ncores = 1, results_dir = NULL){
   
   # Check that inputs have the correct data type
@@ -173,14 +173,14 @@ calculate_meth_site_transcript_cors <- function(meth_rse, assay_number = 1, tran
       transcript_table <- setNames(data.frame(t(transcript_table)), transcript_name)
         
       tryCatch({
-        transcript_meth_site_cors <- methodical::rapid_cor_test(
+        transcript_meth_site_cors <- methodical::rapidCorTest(
           table1 = meth_table, table2 = transcript_table, 
           table1_name = "meth_site", table2_name = "transcript_name", 
           cor_method = cor_method, p_adjust_method = "none")
   
           # Add meth site distance to region if specified
           if(add_distance_to_region){transcript_meth_site_cors$distance_to_tss <- 
-            methodical::stranded_distance(query_gr = GenomicRanges::GRanges(transcript_meth_site_cors$meth_site), 
+            methodical::strandedDistance(query_gr = GenomicRanges::GRanges(transcript_meth_site_cors$meth_site), 
               subject_gr = transcript_tss)
           }
         

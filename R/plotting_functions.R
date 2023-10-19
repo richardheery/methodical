@@ -24,14 +24,14 @@
 #' data("tubb6_cpg_meth_transcript_cors", package = "methodical")
 #' 
 #' # Plot methylation-transcript correlation values around TUBB6 TSS
-#' methodical::plot_meth_site_values(tubb6_cpg_meth_transcript_cors, column_name = "cor", ylabel = "Spearman Correlation")
+#' methodical::plotMethSiteValues(tubb6_cpg_meth_transcript_cors, column_name = "cor", ylabel = "Spearman Correlation")
 #' 
 #' # Create same plot but showing the distance to the TUBB6 TSS on the x-axis
-#' methodical::plot_meth_site_values(tubb6_cpg_meth_transcript_cors, column_name = "cor", 
+#' methodical::plotMethSiteValues(tubb6_cpg_meth_transcript_cors, column_name = "cor", 
 #'   ylabel = "Spearman Correlation", reference_tss = attributes(tubb6_cpg_meth_transcript_cors)$tss_range)
 #' 
 #' @export
-plot_meth_site_values <- function(meth_site_values, column_name, reference_tss = FALSE, 
+plotMethSiteValues <- function(meth_site_values, column_name, reference_tss = FALSE, 
   title = NULL, xlabel = NULL, ylabel = "Value", value_colours = "set1"){
   
   # Check that inputs have the correct data type
@@ -97,7 +97,7 @@ plot_meth_site_values <- function(meth_site_values, column_name, reference_tss =
   
   # Decide x-axis values for methylation sites depending on whether reference_tss provided
   if(!is.null(reference_tss)){
-    plot_df$meth_site_plot_position <- methodical::stranded_distance(query_gr = GRanges(row.names(plot_df)), subject_gr = reference_tss)
+    plot_df$meth_site_plot_position <- methodical::strandedDistance(query_gr = GRanges(row.names(plot_df)), subject_gr = reference_tss)
   } else {
     plot_df$meth_site_plot_position <- plot_df$meth_site_start 
   }
@@ -129,7 +129,7 @@ plot_meth_site_values <- function(meth_site_values, column_name, reference_tss =
   return(meth_site_plot)
 }
 
-#' Create a plot with genomic annotation for a plot returned by plot_meth_site_values()
+#' Create a plot with genomic annotation for a plot returned by plotMethSiteValues()
 #'
 #' Can combine the meth site values plot and genomic annotation together into a single plot or return the annotation plot separately. 
 #'
@@ -156,9 +156,9 @@ plot_meth_site_values <- function(meth_site_values, column_name, reference_tss =
 #' data("tubb6_correlation_plot", package = "methodical")
 #' 
 #' # Add positions of CpG islands to tubb6_correlation_plot
-#' methodical::annotate_meth_site_plot(tubb6_correlation_plot, cpg_island_annotation, annotation_plot_height = 0.3)
+#' methodical::annotateMethSitePlot(tubb6_correlation_plot, cpg_island_annotation, annotation_plot_height = 0.3)
 #' 
-annotate_meth_site_plot <- function(meth_site_plot, annotation_gr, reference_tss = NULL, region_class_colours = NULL, 
+annotateMethSitePlot <- function(meth_site_plot, annotation_gr, reference_tss = NULL, region_class_colours = NULL, 
   annotation_line_size = 5, annotation_plot_height = 0.5, keep_meth_site_plot_legend = FALSE, annotation_plot_only = FALSE){
   
   # Check that inputs have the correct data type
@@ -198,8 +198,8 @@ annotate_meth_site_plot <- function(meth_site_plot, annotation_gr, reference_tss
   
   # Decide x-axis values for methylation sites depending on whether reference_tss provided
   if(!is.null(reference_tss)){
-    meth_site_plot$data$meth_site_plot_position <- methodical::stranded_distance(query_gr = GRanges(row.names(meth_site_plot$data)), subject_gr = reference_tss)
-    annotation_gr <- methodical::ranges_relative_to_tss(genomic_regions = annotation_gr, reference_positions = reference_tss)
+    meth_site_plot$data$meth_site_plot_position <- methodical::strandedDistance(query_gr = GRanges(row.names(meth_site_plot$data)), subject_gr = reference_tss)
+    annotation_gr <- methodical::rangesRelativeToTSS(genomic_regions = annotation_gr, reference_positions = reference_tss)
   } else {
     meth_site_plot$data$meth_site_plot_position <- meth_site_plot$data$meth_site_start 
   }
@@ -278,14 +278,14 @@ annotate_meth_site_plot <- function(meth_site_plot, annotation_gr, reference_tss
 #' data("tubb6_cpg_meth_transcript_cors", package = "methodical")
 #' 
 #' # Plot methylation-transcript correlation values around TUBB6 TSS
-#' tubb6_correlation_plot <- methodical::plot_meth_site_values(tubb6_cpg_meth_transcript_cors, column_name = "cor", ylabel = "Spearman Correlation")
+#' tubb6_correlation_plot <- methodical::plotMethSiteValues(tubb6_cpg_meth_transcript_cors, column_name = "cor", ylabel = "Spearman Correlation")
 #'   
 #' # Find TMRs for TUBB6
-#' tubb6_tmrs <- find_tmrs(correlation_df = tubb6_cpg_meth_transcript_cors)
+#' tubb6_tmrs <- find_TMRs(correlation_df = tubb6_cpg_meth_transcript_cors)
 #' 
 #' # Plot TMRs on top of tubb6_correlation_plot
-#' methodical::plot_tmrs(tubb6_correlation_plot, tmrs_gr = tubb6_tmrs)
-plot_tmrs <- function(meth_site_plot, tmrs_gr, reference_tss = NULL, transcript_id = NULL, tmr_colours = c("#A28CB1", "#D2C465"), linewidth = 5){
+#' methodical::plotTMRs(tubb6_correlation_plot, tmrs_gr = tubb6_tmrs)
+plotTMRs <- function(meth_site_plot, tmrs_gr, reference_tss = NULL, transcript_id = NULL, tmr_colours = c("#A28CB1", "#D2C465"), linewidth = 5){
   
   # Check that inputs have the correct data type
   stopifnot(is(meth_site_plot, "ggplot"), is(tmrs_gr, "GRanges"),
@@ -306,7 +306,7 @@ plot_tmrs <- function(meth_site_plot, tmrs_gr, reference_tss = NULL, transcript_
   
   # Decide positions for tmrs depending on whether reference_tss provided
   if(!is.null(reference_tss)){
-      tmrs_df <- data.frame(methodical::ranges_relative_to_tss(
+      tmrs_df <- data.frame(methodical::rangesRelativeToTSS(
         genomic_regions = tmrs_gr, tss_gr = reference_tss))
   } else {
       tmrs_df <- data.frame(tmrs_gr)
@@ -330,8 +330,8 @@ plot_tmrs <- function(meth_site_plot, tmrs_gr, reference_tss = NULL, transcript_
 #' relative to the reference_tss shown first. If not, the x-axis will show the start site coordinate of the methylation site. 
 #' @param p_value_threshold The p-value threshold used to identify TMRs. Default value is 0.005. Set to NULL to turn off significance thresholds.
 #' @param smooth_scores A logical value indicating whether to display a curve of smoothed Methodical scores on top of the plot. Default is TRUE.
-#' @param offset_length Offset length to be supplied to calculate_smoothed_methodical_scores.
-#' @param smoothing_factor Smoothing factor to be provided to calculate_smoothed_methodical_scores.
+#' @param offset_length Offset length to be supplied to calculateSmoothedMethodicalScores.
+#' @param smoothing_factor Smoothing factor to be provided to calculateSmoothedMethodicalScores.
 #' @param smoothed_curve_colour Colour of the smoothed curve. Default is "black".
 #' @param linewidth Line width of the smoothed curve. Default value is 1.
 #' @param curve_alpha Alpha value for the curve. Default value is 0.75. 
@@ -346,8 +346,8 @@ plot_tmrs <- function(meth_site_plot, tmrs_gr, reference_tss = NULL, transcript_
 #' data("tubb6_cpg_meth_transcript_cors", package = "methodical")
 #'   
 #' # Calculate and plot Methodical scores from correlation values
-#' methodical::plot_methodical_scores(tubb6_cpg_meth_transcript_cors, reference_tss = attributes(tubb6_cpg_meth_transcript_cors)$tss_range)
-plot_methodical_scores <- function(meth_site_values, reference_tss = NULL, p_value_threshold = 0.005,
+#' methodical::plotMethodicalScores(tubb6_cpg_meth_transcript_cors, reference_tss = attributes(tubb6_cpg_meth_transcript_cors)$tss_range)
+plotMethodicalScores <- function(meth_site_values, reference_tss = NULL, p_value_threshold = 0.005,
   smooth_scores = TRUE, offset_length = 10, smoothing_factor = 0.75, 
   smoothed_curve_colour = "black", linewidth = 1, curve_alpha = 0.75, 
   title = NULL, xlabel = "Genomic Position", low_colour = "#7B5C90", high_colour = "#BFAB25"){
@@ -378,7 +378,7 @@ plot_methodical_scores <- function(meth_site_values, reference_tss = NULL, p_val
   
   # Decide x-axis values for methylation sites depending on whether reference_tss provided
   if(!is.null(reference_tss)){
-    meth_site_values_plot_df$meth_site_plot_position <- methodical::stranded_distance(query_gr = GRanges(row.names(meth_site_values_plot_df)), subject_gr = reference_tss)
+    meth_site_values_plot_df$meth_site_plot_position <- methodical::strandedDistance(query_gr = GRanges(row.names(meth_site_values_plot_df)), subject_gr = reference_tss)
   } else {
     meth_site_values_plot_df$meth_site_plot_position <- meth_site_values_plot_df$meth_site_start 
   }
@@ -410,7 +410,7 @@ plot_methodical_scores <- function(meth_site_values, reference_tss = NULL, p_val
   
   # Add smoothed Methodical scores if specified
   if(smooth_scores){
-    smoothed_methodical_scores <- calculate_smoothed_methodical_scores(correlation_df = meth_site_values)
+    smoothed_methodical_scores <- calculateSmoothedMethodicalScores(correlation_df = meth_site_values)
     meth_site_plot <- meth_site_plot +
     geom_line(mapping = aes(y = smoothed_methodical_scores), 
       color = smoothed_curve_colour, alpha = curve_alpha, linewidth = linewidth)

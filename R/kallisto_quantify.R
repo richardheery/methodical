@@ -2,7 +2,7 @@
 #'
 #' @param path_to_kallisto Path to kallisto executable
 #' @param transcripts_fasta Path to a fasta file for the transcripts to be quantified.
-#' @param index_name Name to give the created index file. Default is "kallisto_index.idx".
+#' @param index_name Name to give the created index file. Default is "kallistoIndex.idx".
 #' @return Invisibly returns TRUE. 
 #' @export
 #' @examples \dontrun{
@@ -13,9 +13,9 @@
 #' kallisto_path <- system2("which", args = "kallisto", stdout = TRUE)
 #' 
 #' # Create transcripts index for use with Kallisto
-#' methodical::kallisto_index(kallisto_path, transcripts_fasta = "gencode.v44.transcripts.fa.gz")
+#' methodical::kallistoIndex(kallisto_path, transcripts_fasta = "gencode.v44.transcripts.fa.gz")
 #' }
-kallisto_index <- function(path_to_kallisto, transcripts_fasta, index_name = "kallisto_index.idx"){
+kallistoIndex <- function(path_to_kallisto, transcripts_fasta, index_name = "kallistoIndex.idx"){
   
   # Check that inputs have the correct data type
   stopifnot(is(path_to_kallisto, "character"), is(transcripts_fasta, "character"),
@@ -41,7 +41,7 @@ kallisto_index <- function(path_to_kallisto, transcripts_fasta, index_name = "ka
 #' Run kallisto on a set of FASTQ files and merge the results
 #'
 #' @param path_to_kallisto Path to kallisto executable
-#' @param kallisto_index Path to a kallisto index 
+#' @param kallistoIndex Path to a kallisto index 
 #' @param forward_fastq_files A vector with the paths to forward FASTQ files. Each file should correspond to the file at the same position in reverse_fastq_files.
 #' @param reverse_fastq_files A vector with the paths to reverse FASTQ files. Each file should correspond to the file at the same position in forward_fastq_files.
 #' @param sample_names A vector with the names of samples for each pair of samples from forward_fastq_files and reverse_fastq_files
@@ -54,11 +54,11 @@ kallisto_index <- function(path_to_kallisto, transcripts_fasta, index_name = "ka
 #' @param number_bootstraps The number of bootstrap samples. Default is 100. 
 #' @return The path to the merged counts table. 
 #' @export
-kallisto_quantify <- function(path_to_kallisto, kallisto_index, forward_fastq_files, reverse_fastq_files, 
+kallistoQuantify <- function(path_to_kallisto, kallistoIndex, forward_fastq_files, reverse_fastq_files, 
   sample_names, output_directory, merged_output_prefix = "kallisto_transcript", messages_file = "", ncores = 1, number_bootstraps  = 100){
   
   # Check that inputs have the correct data type
-  stopifnot(is(path_to_kallisto, "character"), is(kallisto_index, "character"), 
+  stopifnot(is(path_to_kallisto, "character"), is(kallistoIndex, "character"), 
     is(forward_fastq_files, "character"), is(reverse_fastq_files, "character"),
     is(sample_names, "character"), is(output_directory, "character"),
     is(merged_output_prefix, "character"), is(messages_file, "character"),
@@ -72,8 +72,8 @@ kallisto_quantify <- function(path_to_kallisto, kallisto_index, forward_fastq_fi
     stop("kallisto could can not be executed from given path")
   }
   
-  # Check that path to kallisto_index exits
-  if(!file.exists(kallisto_index)){stop("kallisto_index could not be found")}
+  # Check that path to kallistoIndex exits
+  if(!file.exists(kallistoIndex)){stop("kallistoIndex could not be found")}
   
   # Check that at least one pair of FASTQs provided
   if(length(forward_fastq_files) == 0 | length(forward_fastq_files) == 0){stop(
@@ -119,7 +119,7 @@ kallisto_quantify <- function(path_to_kallisto, kallisto_index, forward_fastq_fi
     message(paste("Starting to process FASTQ pair", pair))
     system2(command = path_to_kallisto,
       args = paste(
-        "quant -i", kallisto_index, "-t", ncores, "-b", number_bootstraps, "-o", 
+        "quant -i", kallistoIndex, "-t", ncores, "-b", number_bootstraps, "-o", 
         sample_directories[pair], forward_fastq_files[pair], reverse_fastq_files[pair]
         ),
       stderr = messages_file)
@@ -159,7 +159,7 @@ kallisto_quantify <- function(path_to_kallisto, kallisto_index, forward_fastq_fi
 #' Can alternatively be a GRangeList where the name of each list element is a gene and the names of the individual ranges are transcripts.
 #' @return A data.frame with the sum of transcript expression values for genes where rows are genes and columns are samples
 #' @export
-sum_transcript_values_for_genes <- function(transcript_expression_table, gene_to_transcript_list){
+sumTranscriptValuesForGenes <- function(transcript_expression_table, gene_to_transcript_list){
   
   # Check that inputs have the correct data type
   stopifnot(is(transcript_expression_table, "data.frame") | is(transcript_expression_table, "matrix"), 

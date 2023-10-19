@@ -16,8 +16,8 @@
 #' test_region <- GRanges("chr18:12305000-12310000")
 #' 
 #' # Get methylation values for CpG sites overlapping HDAC1 gene
-#' test_region_methylation <- methodical::extract_granges_meth_site_values(tubb6_meth_rse, genomic_regions = test_region)
-extract_granges_meth_site_values <- function(meth_rse, genomic_regions = NULL, samples_subset = NULL, assay_number = 1){
+#' test_region_methylation <- methodical::extractGRangesMethSiteValues(tubb6_meth_rse, genomic_regions = test_region)
+extractGRangesMethSiteValues <- function(meth_rse, genomic_regions = NULL, samples_subset = NULL, assay_number = 1){
   
   # Check that inputs have the correct data type
   stopifnot(is(meth_rse, "RangedSummarizedExperiment"), 
@@ -73,13 +73,13 @@ extract_granges_meth_site_values <- function(meth_rse, genomic_regions = NULL, s
 #' mask_ranges <- GRanges("chr18:12305000-12310000")
 #' 
 #' # Get 20 random CpG sites outside mask_ranges
-#' random_cpgs <- methodical::sample_meth_sites(tubb6_meth_rse, n_sites = 20, genomic_ranges_filter = mask_ranges, 
+#' random_cpgs <- methodical::SampleMethSites(tubb6_meth_rse, n_sites = 20, genomic_ranges_filter = mask_ranges, 
 #'   invert_filter = TRUE)
 #' 
 #' # Check that no CpGs overlap repeats
 #' intersect(rowRanges(random_cpgs), mask_ranges)
 #' 
-sample_meth_sites <- function(meth_rse, n_sites = 1000, genomic_ranges_filter = NULL, 
+SampleMethSites <- function(meth_rse, n_sites = 1000, genomic_ranges_filter = NULL, 
   invert_filter = FALSE, samples_subset = NULL, assay_number = 1){
   
   # Check that inputs have the correct data type
@@ -127,7 +127,7 @@ sample_meth_sites <- function(meth_rse, n_sites = 1000, genomic_ranges_filter = 
 #' tubb6_meth_rse <- eval(tubb6_meth_rse)
 #'   
 #' # Get CpG sites for hg19
-#' hg19_cpgs <- methodical::extract_meth_sites_from_genome("BSgenome.Hsapiens.UCSC.hg19")
+#' hg19_cpgs <- methodical::extractMethSitesFromGenome("BSgenome.Hsapiens.UCSC.hg19")
 #' 
 #' # Get liftover chain for mapping hg38 to hg19
 #' library(AnnotationHub)
@@ -135,10 +135,10 @@ sample_meth_sites <- function(meth_rse, n_sites = 1000, genomic_ranges_filter = 
 #' chain <- ah[["AH14108"]]
 #'   
 #' # Liftover tubb6_meth_rse from hg38 to hg19, keeping only sites that were mapped to CpG sites in hg19
-#' tubb6_meth_rse_hg19 <- methodical::liftover_meth_rse(tubb6_meth_rse, chain = chain, 
+#' tubb6_meth_rse_hg19 <- methodical::liftoverMethRSE(tubb6_meth_rse, chain = chain, 
 #'   permitted_target_regions = hg19_cpgs)
 #' @export
-liftover_meth_rse <- function(meth_rse, chain, remove_one_to_many_mapping = TRUE, permitted_target_regions = NULL){
+liftoverMethRSE <- function(meth_rse, chain, remove_one_to_many_mapping = TRUE, permitted_target_regions = NULL){
   
   # Check that inputs have the correct data type
   stopifnot(is(meth_rse, "RangedSummarizedExperiment"), is(chain, "Chain"),
@@ -210,12 +210,12 @@ liftover_meth_rse <- function(meth_rse, chain, remove_one_to_many_mapping = TRUE
 #' mask_ranges <- GRanges("chr18:12305000-12310000")
 #' 
 #' # Mask regions in tubb6_meth_rse
-#' tubb6_meth_rse_masked <- methodical::mask_ranges_in_rse(tubb6_meth_rse, mask_ranges)
+#' tubb6_meth_rse_masked <- methodical::maskRangesInRSE(tubb6_meth_rse, mask_ranges)
 #' 
 #' # Count the number of NA values before and after masking
 #' sum(is.na(assay(tubb6_meth_rse)))
 #' sum(is.na(assay(tubb6_meth_rse_masked)))
-mask_ranges_in_rse <- function(rse, mask_ranges, assay_number = 1){
+maskRangesInRSE <- function(rse, mask_ranges, assay_number = 1){
   
   # Check that inputs have the correct data type
   stopifnot(is(meth_rse, "RangedSummarizedExperiment"), 
