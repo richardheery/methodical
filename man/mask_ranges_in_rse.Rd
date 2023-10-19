@@ -23,13 +23,14 @@ Mask regions in a ranged summarized experiment
 }
 \examples{
 # Load sample RangedSummarizedExperiment with CpG methylation data
-data(tubb6_meth_rse, package = "methodical"); tubb6_meth_rse = eval(tubb6_meth_rse)
+data(tubb6_meth_rse, package = "methodical")
+tubb6_meth_rse <- eval(tubb6_meth_rse)
 
 # Create a sample GRanges object to use to mask tubb6_meth_rse
-mask_ranges = GRanges("chr18:12305000-12310000")
+mask_ranges <- GRanges("chr18:12305000-12310000")
 
 # Mask regions in tubb6_meth_rse
-tubb6_meth_rse_masked = methodical::mask_ranges_in_rse(tubb6_meth_rse, mask_ranges)
+tubb6_meth_rse_masked <- methodical::mask_ranges_in_rse(tubb6_meth_rse, mask_ranges)
 
 # Count the number of NA values before and after masking
 sum(is.na(assay(tubb6_meth_rse)))

@@ -50,11 +50,10 @@ all protein-coding transcripts annotated by Gencode.
 
 ```{r}
 # Download Gencode annotation 
-download.file("https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_38/gencode.v38.annotation.gff3.gz", 
-    destfile = "gencode.v38.annotation.gff3.gz")
+library(AnnotationHub)
+transcript_annotation = AnnotationHub()[["AH75119"]]
 
 # Import the Gencode annotation and subset for transcript annotation for non-mitochondrial protein-coding genes
-transcript_annotation = rtracklayer::import.gff3("gencode.v38.annotation.gff3.gz")
 transcript_annotation = transcript_annotation[transcript_annotation$type == "transcript"]
 transcript_annotation =  transcript_annotation[transcript_annotation$transcript_type == "protein_coding"]
 

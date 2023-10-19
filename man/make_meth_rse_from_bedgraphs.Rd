@@ -76,18 +76,18 @@ Create a HDF5-backed RangedSummarizedExperiment for methylation values in bedGra
 data("hg38_cpgs_subset", package = "methodical")
 
 # Get paths to bedGraphs
-bedgraphs = list.files(path = system.file('extdata', package = 'methodical'), 
+bedgraphs <- list.files(path = system.file('extdata', package = 'methodical'), 
   pattern = ".bg.gz", full.names = TRUE)
 
 # Create sample metadata
-sample_metadata = data.frame(
+sample_metadata <- data.frame(
   tcga_project = gsub("_.*", "", gsub("TCGA_", "", basename(bedgraphs))),
   sample_type = ifelse(grepl("N", basename(bedgraphs)), "Normal", "Tumour"),
   row.names = tools::file_path_sans_ext(basename(bedgraphs))
 )
 
 # Create a HDF5-backed RangedSummarizedExperiment from bedGraphs
-meth_rse = make_meth_rse_from_bedgraphs(bedgraphs = bedgraphs, 
+meth_rse <- make_meth_rse_from_bedgraphs(bedgraphs = bedgraphs, 
   meth_sites = hg38_cpgs_subset, sample_metadata = sample_metadata, 
   hdf5_dir = "bedgraph_hdf5_1")
   

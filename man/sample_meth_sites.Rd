@@ -37,14 +37,15 @@ Randomly sample methylation sites from a methylation RSE.
 }
 \examples{
 # Load sample RangedSummarizedExperiment with CpG methylation data
-data(tubb6_meth_rse, package = "methodical"); tubb6_meth_rse = eval(tubb6_meth_rse)
+data(tubb6_meth_rse, package = "methodical")
+tubb6_meth_rse <- eval(tubb6_meth_rse)
 
 # Create a sample GRanges object to use to mask tubb6_meth_rse
-mask_ranges = GRanges("chr18:12305000-12310000")
+mask_ranges <- GRanges("chr18:12305000-12310000")
 
 # Get 20 random CpG sites outside mask_ranges
-random_cpgs = methodical::sample_meth_sites(tubb6_meth_rse, n_sites = 20, genomic_ranges_filter = mask_ranges, 
-invert_filter = TRUE)
+random_cpgs <- methodical::sample_meth_sites(tubb6_meth_rse, n_sites = 20, genomic_ranges_filter = mask_ranges, 
+  invert_filter = TRUE)
 
 # Check that no CpGs overlap repeats
 intersect(rowRanges(random_cpgs), mask_ranges)

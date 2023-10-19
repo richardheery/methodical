@@ -29,7 +29,7 @@ Create an index file for running Kallisto
 download.file("https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_44/gencode.v44.transcripts.fa.gz")
 
 # Locate the kallisto executable (provided that it is on the path)
-kallisto_path = system2("which", args = "kallisto", stdout = TRUE)
+kallisto_path <- system2("which", args = "kallisto", stdout = TRUE)
 
 # Create transcripts index for use with Kallisto
 methodical::kallisto_index(kallisto_path, transcripts_fasta = "gencode.v44.transcripts.fa.gz")

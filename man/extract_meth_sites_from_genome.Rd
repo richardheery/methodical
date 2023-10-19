@@ -34,8 +34,8 @@ Create a GRanges with methylation sites of interest from a BSgenome.
 }
 \examples{
 # Get human CpG sites for hg38 genome build
-hg38_cpgs = methodical::extract_meth_sites_from_genome("BSgenome.Hsapiens.UCSC.hg38")
+hg38_cpgs <- methodical::extract_meth_sites_from_genome("BSgenome.Hsapiens.UCSC.hg38")
 
 # Find CHG sites in Arabidopsis thaliana
-arabidopsis_cphpgs = methodical::extract_meth_sites_from_genome("BSgenome.Athaliana.TAIR.TAIR9", pattern = "CHG")
+arabidopsis_cphpgs <- methodical::extract_meth_sites_from_genome("BSgenome.Athaliana.TAIR.TAIR9", pattern = "CHG")
 }

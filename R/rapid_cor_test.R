@@ -12,15 +12,15 @@
 #' @examples 
 #'
 #' # Divide mtcars into two tables
-#' table1 = mtcars[1:5]
-#' table2 = mtcars[6:11]
+#' table1 <- mtcars[1:5]
+#' table2 <- mtcars[6:11]
 #' 
 #' # Calculate correlation between table1 and table2
-#' cor_results = methodical::rapid_cor_test(table1, table2, cor_method = "spearman", 
+#' cor_results <- methodical::rapid_cor_test(table1, table2, cor_method = "spearman", 
 #'   table1_name = "feature1", table2_name = "feature2")
 #' head(cor_results)
 #'
-rapid_cor_test = function(table1, table2, cor_method = "p", table1_name = "table1", table2_name = "table2", p_adjust_method = "BH"){
+rapid_cor_test <- function(table1, table2, cor_method = "p", table1_name = "table1", table2_name = "table2", p_adjust_method = "BH"){
   
   # Check that the length of vec equals the number of rows of df
   if(nrow(table1) != nrow(table2)){
@@ -28,33 +28,33 @@ rapid_cor_test = function(table1, table2, cor_method = "p", table1_name = "table
   }
   
   # Calculate the number of complete pairs of observations for each column in df with vec
-  n = apply(table2, 2, function(x)
+  n <- apply(table2, 2, function(x)
     colSums((!is.na(table1)) & !is.na(x)))
   
   # Calculate specified correlation values
-  cors = cor(table1, table2, use = "p", method = cor_method)
+  cors <- cor(table1, table2, use = "p", method = cor_method)
   
   # Calculate t-statistics from correlations
-  t_stat = cors * sqrt(n-2)/sqrt((1-cors^2))
+  t_stat <- cors * sqrt(n-2)/sqrt((1-cors^2))
   
   # Calculate p-values from t-statistics
-  p_val =  as.data.frame(2*(pt(-abs(t_stat), df = n - 2)))
+  p_val <- as.data.frame(2*(pt(-abs(t_stat), df = n - 2)))
   
   # Convert p-val to long format
-  p_val = tidyr::pivot_longer(
+  p_val <- tidyr::pivot_longer(
     tibble::rownames_to_column(p_val, table1_name), -!!table1_name, names_to = table2_name, values_to = "p_val")
   
   # Convert cors to long format
-  cors = data.frame(cors)
-  cors = tidyr::pivot_longer(
+  cors <- data.frame(cors)
+  cors <- tidyr::pivot_longer(
     tibble::rownames_to_column(cors, table1_name), -!!table1_name, names_to = table2_name, values_to = "cor")
   
   # Add p_val to cors
-  cors$p_val = p_val$p_val
+  cors$p_val <- p_val$p_val
   
   # Calculate q-values from p-values using specified method
   if(p_adjust_method != "none"){
-    cors$q_val = p.adjust(p = cors$p_val, method = p_adjust_method)
+    cors$q_val <- p.adjust(p = cors$p_val, method = p_adjust_method)
   }
   
   # Return a data.frame with correlations, p-values and q-values

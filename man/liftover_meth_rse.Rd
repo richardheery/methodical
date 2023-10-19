@@ -33,17 +33,18 @@ map to allowed regions in the target genome e.g. CpG sites.
 }
 \examples{
 # Load sample RangedSummarizedExperiment with CpG methylation data
-data(tubb6_meth_rse, package = "methodical"); tubb6_meth_rse = eval(tubb6_meth_rse)
+data(tubb6_meth_rse, package = "methodical")
+tubb6_meth_rse <- eval(tubb6_meth_rse)
   
 # Get CpG sites for hg19
-hg19_cpgs = methodical::extract_meth_sites_from_genome("BSgenome.Hsapiens.UCSC.hg19")
+hg19_cpgs <- methodical::extract_meth_sites_from_genome("BSgenome.Hsapiens.UCSC.hg19")
 
 # Get liftover chain for mapping hg38 to hg19
 library(AnnotationHub)
-ah = AnnotationHub()
-chain = ah[["AH14108"]]
+ah <- AnnotationHub()
+chain <- ah[["AH14108"]]
   
 # Liftover tubb6_meth_rse from hg38 to hg19, keeping only sites that were mapped to CpG sites in hg19
-tubb6_meth_rse_hg19 = methodical::liftover_meth_rse(tubb6_meth_rse, chain = chain, 
+tubb6_meth_rse_hg19 <- methodical::liftover_meth_rse(tubb6_meth_rse, chain = chain, 
   permitted_target_regions = hg19_cpgs)
 }

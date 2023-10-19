@@ -32,14 +32,15 @@
 #' 
 #' # Load TUBB6 TSS GRanges, RangedSummarizedExperiment with methylation values for CpGs around TUBB6 TSS and TUBB6 transcript counts
 #' data(tubb6_tss, package = "methodical")
-#' data(tubb6_meth_rse, package = "methodical"); tubb6_meth_rse = eval(tubb6_meth_rse)
+#' data(tubb6_meth_rse, package = "methodical")
+#' tubb6_meth_rse <- eval(tubb6_meth_rse)
 #' data(tubb6_transcript_counts, package = "methodical")
 #' 
 #' # Calculate correlation values between methylation values and transcript values for TUBB6
-#' tubb6_cpg_meth_transcript_cors = methodical::calculate_meth_site_transcript_cors(meth_rse = tubb6_meth_rse, 
+#' tubb6_cpg_meth_transcript_cors <- methodical::calculate_meth_site_transcript_cors(meth_rse = tubb6_meth_rse, 
 #'   transcript_expression_table = tubb6_transcript_counts, tss_gr = tubb6_tss, expand_upstream = 5000, expand_downstream = 5000)
 #'   
-calculate_meth_site_transcript_cors = function(meth_rse, assay_number = 1, transcript_expression_table, samples_subset = NULL, tss_gr, expand_upstream = 5000,
+calculate_meth_site_transcript_cors <- function(meth_rse, assay_number = 1, transcript_expression_table, samples_subset = NULL, tss_gr, expand_upstream = 5000,
   expand_downstream = 5000, cor_method = "pearson", add_distance_to_region = TRUE, max_sites_per_chunk = NULL, ncores = 1, results_dir = NULL){
   
   # Check that all regions in tss_gr have a length of 1 and that they have names
@@ -56,17 +57,17 @@ calculate_meth_site_transcript_cors = function(meth_rse, assay_number = 1, trans
   if(!any(names(tss_gr) %in% row.names(transcript_expression_table))){
     stop("There are transcripts in tss_gr that are not present in transcript_expression_table")
   } else {
-    transcript_expression_table = transcript_expression_table[names(tss_gr), ]
+    transcript_expression_table <- transcript_expression_table[names(tss_gr), ]
   }
   
   # Check that samples_subset are in meth_rse and transcript_expression_table
   if(!is.null(samples_subset)){
     if(any(!samples_subset %in% colnames(meth_rse))){
       stop("Some samples_subset are not in meth_rse")
-    } else {meth_rse = meth_rse[, samples_subset]}
+    } else {meth_rse <- meth_rse[, samples_subset]}
     if(any(!samples_subset %in% names(transcript_expression_table))){
       stop("Some samples_subset are not in transcript_expression_table")
-    } else {transcript_expression_table = dplyr::select(transcript_expression_table, dplyr::all_of(samples_subset))}
+    } else {transcript_expression_table <- dplyr::select(transcript_expression_table, dplyr::all_of(samples_subset))}
   }
 
   # Check that names of meth_rse and transcript_expression_table match
@@ -75,7 +76,7 @@ calculate_meth_site_transcript_cors = function(meth_rse, assay_number = 1, trans
   }
   
   # Check that there are at least three samples and give a warning if there are less than 20 samples
-  n_samples = ncol(meth_rse) 
+  n_samples <- ncol(meth_rse) 
   if(n_samples < 3){stop("There are not enough samples to calculate correlations")}
   if(n_samples < 20){
     warning(paste("There are only", n_samples, "samples. It is recommended to have at least 20 samples to calculate correlations"))
@@ -94,97 +95,97 @@ calculate_meth_site_transcript_cors = function(meth_rse, assay_number = 1, trans
   message(paste("Using", match.arg(cor_method, c("pearson", "kendall", "spearman")), "correlation method"))
 
   # Expand tss_gr and subset meth_rse for these regions
-  tss_gr_expanded = methodical::expand_granges(tss_gr, expand_upstream, expand_downstream)
+  tss_gr_expanded <- GenomicRanges::promoters(tss_gr, expand_upstream, expand_downstream + 1)
   
   # Split tss_gr_expanded into chunks based on the number of methylation sites that they cover
-  genomic_region_bins = .chunk_regions(meth_rse = meth_rse, genomic_regions = tss_gr_expanded, 
+  genomic_region_bins <- .chunk_regions(meth_rse = meth_rse, genomic_regions = tss_gr_expanded, 
     max_sites_per_chunk = max_sites_per_chunk, ncores = 1)
   
   # Create cluster if ncores greater than 1
-  cl = setup_cluster(ncores = ncores, packages = c("methodical", "HDF5Array"), outfile = NULL)
+  cl <- setup_cluster(ncores = ncores, packages = c("methodical", "HDF5Array"), outfile = NULL)
   if(ncores > 1){on.exit(parallel::stopCluster(cl))}
   
   # For each sequence get methylation of the associated regions
-  all_correlations = foreach::foreach(chunk = seq_along(genomic_region_bins)) %do% {
+  all_correlations <- foreach::foreach(chunk = seq_along(genomic_region_bins)) %do% {
     
     # Print name of sequence which is being summarized
     message(paste("Calculating correlations for chunk", chunk, "of", length(genomic_region_bins)))
 
     # Get regions from chunk and associated TSS
-    regions_for_chunk = genomic_region_bins[[chunk]]
-    tss_for_chunk = tss_gr[names(regions_for_chunk)]
+    regions_for_chunk <- genomic_region_bins[[chunk]]
+    tss_for_chunk <- tss_gr[names(regions_for_chunk)]
     
     # Get transcript values for chunk transcripts
-    transcript_expression_table_chunk = transcript_expression_table[names(regions_for_chunk), ]
+    transcript_expression_table_chunk <- transcript_expression_table[names(regions_for_chunk), ]
     
     # Subset meth_rse_for_chunk for regions overlapping regions_for_chunk
-    meth_rse_for_chunk = subsetByOverlaps(meth_rse, regions_for_chunk)
+    meth_rse_for_chunk <- subsetByOverlaps(meth_rse, regions_for_chunk)
     invisible(gc()) 
     
     # Find the overlaps of regions_for_chunk and meth_rse_for_chunk
-    overlaps_df = data.frame(findOverlaps(regions_for_chunk, meth_rse_for_chunk))
+    overlaps_df <- data.frame(findOverlaps(regions_for_chunk, meth_rse_for_chunk))
     
     # Add region names to overlaps_df
-    overlaps_df$genomic_region_name = names(regions_for_chunk)[overlaps_df$queryHits]
+    overlaps_df$genomic_region_name <- names(regions_for_chunk)[overlaps_df$queryHits]
     
     # Create a list matching region names to rows of meth_rse_for_chunk
-    tss_region_indices_list = split(overlaps_df$subjectHits, overlaps_df$genomic_region_name)
+    tss_region_indices_list <- split(overlaps_df$subjectHits, overlaps_df$genomic_region_name)
     rm(overlaps_df); gc()
     
     # Put tss_region_indices_list in same order as transcript_expression_table_chunk
-    tss_region_indices_list = tss_region_indices_list[row.names(transcript_expression_table_chunk)]
+    tss_region_indices_list <- tss_region_indices_list[row.names(transcript_expression_table_chunk)]
     
     # Read all values from specified assay of meth_rse_for_chunk into memory and run the garbage collection
-    meth_values_chunk = as.matrix(SummarizedExperiment::assay(meth_rse_for_chunk, i = assay_number))
+    meth_values_chunk <- as.matrix(SummarizedExperiment::assay(meth_rse_for_chunk, i = assay_number))
     gc()
     
     # Add meth site names as row.names
-    row.names(meth_values_chunk) = as.character(SummarizedExperiment::rowRanges(meth_rse_for_chunk))
+    row.names(meth_values_chunk) <- as.character(SummarizedExperiment::rowRanges(meth_rse_for_chunk))
     
     # Create lists with the methylation values, transcript values and TSS for each transcript
-    tss_meth_values = lapply(tss_region_indices_list, function(x) meth_values_chunk[x, , drop = FALSE])
-    transcript_values = lapply(names(tss_region_indices_list), function(x) transcript_expression_table_chunk[x, , drop = FALSE])
-    tss_for_chunk = split(tss_for_chunk, names(tss_for_chunk))[names(tss_meth_values)] 
+    tss_meth_values <- lapply(tss_region_indices_list, function(x) meth_values_chunk[x, , drop = FALSE])
+    transcript_values <- lapply(names(tss_region_indices_list), function(x) transcript_expression_table_chunk[x, , drop = FALSE])
+    tss_for_chunk <- split(tss_for_chunk, names(tss_for_chunk))[names(tss_meth_values)] 
     
     # Remove meth_values_chunk and tss_region_indices_list
     rm(meth_values_chunk, tss_region_indices_list)
     
     # Calculate correlations. 
-    chunk_correlations = foreach::foreach(
+    chunk_correlations <- foreach::foreach(
       meth_table = tss_meth_values, 
       transcript_table = transcript_values,
       transcript_tss = tss_for_chunk, transcript_name = names(tss_meth_values)) %dopar% {
       
       # Transpose meth_table
-      meth_table = t(meth_table)
+      meth_table <- t(meth_table)
       
       # Transpose transcript_table and name it with transcript name
-      transcript_table = setNames(data.frame(t(transcript_table)), transcript_name)
+      transcript_table <- setNames(data.frame(t(transcript_table)), transcript_name)
         
       tryCatch({
-        transcript_meth_site_cors = methodical::rapid_cor_test(
+        transcript_meth_site_cors <- methodical::rapid_cor_test(
           table1 = meth_table, table2 = transcript_table, 
           table1_name = "meth_site", table2_name = "transcript_name", 
           cor_method = cor_method, p_adjust_method = "none")
   
           # Add meth site distance to region if specified
-          if(add_distance_to_region){transcript_meth_site_cors$distance_to_tss = 
+          if(add_distance_to_region){transcript_meth_site_cors$distance_to_tss <- 
             methodical::stranded_distance(query_gr = GenomicRanges::GRanges(transcript_meth_site_cors$meth_site), 
-            subject_gr = transcript_tss)
+              subject_gr = transcript_tss)
           }
         
         # Add transcript TSS as an attribute to correlation data.frame
-        attributes(transcript_meth_site_cors)$tss_range = transcript_tss
+        attributes(transcript_meth_site_cors)$tss_range <- transcript_tss
         
         # Save results to a RDS file in results_dir if it is provided
         if(!is.null(results_dir)){
           
           # Set name of RDS file as the transcript_name with .rds appended
-          rds_file = paste0(results_dir, "/", transcript_name, ".rds")
+          rds_file <- paste0(results_dir, "/", transcript_name, ".rds")
           
           # Write the results to the specified RDS file and return the RDS filepath
           saveRDS(transcript_meth_site_cors, rds_file)
-          transcript_meth_site_cors = rds_file
+          transcript_meth_site_cors <- rds_file
         }
         
         transcript_meth_site_cors
@@ -193,7 +194,7 @@ calculate_meth_site_transcript_cors = function(meth_rse, assay_number = 1, trans
     }
   
     # Add names of transcript to list and return
-    chunk_correlations = setNames(chunk_correlations, names(tss_meth_values))
+    chunk_correlations <- setNames(chunk_correlations, names(tss_meth_values))
       
     chunk_correlations
   }

@@ -31,21 +31,21 @@
 #'   ylabel = "Spearman Correlation", reference_tss = attributes(tubb6_cpg_meth_transcript_cors)$tss_range)
 #' 
 #' @export
-plot_meth_site_values = function(meth_site_values, column_name, reference_tss = FALSE, 
+plot_meth_site_values <- function(meth_site_values, column_name, reference_tss = FALSE, 
   title = NULL, xlabel = NULL, ylabel = "Value", value_colours = "set1"){
   
   # Check that suitable input provided for value_colours and set low and high value colours if so
   if(length(value_colours) == 1){
     if(value_colours == "set1"){
-      low_colour = "#53868B"; high_colour = "#CD2626"
+      low_colour <- "#53868B"; high_colour <- "#CD2626"
     } else if(value_colours == "set2"){
-      low_colour = "#7B5C90"; high_colour = "#bfab25"
+      low_colour <- "#7B5C90"; high_colour <- "#bfab25"
     } else {
       stop("value_colours should be one of either set1 or set2 if only a single value provided")
     }
   } else {
     if(length(value_colours) == 2){
-      low_colour = value_colours[1]; high_colour = value_colours[2]
+      low_colour <- value_colours[1]; high_colour <- value_colours[2]
     } else {
       stop("value_colours should be either a vector with two colours or else 
         one of either 'set1' or 'set2' if a single value os provided")
@@ -53,17 +53,17 @@ plot_meth_site_values = function(meth_site_values, column_name, reference_tss = 
   }
   
   # Change meth_site column to row names
-  meth_site_values = tibble::column_to_rownames(meth_site_values, "meth_site")
+  meth_site_values <- tibble::column_to_rownames(meth_site_values, "meth_site")
   
   # If reference_tss is TRUE, try to extract tss_range from meth_site_values
   if(is(reference_tss, "logical")){
     if(reference_tss){
-      reference_tss = attributes(meth_site_values)$tss_range 
+      reference_tss <- attributes(meth_site_values)$tss_range 
       if(is.null(reference_tss)){
         stop("reference_tss was set to TRUE, but meth_site_values does not have an attribute called tss_range")
       }
     } else {
-      reference_tss = NULL
+      reference_tss <- NULL
     }
   }
   
@@ -84,32 +84,32 @@ plot_meth_site_values = function(meth_site_values, column_name, reference_tss = 
   if(!column_name %in% names(meth_site_values)){stop(paste(column_name, "not the name of a column in meth_site_values"))}
   
   # Create a data.frame with the selected column
-  plot_df = dplyr::select(meth_site_values, values = !!column_name)
+  plot_df <- dplyr::select(meth_site_values, values = !!column_name)
   
   # Add meth_site_start position to plot_df
-  plot_df$meth_site_start = GenomicRanges::start(GenomicRanges::GRanges(row.names(plot_df)))
+  plot_df$meth_site_start <- GenomicRanges::start(GenomicRanges::GRanges(row.names(plot_df)))
   
   # Decide x-axis values for methylation sites depending on whether reference_tss provided
   if(!is.null(reference_tss)){
-    plot_df$meth_site_plot_position = methodical::stranded_distance(query_gr = GRanges(row.names(plot_df)), subject_gr = reference_tss)
+    plot_df$meth_site_plot_position <- methodical::stranded_distance(query_gr = GRanges(row.names(plot_df)), subject_gr = reference_tss)
   } else {
-    plot_df$meth_site_plot_position = plot_df$meth_site_start 
+    plot_df$meth_site_plot_position <- plot_df$meth_site_start 
   }
   
   # Subset plot_df for complete rows
-  plot_df = plot_df[complete.cases(plot_df), ]
+  plot_df <- plot_df[complete.cases(plot_df), ]
   
   # Create xlabel for plot if not provided
   if(is.null(xlabel)){
     if(!is.null(reference_tss)){
-      xlabel = "Distance to TSS"
+      xlabel <- "Distance to TSS"
     } else {
-      xlabel = paste(seqnames(GenomicRanges::GRanges(row.names(meth_site_values)))[1], "Position")
+      xlabel <- paste(seqnames(GenomicRanges::GRanges(row.names(meth_site_values)))[1], "Position")
     }
   }
   
   # Create a scatter plot of Value and return
-  meth_site_plot = ggplot(data = plot_df, mapping = aes(x = meth_site_plot_position, y = values)) +
+  meth_site_plot <- ggplot(data = plot_df, mapping = aes(x = meth_site_plot_position, y = values)) +
     geom_line(color = "black", alpha = 0.75) +
     geom_point(shape = 21, colour = "black", size = 4, alpha = 1, aes(fill = values)) +
     theme_bw() +
@@ -143,8 +143,8 @@ plot_meth_site_values = function(meth_site_values, column_name, reference_tss = 
 #' @export
 #' @examples 
 #' # Get CpG islands from UCSC
-#' cpg_island_annotation = annotatr::build_annotations(genome='hg38', annotations = 'hg38_cpgs')
-#' cpg_island_annotation$region_type = cpg_island_annotation$type
+#' cpg_island_annotation <- annotatr::build_annotations(genome = "hg38", annotations = "hg38_cpgs")
+#' cpg_island_annotation$region_type <- cpg_island_annotation$type
 #'
 #' # Load plot with CpG methylation correlation values for TUBB6
 #' data("tubb6_correlation_plot", package = "methodical")
@@ -152,7 +152,7 @@ plot_meth_site_values = function(meth_site_values, column_name, reference_tss = 
 #' # Add positions of CpG islands to tubb6_correlation_plot
 #' methodical::annotate_meth_site_plot(tubb6_correlation_plot, cpg_island_annotation, annotation_plot_height = 0.3)
 #' 
-annotate_meth_site_plot = function(meth_site_plot, annotation_gr, reference_tss = NULL, region_class_colours = NULL, 
+annotate_meth_site_plot <- function(meth_site_plot, annotation_gr, reference_tss = NULL, region_class_colours = NULL, 
   annotation_line_size = 5, annotation_plot_height = 0.5, keep_meth_site_plot_legend = FALSE, annotation_plot_only = FALSE){
   
   # Check that if reference_tss is provided, if has a length of 1
@@ -169,49 +169,49 @@ annotate_meth_site_plot = function(meth_site_plot, annotation_gr, reference_tss 
   }
   
   # Get most extreme methylation sites in plot
-  meth_site_min = row.names(meth_site_plot$data)[which.min(start(GRanges(row.names(meth_site_plot$data))))]
-  meth_site_max = row.names(meth_site_plot$data)[which.max(start(GRanges(row.names(meth_site_plot$data))))]
+  meth_site_min <- row.names(meth_site_plot$data)[which.min(start(GRanges(row.names(meth_site_plot$data))))]
+  meth_site_max <- row.names(meth_site_plot$data)[which.max(start(GRanges(row.names(meth_site_plot$data))))]
   
   # Create a GRanges object which covers the plot
-  plot_region = reduce(GRanges(c(meth_site_min, meth_site_max)), min.gapwidth = .Machine$integer.max)
+  plot_region <- reduce(GRanges(c(meth_site_min, meth_site_max)), min.gapwidth = .Machine$integer.max)
   
   # Filter annotation regions for those which overlap plot_region
-  annotation_gr = subsetByOverlaps(annotation_gr, plot_region)
+  annotation_gr <- subsetByOverlaps(annotation_gr, plot_region)
   
   # Update start and end of annotation_gr so that they lie within plot_region
-  start(annotation_gr) = pmax(start(annotation_gr), start(plot_region))
-  end(annotation_gr) = pmin(end(annotation_gr), end(plot_region))
+  start(annotation_gr) <- pmax(start(annotation_gr), start(plot_region))
+  end(annotation_gr) <- pmin(end(annotation_gr), end(plot_region))
   
   # Decide x-axis values for methylation sites depending on whether reference_tss provided
   if(!is.null(reference_tss)){
-    meth_site_plot$data$meth_site_plot_position = methodical::stranded_distance(query_gr = GRanges(row.names(meth_site_plot$data)), subject_gr = reference_tss)
-    annotation_gr = methodical::ranges_relative_to_tss(genomic_regions = annotation_gr, reference_positions = reference_tss)
+    meth_site_plot$data$meth_site_plot_position <- methodical::stranded_distance(query_gr = GRanges(row.names(meth_site_plot$data)), subject_gr = reference_tss)
+    annotation_gr <- methodical::ranges_relative_to_tss(genomic_regions = annotation_gr, reference_positions = reference_tss)
   } else {
-    meth_site_plot$data$meth_site_plot_position = meth_site_plot$data$meth_site_start 
+    meth_site_plot$data$meth_site_plot_position <- meth_site_plot$data$meth_site_start 
   }
   
   # Convert annotation_gr to a data.frame
-  annotation_df = data.frame(annotation_gr)
+  annotation_df <- data.frame(annotation_gr)
   
   # Ensure region_type is a factor and reverse their order so that they are displayed from top to bottom in the plot
-  annotation_df$region_type = factor(annotation_df$region_type)
-  annotation_df$region_type = factor(annotation_df$region_type, levels = rev(levels(annotation_df$region_type)))
+  annotation_df$region_type <- factor(annotation_df$region_type)
+  annotation_df$region_type <- factor(annotation_df$region_type, levels = rev(levels(annotation_df$region_type)))
   
   # Extract axis text size, axis title size and x-axis title from meth_site_plot
-  axis_text_size = theme(meth_site_plot)[[1]]$theme$axis.text$size
-  axis_title_size = theme(meth_site_plot)[[1]]$theme$axis.title$size
-  x_axis_title = meth_site_plot$labels$x
+  axis_text_size <- theme(meth_site_plot)[[1]]$theme$axis.text$size
+  axis_title_size <- theme(meth_site_plot)[[1]]$theme$axis.title$size
+  x_axis_title <- meth_site_plot$labels$x
   
   # Create colours for region classes
   if(is.null(region_class_colours)){
-    palette = c("#9E0142", "#D53E4F", "#F46D43", "#FDAE61", "#FEE08B", "#FFFFBF", 
+    palette <- c("#9E0142", "#D53E4F", "#F46D43", "#FDAE61", "#FEE08B", "#FFFFBF", 
       "#E6F598", "#ABDDA4", "#66C2A5", "#3288BD", "#5E4FA2")
-    region_class_colours = setNames(colorRampPalette(palette)(length(levels(annotation_df$region_type))), 
+    region_class_colours <- setNames(colorRampPalette(palette)(length(levels(annotation_df$region_type))), 
       levels(annotation_df$region_type))
   }
   
   # Create a linerange plot showing the positions of different genomic elements
-  annotation_plot = ggplot(annotation_df, aes(xmin = start, xmax = end, x = NULL, y = region_type,  group = region_type, color = region_type)) + 
+  annotation_plot <- ggplot(annotation_df, aes(xmin = start, xmax = end, x = NULL, y = region_type,  group = region_type, color = region_type)) + 
     geom_linerange(linewidth = annotation_line_size, linetype = "dashed", position = position_dodge(0.06)) +
     theme_bw() + 
     theme(plot.title = element_text(hjust = 0.5, size = 24),
@@ -229,17 +229,17 @@ annotate_meth_site_plot = function(meth_site_plot, annotation_gr, reference_tss 
   if(annotation_plot_only){return(annotation_plot)}
   
   # Get legend from meth_site_plot
-  meth_site_plot_legend = cowplot::get_legend(meth_site_plot)
-  legends = cowplot::plot_grid(meth_site_plot_legend, NULL, nrow = 2, rel_heights = c(1 - annotation_plot_height, annotation_plot_height))
+  meth_site_plot_legend <- cowplot::get_legend(meth_site_plot)
+  legends <- cowplot::plot_grid(meth_site_plot_legend, NULL, nrow = 2, rel_heights = c(1 - annotation_plot_height, annotation_plot_height))
   
   # Combine meth_site_plot and annotation_plot
-  annotated_meth_site_plot = cowplot::plot_grid(meth_site_plot + theme(legend.position = "none", 
+  annotated_meth_site_plot <- cowplot::plot_grid(meth_site_plot + theme(legend.position = "none", 
     axis.text.x = element_blank(), axis.ticks.x = element_blank(), axis.title.x = element_blank()), annotation_plot, 
     nrow = 2, align = "v", rel_heights = c(1 - annotation_plot_height, annotation_plot_height))
   
   # Add legend if specified
   if(keep_meth_site_plot_legend){
-    annotated_meth_site_plot = cowplot::plot_grid(annotated_meth_site_plot, legends, rel_widths = c(1, 0.2))
+    annotated_meth_site_plot <- cowplot::plot_grid(annotated_meth_site_plot, legends, rel_widths = c(1, 0.2))
   }
   
   # Return annotated_meth_site_plot
@@ -263,19 +263,19 @@ annotate_meth_site_plot = function(meth_site_plot, annotation_gr, reference_tss 
 #' data("tubb6_cpg_meth_transcript_cors", package = "methodical")
 #' 
 #' # Plot methylation-transcript correlation values around TUBB6 TSS
-#' tubb6_correlation_plot = methodical::plot_meth_site_values(tubb6_cpg_meth_transcript_cors, column_name = "cor", ylabel = "Spearman Correlation")
+#' tubb6_correlation_plot <- methodical::plot_meth_site_values(tubb6_cpg_meth_transcript_cors, column_name = "cor", ylabel = "Spearman Correlation")
 #'   
 #' # Find TMRs for TUBB6
-#' tubb6_tmrs = find_tmrs(correlation_df = tubb6_cpg_meth_transcript_cors)
+#' tubb6_tmrs <- find_tmrs(correlation_df = tubb6_cpg_meth_transcript_cors)
 #' 
 #' # Plot TMRs on top of tubb6_correlation_plot
 #' methodical::plot_tmrs(tubb6_correlation_plot, tmrs_gr = tubb6_tmrs)
-plot_tmrs = function(meth_site_plot, tmrs_gr, reference_tss = NULL, transcript_id = NULL, tmr_colours = c("#A28CB1", "#D2C465"), linewidth = 5){
+plot_tmrs <- function(meth_site_plot, tmrs_gr, reference_tss = NULL, transcript_id = NULL, tmr_colours = c("#A28CB1", "#D2C465"), linewidth = 5){
   
   # Filter tmrs_gr and reference_tss for transcript_id if provided
   if(!is.null(transcript_id)){
-    tmrs_gr = tmrs_gr[tmrs_gr$transcript_id == transcript_id]
-    reference_tss = reference_tss[reference_tss$transcript_id == transcript_id]
+    tmrs_gr <- tmrs_gr[tmrs_gr$transcript_id == transcript_id]
+    reference_tss <- reference_tss[reference_tss$transcript_id == transcript_id]
   }
   
   # Check that if reference_tss is provided, it has a length of 1
@@ -285,15 +285,15 @@ plot_tmrs = function(meth_site_plot, tmrs_gr, reference_tss = NULL, transcript_i
   
   # Decide positions for tmrs depending on whether reference_tss provided
   if(!is.null(reference_tss)){
-      tmrs_df = data.frame(methodical::ranges_relative_to_tss(
+      tmrs_df <- data.frame(methodical::ranges_relative_to_tss(
         genomic_regions = tmrs_gr, tss_gr = reference_tss))
   } else {
-      tmrs_df = data.frame(tmrs_gr)
+      tmrs_df <- data.frame(tmrs_gr)
   }
   
   
   # Add TMRs to meth_site_plot
-  meth_site_plot_with_tmrs = meth_site_plot +
+  meth_site_plot_with_tmrs <- meth_site_plot +
   geom_segment(data = tmrs_df, aes(x = start, xend = end, y = 0, yend = 0, color = direction), 
     linewidth = linewidth) + scale_color_manual(values = setNames(tmr_colours, levels(tmrs_df$direction))) + labs(color = "TMR Direction")
   
@@ -327,13 +327,13 @@ plot_tmrs = function(meth_site_plot, tmrs_gr, reference_tss = NULL, transcript_i
 #'   
 #' # Calculate and plot Methodical scores from correlation values
 #' methodical::plot_methodical_scores(tubb6_cpg_meth_transcript_cors, reference_tss = attributes(tubb6_cpg_meth_transcript_cors)$tss_range)
-plot_methodical_scores = function(meth_site_values, reference_tss = NULL, p_value_threshold = 0.005,
+plot_methodical_scores <- function(meth_site_values, reference_tss = NULL, p_value_threshold = 0.005,
   smooth_scores = TRUE, offset_length = 10, smoothing_factor = 0.75, 
   smoothed_curve_colour = "black", linewidth = 1, curve_alpha = 0.75, 
   title = NULL, xlabel = "Genomic Position", low_colour = "#7B5C90", high_colour = "#BFAB25"){
   
   # Change meth_site column to row names
-  meth_site_values_plot_df = tibble::column_to_rownames(meth_site_values, "meth_site")
+  meth_site_values_plot_df <- tibble::column_to_rownames(meth_site_values, "meth_site")
   
   # Check that if reference_tss is provided, it has a length of 1
   if(!is.null(reference_tss) & length(reference_tss) > 1){stop("reference_tss should have length of 1 if provided")}
@@ -344,23 +344,23 @@ plot_methodical_scores = function(meth_site_values, reference_tss = NULL, p_valu
   }
   
   # Add meth_site_start position to meth_site_values_plot_df
-  meth_site_values_plot_df$meth_site_start = GenomicRanges::start(GenomicRanges::GRanges(row.names(meth_site_values_plot_df)))
+  meth_site_values_plot_df$meth_site_start <- GenomicRanges::start(GenomicRanges::GRanges(row.names(meth_site_values_plot_df)))
   
   # Decide x-axis values for methylation sites depending on whether reference_tss provided
   if(!is.null(reference_tss)){
-    meth_site_values_plot_df$meth_site_plot_position = methodical::stranded_distance(query_gr = GRanges(row.names(meth_site_values_plot_df)), subject_gr = reference_tss)
+    meth_site_values_plot_df$meth_site_plot_position <- methodical::stranded_distance(query_gr = GRanges(row.names(meth_site_values_plot_df)), subject_gr = reference_tss)
   } else {
-    meth_site_values_plot_df$meth_site_plot_position = meth_site_values_plot_df$meth_site_start 
+    meth_site_values_plot_df$meth_site_plot_position <- meth_site_values_plot_df$meth_site_start 
   }
   
   # Convert p-values into methodical score
-  meth_site_values_plot_df$methodical_score = log10(meth_site_values_plot_df$p_val) * -sign(meth_site_values_plot_df$cor)
+  meth_site_values_plot_df$methodical_score <- log10(meth_site_values_plot_df$p_val) * -sign(meth_site_values_plot_df$cor)
   
   # Subset meth_site_values_plot_df for necessary columns
-  meth_site_values_plot_df = dplyr::select(meth_site_values_plot_df, meth_site_start, meth_site_plot_position, methodical_score, cor)
+  meth_site_values_plot_df <- dplyr::select(meth_site_values_plot_df, meth_site_start, meth_site_plot_position, methodical_score, cor)
   
   # Create a scatter plot of Value and return
-  meth_site_plot = ggplot(data = meth_site_values_plot_df, mapping = aes(x = meth_site_plot_position, y = methodical_score)) +
+  meth_site_plot <- ggplot(data = meth_site_values_plot_df, mapping = aes(x = meth_site_plot_position, y = methodical_score)) +
     geom_line(color = "black", alpha = 0.75) +
     geom_point(shape = 21, colour = "black", size = 4, alpha = 1, aes(fill = cor)) +
     theme_bw() +
@@ -373,15 +373,15 @@ plot_methodical_scores = function(meth_site_values, reference_tss = NULL, p_valu
   
   # Add TMR thresholds if specified
   if(!is.null(p_value_threshold)){
-    meth_site_plot = meth_site_plot + 
+    meth_site_plot <- meth_site_plot + 
       geom_hline(yintercept = log10(p_value_threshold), linetype = "dashed", colour = low_colour) +
       geom_hline(yintercept = -log10(p_value_threshold), linetype = "dashed", colour = high_colour) 
   }
   
   # Add smoothed Methodical scores if specified
   if(smooth_scores){
-    smoothed_methodical_scores = calculate_smoothed_methodical_scores(correlation_df = meth_site_values)
-    meth_site_plot = meth_site_plot +
+    smoothed_methodical_scores <- calculate_smoothed_methodical_scores(correlation_df = meth_site_values)
+    meth_site_plot <- meth_site_plot +
     geom_line(mapping = aes(y = smoothed_methodical_scores), 
       color = smoothed_curve_colour, alpha = curve_alpha, linewidth = linewidth)
   }

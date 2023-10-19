@@ -9,38 +9,39 @@
 #' @export
 #' @examples 
 #' # Load sample RangedSummarizedExperiment with CpG methylation data
-#' data(tubb6_meth_rse, package = "methodical"); tubb6_meth_rse = eval(tubb6_meth_rse)
+#' data(tubb6_meth_rse, package = "methodical")
+#' tubb6_meth_rse <- eval(tubb6_meth_rse)
 #' 
 #' # Create a sample GRanges object to use
-#' test_region = GRanges("chr18:12305000-12310000")
+#' test_region <- GRanges("chr18:12305000-12310000")
 #' 
 #' # Get methylation values for CpG sites overlapping HDAC1 gene
-#' test_region_methylation = methodical::extract_granges_meth_site_values(tubb6_meth_rse, genomic_regions = test_region)
-extract_granges_meth_site_values = function(meth_rse, genomic_regions = NULL, samples_subset = NULL, assay_number = 1){
+#' test_region_methylation <- methodical::extract_granges_meth_site_values(tubb6_meth_rse, genomic_regions = test_region)
+extract_granges_meth_site_values <- function(meth_rse, genomic_regions = NULL, samples_subset = NULL, assay_number = 1){
   
   # If samples_subset provided, check that all samples present in meth_rse and then subset meth_rse for those samples
   if(!is.null(samples_subset)){
     if(any(!samples_subset %in% colnames(meth_rse))){
       stop("Some sample names in samples_subset not present in meth_rse")
     } else {
-      meth_rse = meth_rse[, samples_subset]
+      meth_rse <- meth_rse[, samples_subset]
     }
   }
   
   # Set genomic_regions to all regions in meth_rse if not provided
-  if(is.null(genomic_regions)){genomic_regions = rowRanges(meth_rse)}
+  if(is.null(genomic_regions)){genomic_regions <- rowRanges(meth_rse)}
   
   # Subset meth_rse for sites overlapping genomic_ranges
-  meth_rse_subset = IRanges::subsetByOverlaps(meth_rse, genomic_regions)
+  meth_rse_subset <- IRanges::subsetByOverlaps(meth_rse, genomic_regions)
   
   # Extract GRanges from meth_rse_subset and convert into a character vector
-  meth_sites_subset = as.character(SummarizedExperiment::rowRanges(meth_rse_subset))
+  meth_sites_subset <- as.character(SummarizedExperiment::rowRanges(meth_rse_subset))
   
   # Extract methylation values from meth_rse_subset
-  meth_values_subset = as.data.frame(assay(meth_rse_subset, assay_number))
+  meth_values_subset <- as.data.frame(assay(meth_rse_subset, assay_number))
   
   # Set row names as the names of the methylation sites and return
-  row.names(meth_values_subset) = meth_sites_subset
+  row.names(meth_values_subset) <- meth_sites_subset
   return(meth_values_subset)
   
 }
@@ -60,35 +61,36 @@ extract_granges_meth_site_values = function(meth_rse, genomic_regions = NULL, sa
 #' @export
 #' @examples 
 #' # Load sample RangedSummarizedExperiment with CpG methylation data
-#' data(tubb6_meth_rse, package = "methodical"); tubb6_meth_rse = eval(tubb6_meth_rse)
+#' data(tubb6_meth_rse, package = "methodical")
+#' tubb6_meth_rse <- eval(tubb6_meth_rse)
 #' 
 #' # Create a sample GRanges object to use to mask tubb6_meth_rse
-#' mask_ranges = GRanges("chr18:12305000-12310000")
+#' mask_ranges <- GRanges("chr18:12305000-12310000")
 #' 
 #' # Get 20 random CpG sites outside mask_ranges
-#' random_cpgs = methodical::sample_meth_sites(tubb6_meth_rse, n_sites = 20, genomic_ranges_filter = mask_ranges, 
-#' invert_filter = TRUE)
+#' random_cpgs <- methodical::sample_meth_sites(tubb6_meth_rse, n_sites = 20, genomic_ranges_filter = mask_ranges, 
+#'   invert_filter = TRUE)
 #' 
 #' # Check that no CpGs overlap repeats
 #' intersect(rowRanges(random_cpgs), mask_ranges)
 #' 
-sample_meth_sites = function(meth_rse, n_sites = 1000, genomic_ranges_filter = NULL, 
+sample_meth_sites <- function(meth_rse, n_sites = 1000, genomic_ranges_filter = NULL, 
   invert_filter = FALSE, samples_subset = NULL, assay_number = 1){
   
   # If genomic_ranges_filter provided, subset meth_rse with it
   if(!is.null(genomic_ranges_filter)){
-    meth_rse = IRanges::subsetByOverlaps(meth_rse, genomic_ranges_filter, invert = invert_filter)
+    meth_rse <- IRanges::subsetByOverlaps(meth_rse, genomic_ranges_filter, invert = invert_filter)
   }
   
   # Randomly sample specified number of sites from meth_rse
-  sites = sample(nrow(meth_rse), n_sites, replace = FALSE)
+  sites <- sample(nrow(meth_rse), n_sites, replace = FALSE)
   
   # Subset meth_rse for random sites
-  meth_rse_sites = meth_rse[sites, ]
+  meth_rse_sites <- meth_rse[sites, ]
   
   # Subset for samples if specified
   if(!is.null(samples_subset)){
-    meth_rse_sites = meth_rse_sites[, samples_subset]
+    meth_rse_sites <- meth_rse_sites[, samples_subset]
   }
   return(meth_rse_sites)
   
@@ -110,63 +112,64 @@ sample_meth_sites = function(meth_rse, n_sites = 1000, genomic_ranges_filter = N
 #' @return A RangedSummarizedExperiment with rowRanges lifted over to the genome build indicated by chain. 
 #' @examples
 #' # Load sample RangedSummarizedExperiment with CpG methylation data
-#' data(tubb6_meth_rse, package = "methodical"); tubb6_meth_rse = eval(tubb6_meth_rse)
+#' data(tubb6_meth_rse, package = "methodical")
+#' tubb6_meth_rse <- eval(tubb6_meth_rse)
 #'   
 #' # Get CpG sites for hg19
-#' hg19_cpgs = methodical::extract_meth_sites_from_genome("BSgenome.Hsapiens.UCSC.hg19")
+#' hg19_cpgs <- methodical::extract_meth_sites_from_genome("BSgenome.Hsapiens.UCSC.hg19")
 #' 
 #' # Get liftover chain for mapping hg38 to hg19
 #' library(AnnotationHub)
-#' ah = AnnotationHub()
-#' chain = ah[["AH14108"]]
+#' ah <- AnnotationHub()
+#' chain <- ah[["AH14108"]]
 #'   
 #' # Liftover tubb6_meth_rse from hg38 to hg19, keeping only sites that were mapped to CpG sites in hg19
-#' tubb6_meth_rse_hg19 = methodical::liftover_meth_rse(tubb6_meth_rse, chain = chain, 
+#' tubb6_meth_rse_hg19 <- methodical::liftover_meth_rse(tubb6_meth_rse, chain = chain, 
 #'   permitted_target_regions = hg19_cpgs)
 #' @export
-liftover_meth_rse = function(meth_rse, chain, remove_one_to_many_mapping = TRUE, permitted_target_regions = NULL){
+liftover_meth_rse <- function(meth_rse, chain, remove_one_to_many_mapping = TRUE, permitted_target_regions = NULL){
   
   # Liftover rowRanges for meth_rse using specified liftover chain file
-  liftover_ranges = rtracklayer::liftOver(SummarizedExperiment::rowRanges(meth_rse), chain)
+  liftover_ranges <- rtracklayer::liftOver(SummarizedExperiment::rowRanges(meth_rse), chain)
   
   # Put seqlevels of liftover_ranges in the same order as meth_rse
-  GenomeInfoDb::seqlevels(liftover_ranges) = GenomeInfoDb::seqlevels(meth_rse)
+  GenomeInfoDb::seqlevels(liftover_ranges) <- GenomeInfoDb::seqlevels(meth_rse)
   
   # Initialize selected regions to all liftover_ranges
-  selected_ranges = seq_along(liftover_ranges)
+  selected_ranges <- seq_along(liftover_ranges)
   
   # Get the number of regions in the target genome each region in the source genome matches to
-  mappings_count = lengths(liftover_ranges)
+  mappings_count <- lengths(liftover_ranges)
   
   # Remove non-mapping regions from selected_ranges if specified
-  non_mapping_regions = which(mappings_count == 0)
+  non_mapping_regions <- which(mappings_count == 0)
   message(paste(length(non_mapping_regions), "non-mapping sites removed"))
-  selected_ranges = setdiff(selected_ranges, non_mapping_regions)
+  selected_ranges <- setdiff(selected_ranges, non_mapping_regions)
   
   # Remove one-to-many mapping regions from selected_ranges if specified
   if(remove_one_to_many_mapping){
-    one_to_many_mapping_regions = which(mappings_count > 1)
+    one_to_many_mapping_regions <- which(mappings_count > 1)
     message(paste(length(one_to_many_mapping_regions), "one-to-many mapping sites removed"))
-    selected_ranges = setdiff(selected_ranges, one_to_many_mapping_regions)
+    selected_ranges <- setdiff(selected_ranges, one_to_many_mapping_regions)
   }
   
   # Remove many-to-one mapping regions from selected_ranges if specified
-  self_overlaps = GenomicRanges::countOverlaps(liftover_ranges, liftover_ranges)
-  many_to_one_mapping_regions = which(self_overlaps > 1)
+  self_overlaps <- GenomicRanges::countOverlaps(liftover_ranges, liftover_ranges)
+  many_to_one_mapping_regions <- which(self_overlaps > 1)
   message(paste(length(many_to_one_mapping_regions), "many-to-one mapping sites removed"))
-  selected_ranges = setdiff(selected_ranges, many_to_one_mapping_regions)
+  selected_ranges <- setdiff(selected_ranges, many_to_one_mapping_regions)
   
   # Identify regions which overlap permitted_target_regions is provided
   if(!is.null(permitted_target_regions)){
-    target_regions_overlaps = GenomicRanges::countOverlaps(liftover_ranges, permitted_target_regions)
-    non_target_overlaps = which(target_regions_overlaps < 1)
+    target_regions_overlaps <- GenomicRanges::countOverlaps(liftover_ranges, permitted_target_regions)
+    non_target_overlaps <- which(target_regions_overlaps < 1)
     message(paste(length(non_target_overlaps), "sites not overlapping permitted target regions removed"))
-    selected_ranges = setdiff(selected_ranges, non_target_overlaps)
+    selected_ranges <- setdiff(selected_ranges, non_target_overlaps)
   }
   
   # Subset meth_rse for selected rows and update rowRanges
-  meth_rse = meth_rse[selected_ranges, ]
-  SummarizedExperiment::rowRanges(meth_rse) = unlist(liftover_ranges[selected_ranges]) #
+  meth_rse <- meth_rse[selected_ranges, ]
+  SummarizedExperiment::rowRanges(meth_rse) <- unlist(liftover_ranges[selected_ranges]) #
   
   # Return meth_rse 
   return(meth_rse)
@@ -184,21 +187,22 @@ liftover_meth_rse = function(meth_rse, chain, remove_one_to_many_mapping = TRUE,
 #' @export
 #' @examples 
 #' # Load sample RangedSummarizedExperiment with CpG methylation data
-#' data(tubb6_meth_rse, package = "methodical"); tubb6_meth_rse = eval(tubb6_meth_rse)
+#' data(tubb6_meth_rse, package = "methodical")
+#' tubb6_meth_rse <- eval(tubb6_meth_rse)
 #' 
 #' # Create a sample GRanges object to use to mask tubb6_meth_rse
-#' mask_ranges = GRanges("chr18:12305000-12310000")
+#' mask_ranges <- GRanges("chr18:12305000-12310000")
 #' 
 #' # Mask regions in tubb6_meth_rse
-#' tubb6_meth_rse_masked = methodical::mask_ranges_in_rse(tubb6_meth_rse, mask_ranges)
+#' tubb6_meth_rse_masked <- methodical::mask_ranges_in_rse(tubb6_meth_rse, mask_ranges)
 #' 
 #' # Count the number of NA values before and after masking
 #' sum(is.na(assay(tubb6_meth_rse)))
 #' sum(is.na(assay(tubb6_meth_rse_masked)))
-mask_ranges_in_rse = function(rse, mask_ranges, assay = 1){
+mask_ranges_in_rse <- function(rse, mask_ranges, assay = 1){
   
   # Create a copy of rse for masking
-  rse_masked = rse
+  rse_masked <- rse
   
   # If mask_ranges is a GRangesList loop through each individual GRanges
   if(is(mask_ranges, "GRangesList")){
@@ -215,19 +219,19 @@ mask_ranges_in_rse = function(rse, mask_ranges, assay = 1){
       message(sprintf("masking regions in sample %s", sample))
       
       # Find row indices for regions overlapping regions to be masked for sample
-      mask_indices = unique(queryHits(findOverlaps(rse_masked, mask_ranges[[sample]])))
+      mask_indices <- unique(queryHits(findOverlaps(rse_masked, mask_ranges[[sample]])))
       
       # Set values to be masked as NA
-      assay(rse_masked, assay)[mask_indices, sample] = NA
+      assay(rse_masked, assay)[mask_indices, sample] <- NA
     }
     
   } else if(is(mask_ranges, "GRanges")){
     
     # Find row indices for regions overlapping regions to be masked in all samples
-    mask_indices = unique(queryHits(findOverlaps(rse_masked, mask_ranges)))
+    mask_indices <- unique(queryHits(findOverlaps(rse_masked, mask_ranges)))
     
     # Set values to be masked as NA
-    SummarizedExperiment::assay(rse_masked, assay)[mask_indices, ] = NA
+    SummarizedExperiment::assay(rse_masked, assay)[mask_indices, ] <- NA
     
     
   } else {

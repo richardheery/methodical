@@ -10,15 +10,15 @@
 #' download.file("https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_44/gencode.v44.transcripts.fa.gz")
 #' 
 #' # Locate the kallisto executable (provided that it is on the path)
-#' kallisto_path = system2("which", args = "kallisto", stdout = TRUE)
+#' kallisto_path <- system2("which", args = "kallisto", stdout = TRUE)
 #' 
 #' # Create transcripts index for use with Kallisto
 #' methodical::kallisto_index(kallisto_path, transcripts_fasta = "gencode.v44.transcripts.fa.gz")
 #' }
-kallisto_index = function(path_to_kallisto, transcripts_fasta, index_name = "kallisto_index.idx"){
+kallisto_index <- function(path_to_kallisto, transcripts_fasta, index_name = "kallisto_index.idx"){
   
   # Get the canonical path to kallisto
-  path_to_kallisto = normalizePath(path_to_kallisto)
+  path_to_kallisto <- normalizePath(path_to_kallisto)
   
   # Check if kallisto can be executed from the given path
   if(suppressWarnings(system2(command = path_to_kallisto, args = "version", stdout = NULL, stderr = NULL)) != 0){
@@ -50,11 +50,11 @@ kallisto_index = function(path_to_kallisto, transcripts_fasta, index_name = "kal
 #' @param number_bootstraps The number of bootstrap samples. Default is 100. 
 #' @return The path to the merged counts table. 
 #' @export
-kallisto_quantify = function(path_to_kallisto, kallisto_index, forward_fastq_files, reverse_fastq_files, 
+kallisto_quantify <- function(path_to_kallisto, kallisto_index, forward_fastq_files, reverse_fastq_files, 
   sample_names, output_directory, merged_output_prefix = "kallisto_transcript", messages_file = "", n_cores = 1, number_bootstraps  = 100){
   
   # Get the canonical path to kallisto
-  path_to_kallisto = normalizePath(path_to_kallisto)
+  path_to_kallisto <- normalizePath(path_to_kallisto)
   
   # Check if kallisto can be executed from the given path
   if(suppressWarnings(system2(command = path_to_kallisto, args = "version", stdout = NULL, stderr = NULL)) != 0){
@@ -84,7 +84,7 @@ kallisto_quantify = function(path_to_kallisto, kallisto_index, forward_fastq_fil
   if(!dir.exists(output_directory)){dir.create(output_directory)}
   
   # Create output subdirectories for each pair of FASTQ samples by pasting sample_names to output_directory
-  sample_directories = paste(output_directory, sample_names, sep = "/")
+  sample_directories <- paste(output_directory, sample_names, sep = "/")
   
   # Check that sample directories do not already exist
   for(directory in sample_directories) {
@@ -92,8 +92,8 @@ kallisto_quantify = function(path_to_kallisto, kallisto_index, forward_fastq_fil
   }
   
   # Create names for merged output files and check that they do not already exist
-  merged_counts_file = paste(merged_output_prefix, "counts_merged.tsv.gz", sep = "_")
-  merged_tpm_file = paste(merged_output_prefix, "tpm_merged.tsv.gz", sep = "_")
+  merged_counts_file <- paste(merged_output_prefix, "counts_merged.tsv.gz", sep = "_")
+  merged_tpm_file <- paste(merged_output_prefix, "tpm_merged.tsv.gz", sep = "_")
   
   # Check if merged_counts_file already exists
   if(file.exists(paste(output_directory, merged_counts_file, sep = "/"))){
@@ -115,22 +115,22 @@ kallisto_quantify = function(path_to_kallisto, kallisto_index, forward_fastq_fil
   }
   
   # Get paths to all abundance files
-  abundance_files = paste0(sample_directories, "/abundance.tsv")
+  abundance_files <- paste0(sample_directories, "/abundance.tsv")
   
   # Create a data.frame with the counts calculated using kallisto for each sample
-  kallisto_counts = data.frame(setNames(lapply(abundance_files, function(x) 
+  kallisto_counts <- data.frame(setNames(lapply(abundance_files, function(x) 
     data.table::fread(x, sep = "\t", header = TRUE)$est_counts), basename(sample_directories)))
   
   # Create a data.frame with the TPM values calculated using kallisto for each sample
-  kallisto_tpm = data.frame(setNames(lapply(abundance_files, function(x) 
+  kallisto_tpm <- data.frame(setNames(lapply(abundance_files, function(x) 
     data.table::fread(x, sep = "\t", header = TRUE)$tpm), basename(sample_directories)))
   
   # Get names of transcripts and add to output tables
-  transcript_names = data.table::fread(abundance_files[1], sep = "\t", header = TRUE)$target_id
-  row.names(kallisto_counts) = transcript_names
-  kallisto_counts = tibble::rownames_to_column(kallisto_counts, "transcript_id")
-  row.names(kallisto_tpm) = transcript_names
-  kallisto_tpm = tibble::rownames_to_column(kallisto_tpm, "transcript_id")
+  transcript_names <- data.table::fread(abundance_files[1], sep = "\t", header = TRUE)$target_id
+  row.names(kallisto_counts) <- transcript_names
+  kallisto_counts <- tibble::rownames_to_column(kallisto_counts, "transcript_id")
+  row.names(kallisto_tpm) <- transcript_names
+  kallisto_tpm <- tibble::rownames_to_column(kallisto_tpm, "transcript_id")
       
   # Write tables to output directory
   data.table::fwrite(kallisto_counts, paste(output_directory, merged_counts_file, sep = "/"), sep = "\t", row.names = FALSE, quote = FALSE)
@@ -148,31 +148,31 @@ kallisto_quantify = function(path_to_kallisto, kallisto_index, forward_fastq_fil
 #' Can alternatively be a GRangeList where the name of each list element is a gene and the names of the individual ranges are transcripts.
 #' @return A data.frame with the sum of transcript expression values for genes where rows are genes and columns are samples
 #' @export
-sum_transcript_values_for_genes = function(transcript_expression_table, gene_to_transcript_list){
+sum_transcript_values_for_genes <- function(transcript_expression_table, gene_to_transcript_list){
   
   # If gene_to_transcript_list is a GRangesList, extract a list of vectors matching genes to transcripts
   if(is(gene_to_transcript_list, "GRangesList")){
-    gene_to_transcript_list = lapply(gene_to_transcript_list, names)
+    gene_to_transcript_list <- lapply(gene_to_transcript_list, names)
   }
   
   # Get the sum of the expression values for all transcripts associated with each gene in each sample
-  `%do%` = foreach::`%do%`
-  results_list = foreach::foreach(gene_transcripts = gene_to_transcript_list) %do% {
+  `%do%` <- foreach::`%do%`
+  results_list <- foreach::foreach(gene_transcripts = gene_to_transcript_list) %do% {
     
     # Sum the transcript values for each transcript associated with a gene
-    gene_results = colSums(transcript_expression_table[gene_transcripts, ], na.rm = TRUE)
+    gene_results <- colSums(transcript_expression_table[gene_transcripts, ], na.rm = TRUE)
     
     # Samples where all values for gene_transcripts are NA are given a value of NA for the gene. 
-    # This is done as colSums returns a value of 0 if all values in a column are NA and na.rm = TRUE.  
-    gene_results[apply(transcript_expression_table[gene_transcripts, ], 2, function(x) all(is.na(x)))] = NA
+    # This is done as colSums returns a value of 0 if all values in a column are NA and na.rm <- TRUE.  
+    gene_results[apply(transcript_expression_table[gene_transcripts, ], 2, function(x) all(is.na(x)))] <- NA
     gene_results
   }
   
   # Set names for results_list
-  names(results_list) = names(gene_to_transcript_list)
+  names(results_list) <- names(gene_to_transcript_list)
   
   # Turn results_list into a data.frame
-  results_table = data.frame(dplyr::bind_rows(results_list, .id = "gene_name"))
+  results_table <- data.frame(dplyr::bind_rows(results_list, .id = "gene_name"))
   
   # Set gene names as row.names and return
   return(tibble::column_to_rownames(results_table, "gene_name"))

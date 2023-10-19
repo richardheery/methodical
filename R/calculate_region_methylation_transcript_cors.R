@@ -25,15 +25,16 @@
 #' 
 #' # Load TUBB6 TMRs, RangedSummarizedExperiment with methylation values for CpGs around TUBB6 TSS and TUBB6 transcript counts
 #' data(tubb6_tmrs, package = "methodical")
-#' data(tubb6_meth_rse, package = "methodical"); tubb6_meth_rse = eval(tubb6_meth_rse)
+#' data(tubb6_meth_rse, package = "methodical")
+#' tubb6_meth_rse <- eval(tubb6_meth_rse)
 #' data(tubb6_transcript_counts, package = "methodical")
 #' 
 #' # Calculate correlation values between TMRs identified for TUBB6 and transcript expression
-#' tubb6_tmrs_transcript_cors = methodical::calculate_region_methylation_transcript_cors(
+#' tubb6_tmrs_transcript_cors <- methodical::calculate_region_methylation_transcript_cors(
 #'   genomic_regions = tubb6_tmrs, genomic_region_names = tubb6_tmrs$tmr_name, meth_rse = tubb6_meth_rse, transcript_expression_table = tubb6_transcript_counts)
 #' tubb6_tmrs_transcript_cors
 #'  
-calculate_region_methylation_transcript_cors = function(meth_rse, assay_number = 1, transcript_expression_table, samples_subset = NULL, 
+calculate_region_methylation_transcript_cors <- function(meth_rse, assay_number = 1, transcript_expression_table, samples_subset = NULL, 
   genomic_regions, genomic_region_names = NULL, genomic_region_transcripts = NULL, genomic_region_methylation = NULL,
   cor_method = "pearson", p_adjust_method = "BH", region_methylation_summary_function = colMeans, ncores = 1){
   
@@ -41,10 +42,10 @@ calculate_region_methylation_transcript_cors = function(meth_rse, assay_number =
   if(!is.null(samples_subset)){
     if(any(!samples_subset %in% colnames(meth_rse))){
       stop("Some samples_subset are not in meth_rse")
-    } else {meth_rse = meth_rse[, samples_subset]}
+    } else {meth_rse <- meth_rse[, samples_subset]}
     if(any(!samples_subset %in% colnames(transcript_expression_table))){
       stop("Some samples_subset are not in transcript_expression_table")
-    } else {transcript_expression_table = dplyr::select(transcript_expression_table, dplyr::all_of(samples_subset))}
+    } else {transcript_expression_table <- dplyr::select(transcript_expression_table, dplyr::all_of(samples_subset))}
   }
 
   # Check that names of meth_rse and transcript_expression_table match
@@ -53,7 +54,7 @@ calculate_region_methylation_transcript_cors = function(meth_rse, assay_number =
   }
   
   # Check that there are at least three samples and give a warning if there are less than 20 samples
-  n_samples = ncol(meth_rse) 
+  n_samples <- ncol(meth_rse) 
   if(n_samples < 3){stop("There are not enough samples to calculate correlations")}
   if(n_samples < 20){
     warning(paste("There are only", n_samples, "samples. It is recommended to have at least 20 samples to calculate correlations"))
@@ -61,12 +62,12 @@ calculate_region_methylation_transcript_cors = function(meth_rse, assay_number =
   
   # If genomic_region_names not provided, set to names(genomic_regions)
   if(is.null(genomic_region_names)){
-    genomic_region_names = names(genomic_regions)
+    genomic_region_names <- names(genomic_regions)
   }
   
   # If genomic_region_transcripts not provided, set to genomic_regions$transcript_id
   if(is.null(genomic_region_transcripts)){
-    genomic_region_transcripts = genomic_regions$transcript_id
+    genomic_region_transcripts <- genomic_regions$transcript_id
   }
   
   # Check that all genomic_region_transcripts are in transcript_expression_table
@@ -100,14 +101,14 @@ calculate_region_methylation_transcript_cors = function(meth_rse, assay_number =
   
     # Summarize methylation values for genomic_regions
     cat("Summarizing region methylation\n")
-    genomic_region_methylation = methodical::summarize_region_methylation(
+    genomic_region_methylation <- methodical::summarize_region_methylation(
       meth_rse = meth_rse, assay_number = assay_number, genomic_regions = genomic_regions, 
       genomic_regions_names = genomic_region_names, 
       summary_function = region_methylation_summary_function, n_chunks_parallel = ncores
     )
     
     # Set region_name of genomic_region_methylation as row.names
-    genomic_region_methylation = tibble::column_to_rownames(genomic_region_methylation, "region_name")
+    genomic_region_methylation <- tibble::column_to_rownames(genomic_region_methylation, "region_name")
     
   }
   
@@ -115,25 +116,25 @@ calculate_region_methylation_transcript_cors = function(meth_rse, assay_number =
   cat("Calculating transcript correlations")
   
   # Create a data.frame matching genomic_region_names and transcript_names
-  feature_matches_df = 
+  feature_matches_df <- 
     data.frame(genomic_region_names = genomic_region_names, transcript_id = genomic_region_transcripts)
   
   # Create a list of the transcripts associated with each genomic region
-  feature_matches = split(feature_matches_df$genomic_region_names, feature_matches_df$transcript_id)
+  feature_matches <- split(feature_matches_df$genomic_region_names, feature_matches_df$transcript_id)
   
   # Create cluster if ncores greater than 1
   if(ncores > 1){
-    cl = parallel::makeCluster(ncores)
+    cl <- parallel::makeCluster(ncores)
     doParallel::registerDoParallel(cl, ncores)
-    `%dopar%` = foreach::`%dopar%`
-    `%do%` = foreach::`%do%`
+    `%dopar%` <- foreach::`%dopar%`
+    `%do%` <- foreach::`%do%`
   } else {
-    `%dopar%` = foreach::`%do%`
-    `%do%` = foreach::`%do%`
+    `%dopar%` <- foreach::`%do%`
+    `%do%` <- foreach::`%do%`
   }
   
   # For each transcript, calculate the correlation between its expression and the methylation of regions associated with it
-  methylation_transcript_correlations = foreach::foreach(transcript = names(feature_matches)) %dopar% {
+  methylation_transcript_correlations <- foreach::foreach(transcript = names(feature_matches)) %dopar% {
     
     methodical::rapid_cor_test(
       table1 = t(genomic_region_methylation[feature_matches[[transcript]], ]), 
@@ -146,15 +147,15 @@ calculate_region_methylation_transcript_cors = function(meth_rse, assay_number =
   if(ncores > 1){parallel::stopCluster(cl)}
   
   # Combine results into a single table
-  methylation_transcript_correlations = dplyr::bind_rows(methylation_transcript_correlations)
+  methylation_transcript_correlations <- dplyr::bind_rows(methylation_transcript_correlations)
   
   # Adjust p-values
-  methylation_transcript_correlations$q_val = p.adjust(methylation_transcript_correlations$p_val, method = p_adjust_method)
+  methylation_transcript_correlations$q_val <- p.adjust(methylation_transcript_correlations$p_val, method = p_adjust_method)
   
   # Put methylation_transcript_correlations in order of genomic_region_names
-  methylation_transcript_correlations = methylation_transcript_correlations[match(
+  methylation_transcript_correlations <- methylation_transcript_correlations[match(
     genomic_region_names, methylation_transcript_correlations$genomic_region_name), ]
-  row.names(methylation_transcript_correlations) = NULL
+  row.names(methylation_transcript_correlations) <- NULL
   
   # Return results
   return(methylation_transcript_correlations)

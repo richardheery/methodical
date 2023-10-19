@@ -30,22 +30,22 @@
 #' data("hg38_cpgs_subset", package = "methodical")
 #' 
 #' # Get paths to bedGraphs
-#' bedgraphs = list.files(path = system.file('extdata', package = 'methodical'), 
+#' bedgraphs <- list.files(path = system.file('extdata', package = 'methodical'), 
 #'   pattern = ".bg.gz", full.names = TRUE)
 #' 
 #' # Create sample metadata
-#' sample_metadata = data.frame(
+#' sample_metadata <- data.frame(
 #'   tcga_project = gsub("_.*", "", gsub("TCGA_", "", basename(bedgraphs))),
 #'   sample_type = ifelse(grepl("N", basename(bedgraphs)), "Normal", "Tumour"),
 #'   row.names = tools::file_path_sans_ext(basename(bedgraphs))
 #' )
 #' 
 #' # Create a HDF5-backed RangedSummarizedExperiment from bedGraphs
-#' meth_rse = make_meth_rse_from_bedgraphs(bedgraphs = bedgraphs, 
+#' meth_rse <- make_meth_rse_from_bedgraphs(bedgraphs = bedgraphs, 
 #'   meth_sites = hg38_cpgs_subset, sample_metadata = sample_metadata, 
 #'   hdf5_dir = "bedgraph_hdf5_1")
 #'   
-make_meth_rse_from_bedgraphs = function(bedgraphs, 
+make_meth_rse_from_bedgraphs <- function(bedgraphs, 
   seqnames_column = 1, start_column = 2, end_column = 3, value_column = 4,
   zero_based = TRUE, normalization_factor = NULL, decimal_places = NA, 
   meth_sites, sample_metadata = NULL, hdf5_dir, dataset_name = "beta", overwrite = FALSE, chunkdim = NULL, 
@@ -60,7 +60,7 @@ make_meth_rse_from_bedgraphs = function(bedgraphs,
   
   # If temporary_dir not provided, set it to a directory in tempdir()
   if(is.null(temporary_dir)){
-    temporary_dir = tempfile("temporary_meth_chunks_")
+    temporary_dir <- tempfile("temporary_meth_chunks_")
   }
   
   # Check temporary directory doesn't already exist and create it if it doesn't
@@ -76,12 +76,12 @@ make_meth_rse_from_bedgraphs = function(bedgraphs,
   }
   
   # Perform setup
-  setup = .make_meth_rse_setup(meth_files = bedgraphs, meth_sites = meth_sites, sample_metadata = sample_metadata, 
+  setup <- .make_meth_rse_setup(meth_files = bedgraphs, meth_sites = meth_sites, sample_metadata = sample_metadata, 
     hdf5_dir = hdf5_dir, dataset_name = dataset_name, overwrite = overwrite, chunkdim = chunkdim, 
     temporary_dir = temporary_dir, ...)
   
   # Read in bedGraphs and write data from chunks to appropriate temporary directory
-  meth_sites_df = .split_bedgraphs_into_chunks(bedgraphs = bedgraphs, 
+  meth_sites_df <- .split_bedgraphs_into_chunks(bedgraphs = bedgraphs, 
     seqnames_column = seqnames_column, start_column = start_column, end_column = end_column, value_column = value_column,
     file_grid_columns = setup$file_grid_columns, meth_sites = meth_sites, meth_site_groups = setup$meth_site_groups, temp_chunk_dirs = setup$temp_chunk_dirs, 
     zero_based = zero_based, normalization_factor = normalization_factor, decimal_places = decimal_places, ncores = ncores)
@@ -91,7 +91,7 @@ make_meth_rse_from_bedgraphs = function(bedgraphs,
     hdf5_sink = setup$hdf5_sink, hdf5_grid = setup$hdf5_grid)
   
   # Create a RangedSummarizedExperiment
-  rse = .create_meth_rse_from_hdf5(hdf5_filepath = setup$hdf5_filepath, hdf5_dir = hdf5_dir,
+  rse <- .create_meth_rse_from_hdf5(hdf5_filepath = setup$hdf5_filepath, hdf5_dir = hdf5_dir,
     meth_sites_df = meth_sites_df, sample_metadata = sample_metadata)
   
   # Delete temporary_dir if it is empty
@@ -131,22 +131,22 @@ make_meth_rse_from_bedgraphs = function(bedgraphs,
 #' data("infinium_450k_probe_granges_hg19", package = "methodical")
 #' 
 #' # Get paths to array files
-#' array_files = list.files(path = system.file('extdata', package = 'methodical'), 
+#' array_files <- list.files(path = system.file('extdata', package = 'methodical'), 
 #'   pattern = ".txt.gz", full.names = TRUE)
 #' 
 #' # Create sample metadata
-#' sample_metadata = data.frame(
+#' sample_metadata <- data.frame(
 #'   tcga_project = "LUAD",
 #'   sample_type = "Tumour", submitter = gsub("_01.tsv.gz", "", basename(array_files)),
 #'   row.names = gsub(".tsv.gz", "", basename(array_files))
 #' )
 #' 
 #' # Create a HDF5-backed RangedSummarizedExperiment from array files using default chumk dimensions
-#' meth_rse = make_meth_rse_from_array_files(array_files = array_files, 
+#' meth_rse <- make_meth_rse_from_array_files(array_files = array_files, 
 #'  probe_ranges = infinium_450k_probe_granges_hg19, 
 #'  sample_metadata = sample_metadata, hdf5_dir = "array_file_hdf5_1")
 #'
-make_meth_rse_from_array_files = function(array_files, probe_name_column = 1, beta_value_column = 2, 
+make_meth_rse_from_array_files <- function(array_files, probe_name_column = 1, beta_value_column = 2, 
   normalization_factor = NULL, decimal_places = NA, probe_ranges, sample_metadata = NULL, hdf5_dir, dataset_name = "beta", 
   overwrite = FALSE, chunkdim = NULL, temporary_dir = NULL, ncores = 1, ...){
   
@@ -166,7 +166,7 @@ make_meth_rse_from_array_files = function(array_files, probe_name_column = 1, be
   
   # If temporary_dir not provided, set it to a directory in tempdir()
   if(is.null(temporary_dir)){
-    temporary_dir = tempfile("temporary_meth_chunks_")
+    temporary_dir <- tempfile("temporary_meth_chunks_")
   }
   
   # Check temporary directory doesn't already exist and create it if it doesn't
@@ -182,12 +182,12 @@ make_meth_rse_from_array_files = function(array_files, probe_name_column = 1, be
   }
   
   # Perform setup
-  setup = .make_meth_rse_setup(meth_files = array_files, meth_sites = probe_ranges, sample_metadata = sample_metadata, 
+  setup <- .make_meth_rse_setup(meth_files = array_files, meth_sites = probe_ranges, sample_metadata = sample_metadata, 
     hdf5_dir = hdf5_dir, dataset_name = dataset_name, overwrite = overwrite, chunkdim = chunkdim, 
     temporary_dir = temporary_dir, ...)
   
   # Read in array files and write data from chunks to appropriate temporary directory
-  probe_sites_df = .split_meth_array_files_into_chunks(array_files = array_files, probe_name_column = probe_name_column, 
+  probe_sites_df <- .split_meth_array_files_into_chunks(array_files = array_files, probe_name_column = probe_name_column, 
     beta_value_column = beta_value_column, file_grid_columns = setup$file_grid_columns, probe_ranges = probe_ranges,
     probe_groups = setup$meth_site_groups, temp_chunk_dirs = setup$temp_chunk_dirs, 
     normalization_factor = normalization_factor, decimal_places = decimal_places, ncores = ncores)
@@ -197,7 +197,7 @@ make_meth_rse_from_array_files = function(array_files, probe_name_column = 1, be
     temp_chunk_dirs = setup$temp_chunk_dirs, files_in_chunks = setup$files_in_chunks)
   
   # Create a RangedSummarizedExperiment
-  rse = .create_meth_rse_from_hdf5(hdf5_filepath = setup$hdf5_filepath, hdf5_dir = hdf5_dir,
+  rse <- .create_meth_rse_from_hdf5(hdf5_filepath = setup$hdf5_filepath, hdf5_dir = hdf5_dir,
     meth_sites_df = probe_sites_df, sample_metadata = sample_metadata)
   
   # Delete temporary_dir if it is empty
@@ -214,7 +214,7 @@ make_meth_rse_from_array_files = function(array_files, probe_name_column = 1, be
 #' The hg19 genomic coordinates for methylation sites analysed by the Infinium HumanMethylation450K array.
 #'
 #'@format GRanges object with 482,421 ranges and one metadata column name giving the name of the associated probe. 
-#'@source Derived from the manifest file downloaded from https://webdata.illumina.com/downloads/productfiles/humanmethylation450/humanmethylation450_15017482_v1-2.csv?_gl=1*ocsx4f*_ga*MTk1Nzc4MDkwMy4xNjg3ODcxNjg0*_ga_VVVPY8BDYL*MTY4Nzg3MTY4My4xLjEuMTY4Nzg3MzU5Mi4xMC4wLjA.
+#'@source Derived from the manifest file downloaded from https://webdata.illumina.com/downloads/productfiles/humanmethylation450/humanmethylation450_15017482_v1-2.csv?_gl<-1*ocsx4f*_ga*MTk1Nzc4MDkwMy4xNjg3ODcxNjg0*_ga_VVVPY8BDYL*MTY4Nzg3MTY4My4xLjEuMTY4Nzg3MzU5Mi4xMC4wLjA.
 "infinium_450k_probe_granges_hg19"
 
 #' Convert a Methrix object into a RangedSummarizedExperiment
@@ -229,21 +229,21 @@ make_meth_rse_from_array_files = function(array_files, probe_name_column = 1, be
 #' data("methrix_data", package = "methrix")
 #'   
 #' # Convert methrix to a RangedSummarizedExperiment with one assay for the methylation beta values
-#' meth_rse = methodical::methrix_to_rse(methrix_data, assays = "beta")
+#' meth_rse <- methodical::methrix_to_rse(methrix_data, assays = "beta")
 #' 
-methrix_to_rse = function(methrix, assays = c("beta", "cov")){
+methrix_to_rse <- function(methrix, assays = c("beta", "cov")){
   
   # Check that allowed values are provided for assays
   if(any(!assays %in% c("beta", "cov"))){stop("assays should only be one or both of \"beta\" and \"cov\"")}
   
   # Extract rowdata from methrix
-  rowdata = SummarizedExperiment::rowData(methrix)
+  rowdata <- SummarizedExperiment::rowData(methrix)
   
   # Extract GRanges of methylation sites from methrix
-  methrix_ranges = GenomicRanges::makeGRangesFromDataFrame(rowdata, start.field = "start", end.field = "start")
+  methrix_ranges <- GenomicRanges::makeGRangesFromDataFrame(rowdata, start.field = "start", end.field = "start")
   
   # Create a RangedSummarizedExperiment from methrix
-  rse = SummarizedExperiment::SummarizedExperiment(
+  rse <- SummarizedExperiment::SummarizedExperiment(
     assays = SummarizedExperiment::assays(methrix)[assays], 
     colData = SummarizedExperiment::colData(methrix), 
     rowRanges = methrix_ranges)

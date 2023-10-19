@@ -19,6 +19,6 @@ A RangedSummarizedExperiment with methylation values from the specified dataset.
 Download a WGBS methylation dataset from TumourMethData
 }
 \examples{
-mcrpc_wgbs_hg38_chr11 = methodical::download_meth_dataset(dataset = "mcrpc_wgbs_hg38_chr11")
+mcrpc_wgbs_hg38_chr11 <- methodical::download_meth_dataset(dataset = "mcrpc_wgbs_hg38_chr11")
 print(mcrpc_wgbs_hg38_chr11)
 }

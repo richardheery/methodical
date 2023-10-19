@@ -66,18 +66,18 @@ Create a HDF5-backed RangedSummarizedExperiment for methylation values in array 
 data("infinium_450k_probe_granges_hg19", package = "methodical")
 
 # Get paths to array files
-array_files = list.files(path = system.file('extdata', package = 'methodical'), 
+array_files <- list.files(path = system.file('extdata', package = 'methodical'), 
   pattern = ".txt.gz", full.names = TRUE)
 
 # Create sample metadata
-sample_metadata = data.frame(
+sample_metadata <- data.frame(
   tcga_project = "LUAD",
   sample_type = "Tumour", submitter = gsub("_01.tsv.gz", "", basename(array_files)),
   row.names = gsub(".tsv.gz", "", basename(array_files))
 )
 
 # Create a HDF5-backed RangedSummarizedExperiment from array files using default chumk dimensions
-meth_rse = make_meth_rse_from_array_files(array_files = array_files, 
+meth_rse <- make_meth_rse_from_array_files(array_files = array_files, 
  probe_ranges = infinium_450k_probe_granges_hg19, 
  sample_metadata = sample_metadata, hdf5_dir = "array_file_hdf5_1")
 

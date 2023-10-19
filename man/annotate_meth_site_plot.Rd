@@ -44,8 +44,8 @@ Can combine the meth site values plot and genomic annotation together into a sin
 }
 \examples{
 # Get CpG islands from UCSC
-cpg_island_annotation = annotatr::build_annotations(genome='hg38', annotations = 'hg38_cpgs')
-cpg_island_annotation$region_type = cpg_island_annotation$type
+cpg_island_annotation <- annotatr::build_annotations(genome = "hg38", annotations = "hg38_cpgs")
+cpg_island_annotation$region_type <- cpg_island_annotation$type
 
 # Load plot with CpG methylation correlation values for TUBB6
 data("tubb6_correlation_plot", package = "methodical")

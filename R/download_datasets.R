@@ -6,9 +6,9 @@
 #' @return A RangedSummarizedExperiment with methylation values from the specified dataset. 
 #' @export
 #' @examples
-#' mcrpc_wgbs_hg38_chr11 = methodical::download_meth_dataset(dataset = "mcrpc_wgbs_hg38_chr11")
+#' mcrpc_wgbs_hg38_chr11 <- methodical::download_meth_dataset(dataset = "mcrpc_wgbs_hg38_chr11")
 #' print(mcrpc_wgbs_hg38_chr11)
-download_meth_dataset = function(dataset, dir = tempdir()){
+download_meth_dataset <- function(dataset, dir = tempdir()){
   
   # Load TumourMethDatasets
   data("TumourMethDatasets", package = "methodical")
@@ -19,7 +19,7 @@ download_meth_dataset = function(dataset, dir = tempdir()){
   }
   
   # Create output_dir from dir and dataset name
-  output_dir = paste(dir, dataset, sep = "/")
+  output_dir <- paste(dir, dataset, sep = "/")
   
   # Check if output_dir already exists
   if(!dir.exists(dir)){stop("dir doesn't exist")}
@@ -28,11 +28,11 @@ download_meth_dataset = function(dataset, dir = tempdir()){
   )}
   
   # Extract the appropriate EH ID for the dataset
-  eh_id = .experimenthub_ids[dataset, "wgbs"]
+  eh_id <- .experimenthub_ids[dataset, "wgbs"]
   
   # Create a connection to ExperimentHub and find the entry for the specified dataset
-  eh  = ExperimentHub::ExperimentHub()
-  dataset_files = eh[[eh_id]]
+  eh  <- ExperimentHub::ExperimentHub()
+  dataset_files <- eh[[eh_id]]
   
   # Check that two files were downloaded
   if(length(dataset_files) != 2){
@@ -40,9 +40,9 @@ download_meth_dataset = function(dataset, dir = tempdir()){
   }
   
   # Identify H5 file
-  h5_file = dataset_files[which(sapply(dataset_files, function(x)
+  h5_file <- dataset_files[which(sapply(dataset_files, function(x)
     tryCatch({rhdf5::h5ls(x); TRUE}, error = function(e) FALSE)))]
-  rds_file = dataset_files[which(sapply(dataset_files, function(x)
+  rds_file <- dataset_files[which(sapply(dataset_files, function(x)
     tryCatch({readRDS(x); TRUE}, error = function(e) FALSE)))]
   
   # Check that one H5 file and one RDS file were found
@@ -51,13 +51,13 @@ download_meth_dataset = function(dataset, dir = tempdir()){
   
   # Create directory and create symlinks to files in it
   dir.create(output_dir)
-  h5_link = paste(output_dir, "assays.h5", sep = "/")
-  rds_link = paste(output_dir, "se.rds", sep = "/")
+  h5_link <- paste(output_dir, "assays.h5", sep = "/")
+  rds_link <- paste(output_dir, "se.rds", sep = "/")
   R.utils::createLink(link = h5_link, target = h5_file)
   R.utils::createLink(link = rds_link, target = rds_file)
   
   # Create RangedSummarizedExperiment from output_dir
-  rse = HDF5Array::loadHDF5SummarizedExperiment(output_dir)
+  rse <- HDF5Array::loadHDF5SummarizedExperiment(output_dir)
   return(rse)
   
 }

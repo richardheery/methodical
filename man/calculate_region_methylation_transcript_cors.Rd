@@ -61,11 +61,12 @@ Calculate the correlation values between the methylation of genomic regions and 
 
 # Load TUBB6 TMRs, RangedSummarizedExperiment with methylation values for CpGs around TUBB6 TSS and TUBB6 transcript counts
 data(tubb6_tmrs, package = "methodical")
-data(tubb6_meth_rse, package = "methodical"); tubb6_meth_rse = eval(tubb6_meth_rse)
+data(tubb6_meth_rse, package = "methodical")
+tubb6_meth_rse <- eval(tubb6_meth_rse)
 data(tubb6_transcript_counts, package = "methodical")
 
 # Calculate correlation values between TMRs identified for TUBB6 and transcript expression
-tubb6_tmrs_transcript_cors = methodical::calculate_region_methylation_transcript_cors(
+tubb6_tmrs_transcript_cors <- methodical::calculate_region_methylation_transcript_cors(
   genomic_regions = tubb6_tmrs, genomic_region_names = tubb6_tmrs$tmr_name, meth_rse = tubb6_meth_rse, transcript_expression_table = tubb6_transcript_counts)
 tubb6_tmrs_transcript_cors
  

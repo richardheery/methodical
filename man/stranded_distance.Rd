@@ -20,8 +20,8 @@ Unstranded regions are treated the same as regions on the "+" strand.
 }
 \examples{
 # Create query and subject GRanges 
-query_gr = GenomicRanges::GRanges(c("chr1:100-1000:+", "chr1:2000-3000:-"))
-subject_gr = GenomicRanges::GRanges(c("chr1:1500-1600:+", "chr1:4000-4500:-"))
+query_gr <- GenomicRanges::GRanges(c("chr1:100-1000:+", "chr1:2000-3000:-"))
+subject_gr <- GenomicRanges::GRanges(c("chr1:1500-1600:+", "chr1:4000-4500:-"))
 
 # Calculate distances between query and subject
 methodical::stranded_distance(query_gr, subject_gr)

@@ -9,7 +9,7 @@
 #' or the Jaccard index of the intersection in terms of base pairs. Default value is "absolute".
 #' @return A numeric vector with the overlap measure for genomic_regions with each type of region in annotation_ranges
 #' @export
-annotate_granges = function(genomic_regions, annotation_ranges, annotation_column = "region_type", ignore.strand = TRUE, overlap_measure = "absolute"){
+annotate_granges <- function(genomic_regions, annotation_ranges, annotation_column = "region_type", ignore.strand = TRUE, overlap_measure = "absolute"){
   
   # Check that provided annotation_ranges is a GRanges and has a metadata column matching annotation_column
   if(!is(annotation_ranges, "GRanges")){stop("annotation_ranges must be a GRanges object")}
@@ -18,10 +18,10 @@ annotate_granges = function(genomic_regions, annotation_ranges, annotation_colum
   }
   
   # Split annotation_ranges into a list using annotation_column
-  annotation_ranges = split(annotation_ranges, mcols(annotation_ranges)[[annotation_column]]); gc()
+  annotation_ranges <- split(annotation_ranges, mcols(annotation_ranges)[[annotation_column]]); gc()
   
   # Calculate the intersection between genomic_regions and different groups of regions defined by annotation_ranges. 
-  annotation_overlaps = sapply(annotation_ranges, function(x) 
+  annotation_overlaps <- sapply(annotation_ranges, function(x) 
     .calculate_regions_intersections(gr1 = genomic_regions, gr2 = x, ignore.strand = ignore.strand, overlap_measure = overlap_measure))
   
   return(annotation_overlaps)

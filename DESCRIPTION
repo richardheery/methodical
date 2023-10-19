@@ -35,6 +35,7 @@ Imports:
     GenomeInfoDb,
     HDF5Array,
     IRanges,
+    R.utils,
     RcppRoll,
     rhdf5,
     rtracklayer,
@@ -48,9 +49,9 @@ Suggests:
     BSgenome.Athaliana.TAIR.TAIR9,
     BSgenome.Hsapiens.UCSC.hg19,
     BSgenome.Hsapiens.UCSC.hg38,
+    DESeq2,
     knitr,
     methrix,
-    R.utils,
     rmarkdown
 VignetteBuilder: knitr
 SystemRequirements: kallisto

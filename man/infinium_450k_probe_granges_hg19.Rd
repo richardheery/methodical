@@ -8,7 +8,7 @@
 GRanges object with 482,421 ranges and one metadata column name giving the name of the associated probe.
 }
 \source{
-Derived from the manifest file downloaded from https://webdata.illumina.com/downloads/productfiles/humanmethylation450/humanmethylation450_15017482_v1-2.csv?_gl=1\emph{ocsx4f}_ga\emph{MTk1Nzc4MDkwMy4xNjg3ODcxNjg0}_ga_VVVPY8BDYL*MTY4Nzg3MTY4My4xLjEuMTY4Nzg3MzU5Mi4xMC4wLjA.
+Derived from the manifest file downloaded from https://webdata.illumina.com/downloads/productfiles/humanmethylation450/humanmethylation450_15017482_v1-2.csv?_gl<-1\emph{ocsx4f}_ga\emph{MTk1Nzc4MDkwMy4xNjg3ODcxNjg0}_ga_VVVPY8BDYL*MTY4Nzg3MTY4My4xLjEuMTY4Nzg3MzU5Mi4xMC4wLjA.
 }
 \usage{
 infinium_450k_probe_granges_hg19

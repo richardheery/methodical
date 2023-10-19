@@ -31,6 +31,6 @@ Calculate methodical score and smooth it using a exponential weighted moving ave
 data("tubb6_cpg_meth_transcript_cors", package = "methodical")
 
 # Calculate smoothed Methodical scores from correlation values
-smoothed_methodical_scores = methodical::calculate_smoothed_methodical_scores(tubb6_cpg_meth_transcript_cors)
+smoothed_methodical_scores <- methodical::calculate_smoothed_methodical_scores(tubb6_cpg_meth_transcript_cors)
 
 }
