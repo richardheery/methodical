@@ -13,7 +13,7 @@ kallisto_quantify(
   output_directory,
   merged_output_prefix = "kallisto_transcript",
   messages_file = "",
-  n_cores = 1,
+  ncores = 1,
   number_bootstraps = 100
 )
 }
@@ -36,7 +36,7 @@ kallisto_transcript_counts_merged.tsv.gz and kallisto_transcript_tpm_merged.tsv.
 
 \item{messages_file}{Name of file to save kallisto run messages. If no file name given, information is printed to stdout.}
 
-\item{n_cores}{The number of cores to use. Default is 1.}
+\item{ncores}{The number of cores to use. Default is 1.}
 
 \item{number_bootstraps}{The number of bootstrap samples. Default is 100.}
 }

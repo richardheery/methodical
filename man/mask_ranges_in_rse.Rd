@@ -4,7 +4,7 @@
 \alias{mask_ranges_in_rse}
 \title{Mask regions in a ranged summarized experiment}
 \usage{
-mask_ranges_in_rse(rse, mask_ranges, assay = 1)
+mask_ranges_in_rse(rse, mask_ranges, assay_number = 1)
 }
 \arguments{
 \item{rse}{A RangedSummarizedExperiment.}

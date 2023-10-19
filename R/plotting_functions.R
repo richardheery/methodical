@@ -39,9 +39,6 @@ plot_meth_site_values <- function(meth_site_values, column_name, reference_tss =
     is(reference_tss, "logical") | is(reference_tss, "GRanges"), 
     is(title, "character") | is.null(title), is(xlabel, "character") | is.null(xlabel),
     is(ylabel, "character") | is.null(ylabel), is(value_colours, "character"))
-    
-    is(max_sites_per_chunk, "numeric") & max_sites_per_chunk >= 1 | is.null(max_sites_per_chunk),
-    is(ncores, "numeric") & ncores >= 1)
   
   # Check that suitable input provided for value_colours and set low and high value colours if so
   if(length(value_colours) == 1){
@@ -292,7 +289,7 @@ plot_tmrs <- function(meth_site_plot, tmrs_gr, reference_tss = NULL, transcript_
   # Check that inputs have the correct data type
   stopifnot(is(meth_site_plot, "ggplot"), is(tmrs_gr, "GRanges"),
     is(reference_tss, "logical") | is(reference_tss, "GRanges"),
-    is(transcript_id, "character") ! is.null(transcript_id),
+    is(transcript_id, "character") | is.null(transcript_id),
     is(tmr_colours, "character"), is(linewidth, "numeric"))
     
   # Filter tmrs_gr and reference_tss for transcript_id if provided

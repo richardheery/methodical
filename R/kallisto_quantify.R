@@ -163,7 +163,7 @@ sum_transcript_values_for_genes <- function(transcript_expression_table, gene_to
   
   # Check that inputs have the correct data type
   stopifnot(is(transcript_expression_table, "data.frame") | is(transcript_expression_table, "matrix"), 
-    is(gene_to_transcript_list, "list"), all(sapply(gene_to_transcript_list, class) = "character"))
+    is(gene_to_transcript_list, "list"), all(sapply(gene_to_transcript_list, function(x) is(x, "character"))))
   
   # If gene_to_transcript_list is a GRangesList, extract a list of vectors matching genes to transcripts
   if(is(gene_to_transcript_list, "GRangesList")){
