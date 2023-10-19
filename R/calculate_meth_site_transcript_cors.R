@@ -112,7 +112,7 @@ calculate_meth_site_transcript_cors <- function(meth_rse, assay_number = 1, tran
     max_sites_per_chunk = max_sites_per_chunk, ncores = 1)
   
   # Create cluster if ncores greater than 1
-  cl <- setup_cluster(ncores = ncores, packages = c("methodical", "HDF5Array"), outfile = NULL)
+  cl <- .setup_cluster(ncores = ncores, packages = c("methodical", "HDF5Array"), outfile = NULL)
   if(ncores > 1){on.exit(parallel::stopCluster(cl))}
   
   # For each sequence get methylation of the associated regions

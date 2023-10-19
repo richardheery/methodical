@@ -117,7 +117,7 @@
   file_grid_columns, meth_sites, meth_site_groups, temp_chunk_dirs, zero_based, normalization_factor, decimal_places, ncores){
   
   # Create cluster if ncores greater than 1 and set dt_threads accordingly
-  cl <- setup_cluster(ncores = ncores, packages = c("methodical"), outfile = "")
+  cl <- .setup_cluster(ncores = ncores, packages = c("methodical"), outfile = "")
   if(ncores > 1){on.exit(parallel::stopCluster(cl))}
   if(ncores > 1){
     dt_threads <- 1
@@ -220,7 +220,7 @@
   file_grid_columns, probe_ranges, probe_groups, temp_chunk_dirs, normalization_factor, decimal_places, ncores){
   
   # Create cluster if ncores greater than 1 and set dt_threads accordingly
-  cl <- setup_cluster(ncores = ncores, packages = c("methodical"), outfile = "")
+  cl <- .setup_cluster(ncores = ncores, packages = c("methodical"), outfile = "")
   if(ncores > 1){on.exit(parallel::stopCluster(cl))}
   if(ncores > 1){
     dt_threads <- 1

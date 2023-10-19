@@ -4,7 +4,7 @@
 #' @param packages A character vector with the names of packages to load.
 #' @param outfile Outfile for the cluster. Default is the NULL device.  
 #' @return A SOCKcluster if ncores is greater than 1 or NULL otherwise.
-setup_cluster <- function(ncores, packages = NULL, outfile = NULL){
+.setup_cluster <- function(ncores, packages = NULL, outfile = NULL){
   
   # Define %do% and %dopar%
   assign("%do%", foreach::`%do%`, envir = parent.frame())

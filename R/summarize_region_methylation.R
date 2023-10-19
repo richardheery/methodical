@@ -74,7 +74,7 @@ summarize_region_methylation <- function(meth_rse, assay_number = 1, genomic_reg
     max_sites_per_chunk = max_sites_per_chunk, ncores = n_chunks_parallel)
   
   # Create cluster if n_chunks_parallel greater than 1
-  cl <- setup_cluster(ncores = n_chunks_parallel, packages = c("methodical", "HDF5Array"), outfile = "")
+  cl <- .setup_cluster(ncores = n_chunks_parallel, packages = c("methodical", "HDF5Array"), outfile = "")
   if(n_chunks_parallel > 1){on.exit(parallel::stopCluster(cl))}
   
   # For each sequence get methylation of the associated regions
