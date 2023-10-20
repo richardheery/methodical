@@ -136,9 +136,9 @@ system.time({transcript_cpg_meth_cors_mcrpc_samples_5kb <- calculateMethSiteTran
   meth_rse = mcrpc_wgbs_hg38_chr11, 
   transcript_expression_table = mcrpc_transcript_counts_normalized, 
   samples_subset = common_mcprc_samples, 
-  tss_gr = transcript_tss_chr11, 
+  tss_gr = transcript_tss_chr11,
   cor_method = "pearson", max_sites_per_chunk = 300000,
-  expand_upstream = 5000, expand_downstream = 5000, ncores = 4)})
+  expand_upstream = 5000, expand_downstream = 5000, ncores = 8)})
 ```
 
 As an example, we'll examine the CpG methylation transcription correlations for 
@@ -242,7 +242,7 @@ system.time({transcript_body_meth_cors_mcrpc_samples <- calculateRegionMethylati
   genomic_region_transcripts = transcript_annotation_chr11$ID,
   region_methylation_summary_function = colMeans, 
   cor_method = "pearson", 
-  ncores = 4)})
+  ncores = 8)})
 
 # Show the top of the results table
 head(transcript_body_meth_cors_mcrpc_samples)
