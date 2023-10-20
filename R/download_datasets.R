@@ -13,7 +13,7 @@
 downloadMethDataset <- function(dataset, dir = tempdir()){
   
   # Load TumourMethDatasets
-  data("TumourMethDatasets", package = "TumourMethData")
+  data("TumourMethDatasets", package = "methodical")
   
   # Check that dataset is one of the allowed options
   if(!dataset %in% TumourMethDatasets$dataset_name){
