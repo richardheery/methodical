@@ -198,7 +198,7 @@ liftoverMethRSE <- function(meth_rse, chain, remove_one_to_many_mapping = TRUE, 
 #' @param mask_ranges Either a GRanges with regions to be masked in all samples (e.g. repetitive sequences) 
 #' or a GRangesList object with different regions to mask in each sample (e.g. mutations). If using a GRangesList object, names of the list
 #' elements should be the names of samples in rse.
-#' @param assay Assay to perform masking. Default is first assay
+#' @param assay_number Assay to perform masking. Default is first assay
 #' @return A RangedSummarizedExperiment with the regions present in mask_ranges masked
 #' @export
 #' @examples 
@@ -218,7 +218,7 @@ liftoverMethRSE <- function(meth_rse, chain, remove_one_to_many_mapping = TRUE, 
 maskRangesInRSE <- function(rse, mask_ranges, assay_number = 1){
   
   # Check that inputs have the correct data type
-  stopifnot(is(meth_rse, "RangedSummarizedExperiment"), 
+  stopifnot(is(rse, "RangedSummarizedExperiment"), 
     is(mask_ranges, "GRanges") | is(mask_ranges, "GRangesList"),
     is(assay_number, "numeric"))
   

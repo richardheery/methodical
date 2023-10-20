@@ -14,7 +14,7 @@
 \arguments{
 \item{meth_rse}{A RangedSummarizedExperiment with methylation values.}
 
-\item{genomic_regions}{A GRanges object}
+\item{genomic_regions}{A GRanges object.}
 
 \item{max_sites_per_chunk}{The maximum number of methylation sites to load into memory at once for each chunk.}
 

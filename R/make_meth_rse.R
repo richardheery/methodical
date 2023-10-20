@@ -56,7 +56,7 @@ makeMethRSEFromBedgraphs <- function(bedgraphs,
     is(start_column, "numeric") & start_column >= 1, is(end_column, "numeric") & end_column >= 1,
     is(value_column, "numeric") & value_column >= 1, is(zero_based, "logical"),
     is(normalization_factor, "numeric") | is.null(normalization_factor),
-    is(decimal_places, numeric) | is.na(decimal_places), is(meth_sites, "GRanges"),
+    is(decimal_places, "numeric") | is.na(decimal_places), is(meth_sites, "GRanges"),
     is(sample_metadata, "data.frame") | is.null(sample_metadata), is(hdf5_dir, "character"),
     is(dataset_name, "character"), is(overwrite, "logical"), is(chunkdim, "numeric") | is.null(chunkdim),
     is(temporary_dir, "character") | is.null(temporary_dir), is(ncores, "numeric") & ncores >= 1)
@@ -164,7 +164,7 @@ makeMethRSEFromArrayFiles <- function(array_files, probe_name_column = 1, beta_v
   stopifnot(is(array_files, "character"), is(probe_name_column, "numeric") & probe_name_column >= 1,
     is(beta_value_column, "numeric") & beta_value_column >= 1, 
     is(normalization_factor, "numeric") | is.null(normalization_factor),
-    is(decimal_places, numeric) | is.na(decimal_places), is(probe_ranges, "GRanges"),
+    is(decimal_places, "numeric") | is.na(decimal_places), is(probe_ranges, "GRanges"),
     is(sample_metadata, "data.frame") | is.null(sample_metadata), is(hdf5_dir, "character"),
     is(dataset_name, "character"), is(overwrite, "logical"), is(chunkdim, "numeric") | is.null(chunkdim),
     is(temporary_dir, "character") | is.null(temporary_dir), is(ncores, "numeric") & ncores >= 1)

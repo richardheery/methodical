@@ -134,12 +134,12 @@ plotMethSiteValues <- function(meth_site_values, column_name, reference_tss = FA
 #' Can combine the meth site values plot and genomic annotation together into a single plot or return the annotation plot separately. 
 #'
 #' @param meth_site_plot A plot of Value (generally methylation level or correlation of methylation with transcription) around a TSS
-#' @param reference_tss An optional GRanges object with a single range. 
-#' If provided, the x-axis will show the distance of methylation sites to the start of this region with methylation sites upstream 
-#' relative to the reference_tss shown first. If not, the x-axis will show the start site coordinate of the methylation site.
 #' @param annotation_gr A GRanges object giving the locations of different classes of regions. 
 #' There must be a metadata column named region_type giving the class of each region. 
 #' If this is a factor, the levels will be used to order the region classes in the plot. 
+#' @param reference_tss An optional GRanges object with a single range. 
+#' If provided, the x-axis will show the distance of methylation sites to the start of this region with methylation sites upstream 
+#' relative to the reference_tss shown first. If not, the x-axis will show the start site coordinate of the methylation site.
 #' @param region_class_colours An optional named vector of colours to use with different region classes. Names of vector match colours to region classes. 
 #' @param annotation_line_size Linewidth for annotation plot. Default is 5. 
 #' @param annotation_plot_height A value giving the proportion of the height of the plot devoted to the annotation. Default is 0.5. 
@@ -156,13 +156,13 @@ plotMethSiteValues <- function(meth_site_values, column_name, reference_tss = FA
 #' data("tubb6_correlation_plot", package = "methodical")
 #' 
 #' # Add positions of CpG islands to tubb6_correlation_plot
-#' methodical::annotateMethSitePlot(tubb6_correlation_plot, cpg_island_annotation, annotation_plot_height = 0.3)
+#' methodical::annotateMethSitePlot(tubb6_correlation_plot, annotation_gr = cpg_island_annotation, annotation_plot_height = 0.3)
 #' 
 annotateMethSitePlot <- function(meth_site_plot, annotation_gr, reference_tss = NULL, region_class_colours = NULL, 
   annotation_line_size = 5, annotation_plot_height = 0.5, keep_meth_site_plot_legend = FALSE, annotation_plot_only = FALSE){
   
   # Check that inputs have the correct data type
-  stopifnot(is(meth_site_plot, "ggplot"), is(annnotation_gr, "GRanges"),
+  stopifnot(is(meth_site_plot, "ggplot"), is(annotation_gr, "GRanges"),
     is(reference_tss, "GRanges") | is.null(reference_tss), 
     is(region_class_colours, "character") | is.null(region_class_colours),
     is(annotation_line_size, "numeric"), is(annotation_line_size, "numeric"),

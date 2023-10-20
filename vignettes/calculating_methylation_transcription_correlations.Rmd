@@ -11,7 +11,9 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  eval = TRUE
+  eval = TRUE,
+  fig.width = 12,
+  fig.height = 6.75
 )
 ```
 
@@ -179,7 +181,7 @@ on the x-axis. This location can be either the actual genomic location on the
 relevant sequence or else the distance relative to the TSS, depending on 
 whether `reference_tss` is set to TRUE or FALSE. 
 
-```{r}
+```{r, fig.show='hide'}
 # Plot methylation-transcription correlation values for GSTP1 showing 
 # chromosome 11 position on the x-axis
 meth_cor_plot_absolute_distance <- plotMethSiteValues(
@@ -208,7 +210,7 @@ between 2,500 and 1,250 base pairs upstream.
 The returned plots are ggplot objects and can be manipulated in any way that
 a regular ggplot object can. 
 
-```{r}
+```{r, fig.show='hide'}
 # Add a dashed line to meth_cor_plot_relative_distance where the correlation is 0
 meth_cor_plot_relative_distance + ggplot2::geom_hline(yintercept = 0, linetype = "dashed")
 ```
@@ -230,7 +232,7 @@ exon.
 Here we'll investigate the relationship between gene body methylation and 
 transcription for all transcripts on chromosome 11. 
 
-```{r}
+```{r, fig.show='hide'}
 # Calculate gene body methylation-transcription correlations for all TSS on chromosome 11
 system.time({transcript_body_meth_cors_mcrpc_samples <- calculateRegionMethylationTranscriptCors(
   meth_rse = mcrpc_wgbs_hg38_chr11, 
