@@ -23,6 +23,7 @@ Depends:
     SummarizedExperiment
 LazyData: false
 Imports: 
+    BiocParallel,
     Biostrings,
     BSgenome,
     cowplot,

@@ -15,7 +15,7 @@ calculateMethSiteTranscriptCors(
   cor_method = "pearson",
   add_distance_to_region = TRUE,
   max_sites_per_chunk = NULL,
-  ncores = 1,
+  BPPARAM = BiocParallel::bpparam(),
   results_dir = NULL
 )
 }
@@ -50,7 +50,7 @@ Some experimentation may be needed to choose an optimal value as low values will
 while high values will result in a large memory footprint without much improvement in running time.
 Default is floor(62500000/ncol(meth_rse)), resulting in each chunk requiring approximately 500 MB of RAM.}
 
-\item{ncores}{Number of cores to use. Default is 1.}
+\item{BPPARAM}{A BiocParallelParam object. Defaults to \code{BiocParallel::bpparam()}.}
 
 \item{results_dir}{An optional path to a directory to save results as RDS files. There will be one RDS file for each transcript.
 If not provided, returns the results as a list.}

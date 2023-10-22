@@ -20,7 +20,7 @@
 #' Some experimentation may be needed to choose an optimal value as low values will result in increased running time, 
 #' while high values will result in a large memory footprint without much improvement in running time. 
 #' Default is floor(62500000/ncol(meth_rse)), resulting in each chunk requiring approximately 500 MB of RAM. 
-#' @param ncores Number of cores to use. Default is 1.
+#' @param BPPARAM A BiocParallelParam object. Defaults to `BiocParallel::bpparam()`. 
 #' @param results_dir An optional path to a directory to save results as RDS files. There will be one RDS file for each transcript. 
 #' If not provided, returns the results as a list. 
 #' @return If results_dir is NULL, a list of data.frames with the correlation of methylation sites surrounding a specified 
@@ -40,8 +40,9 @@
 #' tubb6_cpg_meth_transcript_cors <- methodical::calculateMethSiteTranscriptCors(meth_rse = tubb6_meth_rse, 
 #'   transcript_expression_table = tubb6_transcript_counts, tss_gr = tubb6_tss, expand_upstream = 5000, expand_downstream = 5000)
 #'   
-calculateMethSiteTranscriptCors <- function(meth_rse, assay_number = 1, transcript_expression_table, samples_subset = NULL, tss_gr, expand_upstream = 5000,
-  expand_downstream = 5000, cor_method = "pearson", add_distance_to_region = TRUE, max_sites_per_chunk = NULL, ncores = 1, results_dir = NULL){
+calculateMethSiteTranscriptCors <- function(meth_rse, assay_number = 1, transcript_expression_table, 
+  samples_subset = NULL, tss_gr, expand_upstream = 5000, expand_downstream = 5000, cor_method = "pearson", 
+  add_distance_to_region = TRUE, max_sites_per_chunk = NULL, BPPARAM = BiocParallel::bpparam(), results_dir = NULL){
   
   # Check that inputs have the correct data type
   stopifnot(is(meth_rse, "RangedSummarizedExperiment"), is(assay_number, "numeric"),
@@ -50,7 +51,7 @@ calculateMethSiteTranscriptCors <- function(meth_rse, assay_number = 1, transcri
     is(tss_gr, "GRanges"), is(expand_upstream, "numeric"), is(expand_downstream, "numeric"),
     is(cor_method, "character"), is(add_distance_to_region, "logical"),
     is(max_sites_per_chunk, "numeric") & max_sites_per_chunk >= 1 | is.null(max_sites_per_chunk), 
-    is(ncores, "numeric") & ncores >= 1, is(results_dir, "character") | is.null(results_dir))
+    is(BPPARAM, "BiocParallelParam"), is(results_dir, "character") | is.null(results_dir))
   cor_method = match.arg(cor_method, c("pearson", "kendall", "spearman"))
   
   # Check that all regions in tss_gr have a length of 1 and that they have names
@@ -108,14 +109,11 @@ calculateMethSiteTranscriptCors <- function(meth_rse, assay_number = 1, transcri
   tss_gr_expanded <- GenomicRanges::promoters(tss_gr, expand_upstream, expand_downstream + 1)
   
   # Split tss_gr_expanded into chunks based on the number of methylation sites that they cover
-  genomic_region_bins <- .chunk_regions(meth_rse = meth_rse, genomic_regions = tss_gr_expanded, 
+  genomic_region_bins <- methodical:::.chunk_regions(meth_rse = meth_rse, genomic_regions = tss_gr_expanded, 
     max_sites_per_chunk = max_sites_per_chunk, ncores = 1)
   
-  # Create cluster if ncores greater than 1
-  cl <- .setup_cluster(ncores = ncores, packages = c("methodical", "HDF5Array"), outfile = NULL)
-  if(ncores > 1){on.exit(parallel::stopCluster(cl))}
-  
   # For each sequence get methylation of the associated regions
+  `%do%` <- foreach::`%do%`
   all_correlations <- foreach::foreach(chunk = seq_along(genomic_region_bins)) %do% {
     
     # Print name of sequence which is being summarized
@@ -153,58 +151,17 @@ calculateMethSiteTranscriptCors <- function(meth_rse, assay_number = 1, transcri
     row.names(meth_values_chunk) <- as.character(SummarizedExperiment::rowRanges(meth_rse_for_chunk))
     
     # Create lists with the methylation values, transcript values and TSS for each transcript
-    tss_meth_values <- lapply(tss_region_indices_list, function(x) meth_values_chunk[x, , drop = FALSE])
     transcript_values <- lapply(names(tss_region_indices_list), function(x) transcript_expression_table_chunk[x, , drop = FALSE])
-    tss_for_chunk <- split(tss_for_chunk, names(tss_for_chunk))[names(tss_meth_values)] 
+    tss_for_chunk <- split(tss_for_chunk, names(tss_for_chunk))[names(tss_region_indices_list)] 
     
-    # Remove meth_values_chunk and tss_region_indices_list
-    rm(meth_values_chunk, tss_region_indices_list)
+    # Create an iterator function for TSS sites
+    tss_iter = methodical:::.tss_iterator(meth_values_chunk, tss_region_indices_list, transcript_values, tss_for_chunk)
     
-    # Calculate correlations. 
-    chunk_correlations <- foreach::foreach(
-      meth_table = tss_meth_values, 
-      transcript_table = transcript_values,
-      transcript_tss = tss_for_chunk, transcript_name = names(tss_meth_values)) %dopar% {
-      
-      # Transpose meth_table
-      meth_table <- t(meth_table)
-      
-      # Transpose transcript_table and name it with transcript name
-      transcript_table <- setNames(data.frame(t(transcript_table)), transcript_name)
-        
-      tryCatch({
-        transcript_meth_site_cors <- methodical::rapidCorTest(
-          table1 = meth_table, table2 = transcript_table, 
-          table1_name = "meth_site", table2_name = "transcript_name", 
-          cor_method = cor_method, p_adjust_method = "none")
-  
-          # Add meth site distance to region if specified
-          if(add_distance_to_region){transcript_meth_site_cors$distance_to_tss <- 
-            methodical::strandedDistance(query_gr = GenomicRanges::GRanges(transcript_meth_site_cors$meth_site), 
-              subject_gr = transcript_tss)
-          }
-        
-        # Add transcript TSS as an attribute to correlation data.frame
-        attributes(transcript_meth_site_cors)$tss_range <- transcript_tss
-        
-        # Save results to a RDS file in results_dir if it is provided
-        if(!is.null(results_dir)){
-          
-          # Set name of RDS file as the transcript_name with .rds appended
-          rds_file <- paste0(results_dir, "/", transcript_name, ".rds")
-          
-          # Write the results to the specified RDS file and return the RDS filepath
-          saveRDS(transcript_meth_site_cors, rds_file)
-          transcript_meth_site_cors <- rds_file
-        }
-        
-        transcript_meth_site_cors
-        
-      }, error = function(x) data.frame())
-    }
-  
+    # Calculate correlations for all TSS in chunk. 
+    chunk_correlations <- BiocParallel::bpiterate(ITER = tss_iter, FUN = methodical:::.tss_correlations, BPPARAM = BPPARAM)
+    
     # Add names of transcript to list and return
-    chunk_correlations <- setNames(chunk_correlations, names(tss_meth_values))
+    chunk_correlations <- setNames(chunk_correlations, names(tss_for_chunk))
       
     chunk_correlations
   }
