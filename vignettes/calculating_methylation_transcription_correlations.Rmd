@@ -1,6 +1,9 @@
 ---
 title: "Calculating Methylation Transcription Correlations"
-output: html_document
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_depth: 2
 vignette: >
   %\VignetteIndexEntry{calculating_methylation_transcription_correlations}
   %\VignetteEngine{knitr::rmarkdown}
@@ -31,6 +34,13 @@ methylation of wider genomic regions (e.g. expected promoter regions, gene bodie
 and the expression of associated transcripts. We will demonstrate both cases in 
 this vignette. 
 
+```{r, eval=FALSE}
+# Installing Methodical
+if (!require("BiocManager"))
+    install.packages("BiocManager")
+BiocManager::install("methodical")
+```
+
 ## Import of RangedSummarizedExperiment for tumour WGBS methylation data
 
 We now first download a RangedSummarizedExperiment with WGBS data for prostate
@@ -41,8 +51,9 @@ tumour metastases from TumourMethDatasets.
 mcrpc_wgbs_hg38_chr11 <- downloadMethDataset(dataset = "mcrpc_wgbs_hg38_chr11")
 
 # Download transcript counts
-download.file("https://zenodo.org/record/8422703/files/mcrpc_transcript_counts.tsv.gz", destfile = "mcrpc_transcript_counts.tsv.gz")
-mcrpc_transcript_counts <- data.frame(data.table::fread("mcrpc_transcript_counts.tsv.gz"), row.names = 1)
+download.file("https://zenodo.org/record/8422703/files/mcrpc_transcript_counts.tsv.gz", 
+  destfile = paste(tempdir(),"mcrpc_transcript_counts.tsv.gz", sep = "/"))
+mcrpc_transcript_counts <- data.frame(data.table::fread(paste(tempdir(),"mcrpc_transcript_counts.tsv.gz", sep = "/")), row.names = 1)
 ```
 
 ## Preparation of TSS annotation
@@ -242,8 +253,7 @@ system.time({transcript_body_meth_cors_mcrpc_samples <- calculateRegionMethylati
   genomic_regions = transcript_annotation_chr11, 
   genomic_region_transcripts = transcript_annotation_chr11$ID,
   region_methylation_summary_function = colMeans, 
-  cor_method = "pearson", 
-  ncores = 8)})
+  cor_method = "pearson", BPPARAM = bpparam())})
 
 # Show the top of the results table
 head(transcript_body_meth_cors_mcrpc_samples)

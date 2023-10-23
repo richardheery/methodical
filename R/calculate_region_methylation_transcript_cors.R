@@ -18,7 +18,7 @@
 #' @param cor_method A character string indicating which correlation coefficient is to be computed. Identical to methods from cor(). Default is "pearson".
 #' @param p_adjust_method Method used to adjust p-values. Same as the methods from p.adjust.methods. Default is Benjamini-Hochberg.
 #' @param region_methylation_summary_function A function that summarizes column values. Default is colMeans.
-#' @param ncores Number of cores to use for parallel processing. Default is 1.
+#' @param BPPARAM A BiocParallelParam object. Defaults to `BiocParallel::bpparam()`. 
 #' @return A data.frame with the correlation values between the methylation of genomic regions and expression of transcripts associated with them
 #' @export
 #' @examples 
@@ -36,7 +36,7 @@
 #'  
 calculateRegionMethylationTranscriptCors <- function(meth_rse, assay_number = 1, transcript_expression_table, samples_subset = NULL, 
   genomic_regions, genomic_region_names = NULL, genomic_region_transcripts = NULL, genomic_region_methylation = NULL,
-  cor_method = "pearson", p_adjust_method = "BH", region_methylation_summary_function = colMeans, ncores = 1){
+  cor_method = "pearson", p_adjust_method = "BH", region_methylation_summary_function = colMeans, BPPARAM = BiocParallel::bpparam()){
   
   # Check that inputs have the correct data type
   stopifnot(is(meth_rse, "RangedSummarizedExperiment"), is(assay_number, "numeric"),
@@ -46,7 +46,7 @@ calculateRegionMethylationTranscriptCors <- function(meth_rse, assay_number = 1,
     is(genomic_region_transcripts, "character") | is.null(genomic_region_transcripts), 
     is(genomic_region_methylation, "data.frame") | is(genomic_region_methylation, "matrix") | is.null(genomic_region_methylation),
     is(cor_method, "character"), is(p_adjust_method, "character") & p_adjust_method %in% p.adjust.methods,
-    is(region_methylation_summary_function, "function"), is(ncores, "numeric") & ncores >= 1)
+    is(region_methylation_summary_function, "function"), is(BPPARAM, "BiocParallelParam"))
   cor_method = match.arg(cor_method, c("pearson", "kendall", "spearman"))
   
   # Check that samples_subset are in meth_rse and transcript_expression_table
@@ -111,11 +111,10 @@ calculateRegionMethylationTranscriptCors <- function(meth_rse, assay_number = 1,
   if(is.null(genomic_region_methylation)){
   
     # Summarize methylation values for genomic_regions
-    cat("Summarizing region methylation\n")
-    genomic_region_methylation <- methodical::summarizeRegionMethylation(
+    genomic_region_methylation <- summarizeRegionMethylation(
       meth_rse = meth_rse, assay_number = assay_number, genomic_regions = genomic_regions, 
       genomic_region_names = genomic_region_names, 
-      summary_function = region_methylation_summary_function, n_chunks_parallel = ncores
+      summary_function = region_methylation_summary_function, BPPARAM = BPPARAM
     )
     
     # Set region_name of genomic_region_methylation as row.names
@@ -124,7 +123,7 @@ calculateRegionMethylationTranscriptCors <- function(meth_rse, assay_number = 1,
   }
   
   # Calculate correlations between region methylation values and transcript expression
-  cat("Calculating transcript correlations")
+  message("Calculating transcript correlations")
   
   # Create a data.frame matching genomic_region_names and transcript_names
   feature_matches_df <- 
@@ -133,30 +132,14 @@ calculateRegionMethylationTranscriptCors <- function(meth_rse, assay_number = 1,
   # Create a list of the transcripts associated with each genomic region
   feature_matches <- split(feature_matches_df$genomic_region_names, feature_matches_df$transcript_id)
   
-  # Create cluster if ncores greater than 1
-  if(ncores > 1){
-    cl <- parallel::makeCluster(ncores)
-    doParallel::registerDoParallel(cl, ncores)
-    `%dopar%` <- foreach::`%dopar%`
-    `%do%` <- foreach::`%do%`
-  } else {
-    `%dopar%` <- foreach::`%do%`
-    `%do%` <- foreach::`%do%`
-  }
-  
   # For each transcript, calculate the correlation between its expression and the methylation of regions associated with it
-  methylation_transcript_correlations <- foreach::foreach(transcript = names(feature_matches)) %dopar% {
+  methylation_transcript_correlations <- BiocParallel::bplapply(X = names(feature_matches), 
+    FUN = function(X) {rapidCorTest(
+      table1 = t(genomic_region_methylation[feature_matches[[X]], ]),
+      table2 = setNames(data.frame(unlist(transcript_expression_table[X, ])), X),
+      table1_name = "genomic_region_name", table2_name = "transcript_name"
+      )}, BPPARAM = BPPARAM)
     
-    methodical::rapidCorTest(
-      table1 = t(genomic_region_methylation[feature_matches[[transcript]], ]), 
-      table2 = setNames(data.frame(unlist(transcript_expression_table[transcript, ])), transcript),
-      table1_name = "genomic_region_name", table2_name = "transcript_name",
-      cor_method = cor_method, p_adjust_method = "none")
-  }
-  
-  # Stop the cluster if present
-  if(ncores > 1){parallel::stopCluster(cl)}
-  
   # Combine results into a single table
   methylation_transcript_correlations <- dplyr::bind_rows(methylation_transcript_correlations)
   

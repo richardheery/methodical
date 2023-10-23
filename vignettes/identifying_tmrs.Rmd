@@ -1,6 +1,9 @@
 ---
 title: "Identifying TSS-Proximal Methylation Controlled Regulatory Regions"
-output: html_document
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_depth: 2
 vignette: >
   %\VignetteIndexEntry{identifying_tmrs}
   %\VignetteEngine{knitr::rmarkdown}
@@ -32,6 +35,13 @@ We start by loading the objects we need for this analysis: The location of the T
 (based on the ENST00000591909 isoform), a RangedSummarizedExperiment object housing
 methylation values for all CpGs within +/- 5,000 base pairs of the TSS and normalized
 counts for the TUBB6 transcript.
+
+```{r, eval=FALSE}
+# Installing Methodical
+if (!require("BiocManager"))
+    install.packages("BiocManager")
+BiocManager::install("methodical")
+```
 
 ```{r, eval=TRUE}
 # Load required objects

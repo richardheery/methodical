@@ -1,5 +1,8 @@
 #' Create an iterator function for use with bpiterate
 #'
+#' @param meth_values_chunk A table with methylation values for current chunk
+#' @param tss_region_indices_list A list with the indices for methylation sites associated with each TSS.
+#' @param transcript_values A list with expression values for transcripts.
 #' @param tss_for_chunk A list of GRanges with the TSS for the current chunk
 #' @return A function which returns a list with the 
 .tss_iterator = function(meth_values_chunk, tss_region_indices_list, transcript_values, tss_for_chunk){
