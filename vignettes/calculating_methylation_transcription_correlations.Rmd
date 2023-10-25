@@ -122,7 +122,7 @@ The default behaviour is to use try to use all samples, but we use
 also present in `mcrpc_transcript_counts_normalized`.  
 
 Finally, we can control the memory usage and parallelization with the 
-`max_sites_per_chunk` and `ncores` parameters. 
+`max_sites_per_chunk` and `BPPARAM` parameters. 
 `calculateMethSiteTranscriptCors` aims to keep the memory footprint low by
 splitting the provided `tss_gr`into chunks of closely-situated TSS and 
 processing these chunks one at a time. The chunks are limited to that they 
@@ -133,7 +133,7 @@ contain an approximate maximum number of CpGs within `expand_upstream` and
 at once and has a default value of `floor(62500000/ncol(meth_rse))` using 
 approximately 500 MB of RAM. 
 
-`ncores` controls the number of TSS within a chunk processed in parallel. As
+`BPPARAM` controls the number of TSS within a chunk processed in parallel. As
 the TSS belong to the same chunk, several cores can be used simultaneously 
 without drastically increasing RAM consumption. The following example
 should jsut take a few minutes. 
