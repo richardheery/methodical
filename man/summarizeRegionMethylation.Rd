@@ -13,7 +13,7 @@ summarizeRegionMethylation(
   max_sites_per_chunk = NULL,
   summary_function = base::colMeans,
   na.rm = TRUE,
-  n_chunks_parallel = 1,
+  BPPARAM = BiocParallel::bpparam(),
   ...
 )
 }
@@ -39,7 +39,7 @@ Default is floor(62500000/ncol(meth_rse)), resulting in each chunk requiring app
 
 \item{na.rm}{A logical value indicating whether to remove NA values when calculating summaries. Default value is TRUE.}
 
-\item{n_chunks_parallel}{Number of chunks of methylation sites to process in parallel. Default is to just process a single chunk at a time.}
+\item{BPPARAM}{A BiocParallelParam object. Defaults to \code{BiocParallel::bpparam()}.}
 
 \item{...}{Additional arguments to be passed to summary_function.}
 }

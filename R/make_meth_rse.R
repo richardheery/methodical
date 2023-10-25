@@ -19,7 +19,7 @@
 #' @param temporary_dir Name to give temporary directory created to store intermediate files. A directory with this name cannot already exist. 
 #' Default is to create a name using tempfile("temporary_meth_chunks_"). 
 #' Will be deleted after completion. 
-#' @param ncores Number of bedgraph files to process in parallel at a time. Default is 1. 
+#' @param BPPARAM A BiocParallelParam object for parallel processing. Defaults to `BiocParallel::bpparam()`. 
 #' @param ... Additional arguments to be passed to HDF5Array::HDF5RealizationSink() for controlling the physical properties of the created HDF5 file, 
 #' such as compression level. Uses the defaults for any properties that are not specified. 
 #' @return A RangedSummarizedExperiment with methylation values for all methylation sites in meth_sites. methylation sites will be in the same order as sort(meth_sites). 
@@ -49,7 +49,7 @@ makeMethRSEFromBedgraphs <- function(bedgraphs,
   seqnames_column = 1, start_column = 2, end_column = 3, value_column = 4,
   zero_based = TRUE, normalization_factor = NULL, decimal_places = NA, 
   meth_sites, sample_metadata = NULL, hdf5_dir, dataset_name = "beta", overwrite = FALSE, chunkdim = NULL, 
-  temporary_dir = NULL, ncores = 1, ...){
+  temporary_dir = NULL, BPPARAM = BiocParallel::bpparam(), ...){
   
   # Check that inputs have the correct data type
   stopifnot(is(bedgraphs, "character"), is(seqnames_column, "numeric") & seqnames_column >= 1,
@@ -59,7 +59,7 @@ makeMethRSEFromBedgraphs <- function(bedgraphs,
     is(decimal_places, "numeric") | is.na(decimal_places), is(meth_sites, "GRanges"),
     is(sample_metadata, "data.frame") | is.null(sample_metadata), is(hdf5_dir, "character"),
     is(dataset_name, "character"), is(overwrite, "logical"), is(chunkdim, "numeric") | is.null(chunkdim),
-    is(temporary_dir, "character") | is.null(temporary_dir), is(ncores, "numeric") & ncores >= 1)
+    is(temporary_dir, "character") | is.null(temporary_dir), is(BPPARAM, "BiocParallelParam"))
     
   # Check that normalization_factor is a whole integer if provided
   if(!is.null(normalization_factor)){
@@ -94,7 +94,7 @@ makeMethRSEFromBedgraphs <- function(bedgraphs,
   meth_sites_df <- .split_bedgraphs_into_chunks(bedgraphs = bedgraphs, 
     seqnames_column = seqnames_column, start_column = start_column, end_column = end_column, value_column = value_column,
     file_grid_columns = setup$file_grid_columns, meth_sites = meth_sites, meth_site_groups = setup$meth_site_groups, temp_chunk_dirs = setup$temp_chunk_dirs, 
-    zero_based = zero_based, normalization_factor = normalization_factor, decimal_places = decimal_places, ncores = ncores)
+    zero_based = zero_based, normalization_factor = normalization_factor, decimal_places = decimal_places, BPPARAM = BPPARAM)
   
   # Write the chunks to the HDF5 file
   .write_chunks_to_hdf5(temp_chunk_dirs = setup$temp_chunk_dirs, files_in_chunks = setup$files_in_chunks, 
@@ -131,7 +131,7 @@ makeMethRSEFromBedgraphs <- function(bedgraphs,
 #' @param chunkdim The dimensions of the chunks for the HDF5 file. Should be a vector of length 2 giving the number of rows and then the number of columns in each chunk.
 #' @param temporary_dir Name to give a temporary directory to store intermediate files. A directory with this name cannot already exist. 
 #' Default is to create a name using tempfile("temporary_meth_chunks_"). 
-#' @param ncores Number of array files to process at a time in parallel. Default is 1. 
+#' @param BPPARAM A BiocParallelParam object for parallel processing. Defaults to `BiocParallel::bpparam()`. 
 #' @param ... Additional arguments to be passed to HDF5Array::HDF5RealizationSink() for controlling the physical properties of the created HDF5 file, 
 #' such as compression level. Uses the defaults for any properties that are not specified. 
 #' @return A RangedSummarizedExperiment with methylation values for all methylation sites in meth_sites. Methylation sites will be in the same order as sort(meth_sites). 
@@ -158,7 +158,7 @@ makeMethRSEFromBedgraphs <- function(bedgraphs,
 #'
 makeMethRSEFromArrayFiles <- function(array_files, probe_name_column = 1, beta_value_column = 2, 
   normalization_factor = NULL, decimal_places = NA, probe_ranges, sample_metadata = NULL, hdf5_dir, dataset_name = "beta", 
-  overwrite = FALSE, chunkdim = NULL, temporary_dir = NULL, ncores = 1, ...){
+  overwrite = FALSE, chunkdim = NULL, temporary_dir = NULL, BPPARAM = BiocParallel::bpparam(), ...){
   
   # Check that inputs have the correct data type
   stopifnot(is(array_files, "character"), is(probe_name_column, "numeric") & probe_name_column >= 1,
@@ -167,7 +167,7 @@ makeMethRSEFromArrayFiles <- function(array_files, probe_name_column = 1, beta_v
     is(decimal_places, "numeric") | is.na(decimal_places), is(probe_ranges, "GRanges"),
     is(sample_metadata, "data.frame") | is.null(sample_metadata), is(hdf5_dir, "character"),
     is(dataset_name, "character"), is(overwrite, "logical"), is(chunkdim, "numeric") | is.null(chunkdim),
-    is(temporary_dir, "character") | is.null(temporary_dir), is(ncores, "numeric") & ncores >= 1)
+    is(temporary_dir, "character") | is.null(temporary_dir), is(BPPARAM, "BiocParallelParam"))
   
   # Check that normalization_factor is a whole integer if provided
   if(!is.null(normalization_factor)){
@@ -209,7 +209,7 @@ makeMethRSEFromArrayFiles <- function(array_files, probe_name_column = 1, beta_v
   probe_sites_df <- .split_meth_array_files_into_chunks(array_files = array_files, probe_name_column = probe_name_column, 
     beta_value_column = beta_value_column, file_grid_columns = setup$file_grid_columns, probe_ranges = probe_ranges,
     probe_groups = setup$meth_site_groups, temp_chunk_dirs = setup$temp_chunk_dirs, 
-    normalization_factor = normalization_factor, decimal_places = decimal_places, ncores = ncores)
+    normalization_factor = normalization_factor, decimal_places = decimal_places, BPPARAM = BPPARAM)
   
   # Write the chunks to the HDF5 file
   .write_chunks_to_hdf5(hdf5_sink = setup$hdf5_sink, hdf5_grid = setup$hdf5_grid, 

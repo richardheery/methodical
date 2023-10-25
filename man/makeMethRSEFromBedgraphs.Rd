@@ -20,7 +20,7 @@ makeMethRSEFromBedgraphs(
   overwrite = FALSE,
   chunkdim = NULL,
   temporary_dir = NULL,
-  ncores = 1,
+  BPPARAM = BiocParallel::bpparam(),
   ...
 )
 }
@@ -59,7 +59,7 @@ Uses HDF5Array::getHDF5DumpChunkDim(length(meth_sites), length(bedgraphs))) by d
 Default is to create a name using tempfile("temporary_meth_chunks_").
 Will be deleted after completion.}
 
-\item{ncores}{Number of bedgraph files to process in parallel at a time. Default is 1.}
+\item{BPPARAM}{A BiocParallelParam object for parallel processing. Defaults to \code{BiocParallel::bpparam()}.}
 
 \item{...}{Additional arguments to be passed to HDF5Array::HDF5RealizationSink() for controlling the physical properties of the created HDF5 file,
 such as compression level. Uses the defaults for any properties that are not specified.}

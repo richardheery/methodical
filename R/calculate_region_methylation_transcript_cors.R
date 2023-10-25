@@ -18,7 +18,7 @@
 #' @param cor_method A character string indicating which correlation coefficient is to be computed. Identical to methods from cor(). Default is "pearson".
 #' @param p_adjust_method Method used to adjust p-values. Same as the methods from p.adjust.methods. Default is Benjamini-Hochberg.
 #' @param region_methylation_summary_function A function that summarizes column values. Default is colMeans.
-#' @param BPPARAM A BiocParallelParam object. Defaults to `BiocParallel::bpparam()`. 
+#' @param BPPARAM A BiocParallelParam object for parallel processing. Defaults to `BiocParallel::bpparam()`. 
 #' @return A data.frame with the correlation values between the methylation of genomic regions and expression of transcripts associated with them
 #' @export
 #' @examples 
