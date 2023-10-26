@@ -270,5 +270,7 @@ methrixToRSE <- function(methrix, assays = c("beta", "cov")){
     colData = SummarizedExperiment::colData(methrix), 
     rowRanges = methrix_ranges)
   
+  # Sort rse and return
+  rse <- sort(rse)
   return(rse)
 }
