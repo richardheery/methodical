@@ -3,9 +3,13 @@
 #' @param meth_values_chunk A table with methylation values for current chunk
 #' @param tss_region_indices_list A list with the indices for methylation sites associated with each TSS.
 #' @param transcript_values A list with expression values for transcripts.
-#' @param tss_for_chunk A list of GRanges with the TSS for the current chunk
-#' @return A function which returns a list with the 
-.tss_iterator = function(meth_values_chunk, tss_region_indices_list, transcript_values, tss_for_chunk){
+#' @param tss_for_chunk A list of GRanges with the TSS for the current chunk.
+#' @param cor_method Correlation method to use. 
+#' @param add_distance_to_region Logical value indicating whether to add distance to TSS.
+#' @param results_dir Location of results directory. 
+#' @return An iterator function which returns a list with the parameters necessary for .tss_correlations. 
+.tss_iterator = function(meth_values_chunk, tss_region_indices_list, transcript_values, tss_for_chunk, 
+  cor_method, add_distance_to_region, results_dir){
   
   n <- length(tss_for_chunk)
   i <- 0L
@@ -18,7 +22,8 @@
         meth_table = meth_values_chunk[tss_region_indices_list[[i]], , drop = FALSE], 
         transcript_table = transcript_values[[i]],
         transcript_tss = tss_for_chunk[[i]], 
-        transcript_name = names(tss_for_chunk)[i]
+        transcript_name = names(tss_for_chunk)[i],
+        cor_method = cor_method, add_distance_to_region = add_distance_to_region, results_dir = results_dir
         )
     }
   }
@@ -35,6 +40,9 @@
   transcript_table <- correlation_objects[["transcript_table"]]
   transcript_tss <- correlation_objects[["transcript_tss"]]
   transcript_name <- correlation_objects[["transcript_name"]]
+  cor_method <- correlation_objects[["cor_method"]]
+  add_distance_to_region <- correlation_objects[["add_distance_to_region"]]
+  results_dir <- correlation_objects[["results_dir"]]
       
     # Transpose meth_table
     meth_table <- t(meth_table)
@@ -42,7 +50,7 @@
     # Transpose transcript_table and name it with transcript name
     transcript_table <- setNames(data.frame(t(transcript_table)), transcript_name)
         
-    tryCatch({
+    transcript_meth_site_cors <- tryCatch({
       transcript_meth_site_cors <- methodical::rapidCorTest(
         table1 = meth_table, table2 = transcript_table, 
         table1_name = "meth_site", table2_name = "transcript_name", 
@@ -68,9 +76,9 @@
         transcript_meth_site_cors <- rds_file
       }
         
-      transcript_meth_site_cors
-      
-    }, error = function(x) data.frame())
+    
+    # Return transcript_meth_site_cors or else an emoty data.frame if there was an error
+    transcript_meth_site_cors}, error = function(error) data.frame())
     
 }
 
@@ -231,10 +239,11 @@ calculateMethSiteTranscriptCors <- function(meth_rse, assay_number = 1, transcri
     tss_for_chunk <- split(tss_for_chunk, names(tss_for_chunk))[names(tss_region_indices_list)] 
     
     # Create an iterator function for TSS sites
-    tss_iter = methodical:::.tss_iterator(meth_values_chunk, tss_region_indices_list, transcript_values, tss_for_chunk)
+    tss_iter = methodical:::.tss_iterator(meth_values_chunk, tss_region_indices_list, transcript_values, tss_for_chunk, 
+      cor_method, add_distance_to_region, results_dir)
     
     # Calculate correlations for all TSS in chunk. 
-    chunk_correlations <- BiocParallel::bpiterate(ITER = tss_iter, FUN = methodical:::.tss_correlations, BPPARAM = BPPARAM)
+    suppressMessages(chunk_correlations <- BiocParallel::bpiterate(ITER = tss_iter, FUN = .tss_correlations, BPPARAM = BPPARAM))
     
     # Add names of transcript to list and return
     chunk_correlations <- setNames(chunk_correlations, names(tss_for_chunk))

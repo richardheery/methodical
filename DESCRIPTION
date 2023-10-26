@@ -53,6 +53,7 @@ Suggests:
     DESeq2,
     knitr,
     methrix,
-    rmarkdown
+    rmarkdown,
+    TumourMethData
 VignetteBuilder: knitr
 SystemRequirements: kallisto

@@ -23,6 +23,7 @@ knitr::opts_chunk$set(
 ```{r setup, message = F}
 library(methodical)
 library(DESeq2)
+library(TumourMethData)
 ```
 
 ## Introduction
@@ -44,16 +45,14 @@ BiocManager::install("methodical")
 ## Import of RangedSummarizedExperiment for tumour WGBS methylation data
 
 We now first download a RangedSummarizedExperiment with WGBS data for prostate
-tumour metastases from TumourMethDatasets.
+tumour metastases and associated transcript counts from TumourMethData.
 
 ```{r}
 # Download mcrpc_wgbs_hg38 from TumourMethDatasets.
-mcrpc_wgbs_hg38_chr11 <- downloadMethDataset(dataset = "mcrpc_wgbs_hg38_chr11")
+mcrpc_wgbs_hg38_chr11 <- TumourMethData::download_meth_dataset(dataset = "mcrpc_wgbs_hg38_chr11")
 
 # Download transcript counts
-download.file("https://zenodo.org/record/8422703/files/mcrpc_transcript_counts.tsv.gz", 
-  destfile = paste(tempdir(),"mcrpc_transcript_counts.tsv.gz", sep = "/"))
-mcrpc_transcript_counts <- data.frame(data.table::fread(paste(tempdir(),"mcrpc_transcript_counts.tsv.gz", sep = "/")), row.names = 1)
+mcrpc_transcript_counts <- TumourMethData::download_rnaseq_dataset(dataset = "mcrpc_wgbs_hg38_chr11")
 ```
 
 ## Preparation of TSS annotation
