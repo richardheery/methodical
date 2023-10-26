@@ -150,7 +150,6 @@ system.time({transcript_cpg_meth_cors_mcrpc_samples_5kb <- calculateMethSiteTran
   cor_method = "pearson", max_sites_per_chunk = 300000,
   expand_upstream = 5000, expand_downstream = 5000, BPPARAM = BiocParallel::bpparam())})
 ```
-```
 
 As an example, we'll examine the CpG methylation transcription correlations for 
 a TSS of GSTP1, a gene known to be important to prostate cancer. We'll use the 
@@ -252,7 +251,7 @@ system.time({transcript_body_meth_cors_mcrpc_samples <- calculateRegionMethylati
   genomic_regions = transcript_annotation_chr11, 
   genomic_region_transcripts = transcript_annotation_chr11$ID,
   region_methylation_summary_function = colMeans, 
-  cor_method = "pearson", BPPARAM = bpparam())})
+  cor_method = "pearson", BPPARAM = BiocParallel::bpparam())})
 
 # Show the top of the results table
 head(transcript_body_meth_cors_mcrpc_samples)
@@ -266,7 +265,6 @@ ggplot(transcript_body_meth_cors_significant, aes(x = cor)) +
   scale_y_continuous(expand = expansion(mult = c(0, 0.2), add = 0)) +
   labs(x = "Correlation Values", y = "Number of Significant Correlation Values")
   
-
 ```
 
 ## Conclusion

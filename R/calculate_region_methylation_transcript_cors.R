@@ -19,6 +19,7 @@
 #' @param p_adjust_method Method used to adjust p-values. Same as the methods from p.adjust.methods. Default is Benjamini-Hochberg.
 #' @param region_methylation_summary_function A function that summarizes column values. Default is colMeans.
 #' @param BPPARAM A BiocParallelParam object for parallel processing. Defaults to `BiocParallel::bpparam()`. 
+#' @param ... Additional arguments to be passed to summary_function. 
 #' @return A data.frame with the correlation values between the methylation of genomic regions and expression of transcripts associated with them
 #' @export
 #' @examples 
@@ -36,7 +37,7 @@
 #'  
 calculateRegionMethylationTranscriptCors <- function(meth_rse, assay_number = 1, transcript_expression_table, samples_subset = NULL, 
   genomic_regions, genomic_region_names = NULL, genomic_region_transcripts = NULL, genomic_region_methylation = NULL,
-  cor_method = "pearson", p_adjust_method = "BH", region_methylation_summary_function = colMeans, BPPARAM = BiocParallel::bpparam()){
+  cor_method = "pearson", p_adjust_method = "BH", region_methylation_summary_function = colMeans, BPPARAM = BiocParallel::bpparam(), ...){
   
   # Check that inputs have the correct data type
   stopifnot(is(meth_rse, "RangedSummarizedExperiment"), is(assay_number, "numeric"),
@@ -114,7 +115,7 @@ calculateRegionMethylationTranscriptCors <- function(meth_rse, assay_number = 1,
     genomic_region_methylation <- summarizeRegionMethylation(
       meth_rse = meth_rse, assay_number = assay_number, genomic_regions = genomic_regions, 
       genomic_region_names = genomic_region_names, 
-      summary_function = region_methylation_summary_function, BPPARAM = BPPARAM
+      summary_function = region_methylation_summary_function, BPPARAM = BPPARAM, ...
     )
     
     # Set region_name of genomic_region_methylation as row.names
@@ -133,12 +134,12 @@ calculateRegionMethylationTranscriptCors <- function(meth_rse, assay_number = 1,
   feature_matches <- split(feature_matches_df$genomic_region_names, feature_matches_df$transcript_id)
   
   # For each transcript, calculate the correlation between its expression and the methylation of regions associated with it
-  methylation_transcript_correlations <- BiocParallel::bplapply(X = names(feature_matches), 
+  methylation_transcript_correlations <- suppressMessages(BiocParallel::bplapply(X = names(feature_matches), 
     FUN = function(X) {rapidCorTest(
       table1 = t(genomic_region_methylation[feature_matches[[X]], ]),
       table2 = setNames(data.frame(unlist(transcript_expression_table[X, ])), X),
       table1_name = "genomic_region_name", table2_name = "transcript_name"
-      )}, BPPARAM = BPPARAM)
+      )}, BPPARAM = BPPARAM))
     
   # Combine results into a single table
   methylation_transcript_correlations <- dplyr::bind_rows(methylation_transcript_correlations)

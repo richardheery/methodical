@@ -4,8 +4,10 @@
 #' @param meth_rse A RangedSummarizedExperiment with methylation values.
 #' @param assay_number The assay from meth_rse to extract values from.
 #' @param summary_function summary_function A function that summarizes column values.
+#' @param na.rm A logical value indicating whether to remove NA values when calculating summaries.
+#' @param ... Additional arguments to be passed to summary_function. 
 #' @return A function which returns a list with the 
-.summarize_chunk_methylation = function(chunk_regions, meth_rse, assay_number, summary_function){
+.summarize_chunk_methylation = function(chunk_regions, meth_rse, assay_number, summary_function, na.rm, ...){
   
   # Subset meth_rse_for_chunk for regions overlapping chunk_regions
   meth_rse_for_chunk <- subsetByOverlaps(meth_rse, chunk_regions)
@@ -26,7 +28,7 @@
   
   # Summarize methylation values 
   meth_summary <- lapply(region_names_to_rows_list, function(x) 
-    summary_function(meth_values[x, , drop = FALSE], na.rm = na.rm))
+    summary_function(meth_values[x, , drop = FALSE], na.rm = na.rm, ...))
   rm(meth_values); gc()
   
   # Combine meth_summary into a single table
@@ -115,7 +117,7 @@ summarizeRegionMethylation <- function(meth_rse, assay_number = 1, genomic_regio
   message("Summarizing genomic region methylation")
   region_methylation <- BiocParallel::bpmapply(FUN = .summarize_chunk_methylation, 
     chunk_regions = genomic_region_bins, MoreArgs = list(meth_rse = meth_rse, 
-      assay_number = assay_number, summary_function = summary_function), 
+      assay_number = assay_number, summary_function = summary_function, na.rm = na.rm, ...), 
     BPPARAM = BPPARAM, SIMPLIFY = FALSE)
 
   # Combine data.frames for each chunk

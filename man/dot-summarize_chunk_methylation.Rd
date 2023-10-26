@@ -8,7 +8,9 @@
   chunk_regions,
   meth_rse,
   assay_number,
-  summary_function
+  summary_function,
+  na.rm,
+  ...
 )
 }
 \arguments{
@@ -19,6 +21,10 @@
 \item{assay_number}{The assay from meth_rse to extract values from.}
 
 \item{summary_function}{summary_function A function that summarizes column values.}
+
+\item{na.rm}{A logical value indicating whether to remove NA values when calculating summaries.}
+
+\item{...}{Additional arguments to be passed to summary_function.}
 }
 \value{
 A function which returns a list with the

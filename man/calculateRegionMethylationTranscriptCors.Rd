@@ -16,7 +16,8 @@ calculateRegionMethylationTranscriptCors(
   cor_method = "pearson",
   p_adjust_method = "BH",
   region_methylation_summary_function = colMeans,
-  BPPARAM = BiocParallel::bpparam()
+  BPPARAM = BiocParallel::bpparam(),
+  ...
 )
 }
 \arguments{
@@ -50,6 +51,8 @@ Row names should match genomic_region_names and column names should match those 
 \item{region_methylation_summary_function}{A function that summarizes column values. Default is colMeans.}
 
 \item{BPPARAM}{A BiocParallelParam object for parallel processing. Defaults to \code{BiocParallel::bpparam()}.}
+
+\item{...}{Additional arguments to be passed to summary_function.}
 }
 \value{
 A data.frame with the correlation values between the methylation of genomic regions and expression of transcripts associated with them
