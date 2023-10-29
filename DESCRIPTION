@@ -47,6 +47,7 @@ Imports:
 Suggests: 
     AnnotationHub,
     annotatr,
+    BiocStyle,
     BSgenome.Athaliana.TAIR.TAIR9,
     BSgenome.Hsapiens.UCSC.hg19,
     BSgenome.Hsapiens.UCSC.hg38,
