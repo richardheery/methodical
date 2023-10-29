@@ -319,7 +319,7 @@ plotTMRs <- function(meth_site_plot, tmrs_gr, reference_tss = NULL, transcript_i
   meth_site_plot_with_tmrs <- meth_site_plot +
   geom_segment(data = tmrs_df, aes(x = start, xend = end, y = 0, yend = 0, color = direction), 
     linewidth = linewidth) + 
-  scale_color_manual(values = setNames(tmr_colours, levels(tmrs_df$direction)), drop = F) + 
+  scale_color_manual(values = setNames(tmr_colours, levels(tmrs_df$direction)), drop = FALSE) + 
   labs(color = "TMR Direction")
   
   # Return meth_site_plot_with_tmrs
