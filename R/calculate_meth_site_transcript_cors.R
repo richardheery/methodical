@@ -243,7 +243,7 @@ calculateMethSiteTranscriptCors <- function(meth_rse, assay_number = 1, transcri
       cor_method, add_distance_to_region, results_dir)
     
     # Calculate correlations for all TSS in chunk. 
-    suppressMessages(chunk_correlations <- BiocParallel::bpiterate(ITER = tss_iter, FUN = .tss_correlations, BPPARAM = BPPARAM))
+    suppressWarnings(chunk_correlations <- BiocParallel::bpiterate(ITER = tss_iter, FUN = .tss_correlations, BPPARAM = BPPARAM))
     
     # Add names of transcript to list and return
     chunk_correlations <- setNames(chunk_correlations, names(tss_for_chunk))
