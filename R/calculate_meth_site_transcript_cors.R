@@ -253,7 +253,7 @@ calculateMethSiteTranscriptCors <- function(meth_rse, assay_number = 1, transcri
 
   # Run garbage collection one final time and return result
   invisible(gc())
-  all_correlations = unlist(all_correlations, recursive = FALSE)
+  all_correlations <- unlist(all_correlations, recursive = FALSE)
   return(all_correlations)
   
 }
