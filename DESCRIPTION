@@ -1,6 +1,6 @@
 Package: methodical
 Title: Discovering genomic regions where methylation is strongly associated with transcriptional activity
-Version: 0.99.11
+Version: 0.99.12
 Authors@R: 
     person("Richard", "Heery", , "richardheery@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-8067-3114"))
