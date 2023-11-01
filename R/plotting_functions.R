@@ -199,7 +199,7 @@ annotateMethSitePlot <- function(meth_site_plot, annotation_gr, reference_tss = 
   # Decide x-axis values for methylation sites depending on whether reference_tss provided
   if(!is.null(reference_tss)){
     meth_site_plot$data$meth_site_plot_position <- methodical::strandedDistance(query_gr = GRanges(row.names(meth_site_plot$data)), subject_gr = reference_tss)
-    annotation_gr <- methodical::rangesRelativeToTSS(genomic_regions = annotation_gr, reference_positions = reference_tss)
+    annotation_gr <- methodical::rangesRelativeToTSS(genomic_regions = annotation_gr, tss_gr = reference_tss)
   } else {
     meth_site_plot$data$meth_site_plot_position <- meth_site_plot$data$meth_site_start 
   }

@@ -47,7 +47,8 @@
 #' @param assay_number The assay from meth_rse to extract values from. Default is the first assay. 
 #' @param genomic_regions GRanges object with regions to summarize methylation values for. 
 #' @param keep_metadata_cols A logical value indicating whether to add the metadata columns of genomic_regions to the output. Default is FALSE.
-#' @param genomic_region_names Names to give genomic_regions. Cannot be any duplicates. Default is to name them region_1, region_2, etc. if no names provided.
+#' @param genomic_region_names A vector of names to give genomic_regions in the output table. There cannot be any duplicated names. 
+#' Default is to attempt to use `names(genomic_regions)` if they are present or to name them region_1, region_2, etc otherwise.
 #' @param max_sites_per_chunk The approximate maximum number of methylation sites to try to load into memory at once. 
 #' The actual number loaded may vary depending on the number of methylation sites overlapping each region, 
 #' but so long as the size of any individual regions is not enormous (>= several MB), it should vary only very slightly. 
@@ -84,9 +85,13 @@ summarizeRegionMethylation <- function(meth_rse, assay_number = 1, genomic_regio
     (is(max_sites_per_chunk, "numeric") & max_sites_per_chunk >= 1) | is.null(max_sites_per_chunk),
     is(summary_function, "function"), is(na.rm, "logical"), 
     is(BPPARAM, "BiocParallelParam"))
+  
+  # If genomic_region_names if NULL, attempt to use names of genomic_regions
+  genomic_region_names = names(genomic_regions)
     
   # Add names to genomic_regions if they are not already present and also check that no names are duplicated. 
   if(is.null(genomic_region_names)){
+    message("No names for provided regions so naming them region_1, region_2, etc.")
     genomic_region_names <- paste0("region_", 1:length(genomic_regions))
     names(genomic_regions) <- genomic_region_names
   } else {
