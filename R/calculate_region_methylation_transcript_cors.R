@@ -69,7 +69,7 @@ calculateRegionMethylationTranscriptCors <- function(meth_rse, assay_number = 1,
   n_samples <- ncol(meth_rse) 
   if(n_samples < 3){stop("There are not enough samples to calculate correlations")}
   if(n_samples < 20){
-    warning(paste("There are only", n_samples, "samples. It is recommended to have at least 20 samples to calculate correlations"))
+    message(paste("There are only", n_samples, "samples. It is recommended to have at least 20 samples to calculate correlations"))
   }
   
   # If genomic_region_names not provided, set to names(genomic_regions)
