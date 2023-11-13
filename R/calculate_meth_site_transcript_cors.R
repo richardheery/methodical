@@ -147,13 +147,16 @@ calculateMethSiteTranscriptCors <- function(meth_rse, assay_number = 1, transcri
     stop("There cannot be duplicated transcript names in names(tss_gr) or row.names(transcript_expression_table)")
   }
   
-  # Check that all transcripts associated with tss_gr are present in transcript_expression_table
-  # and subset transcript_expression_table for these transcripts if so
-  if(!any(names(tss_gr) %in% row.names(transcript_expression_table))){
-    stop("There are transcripts in tss_gr that are not present in transcript_expression_table")
+  # Identify transcripts in common between tss_gr and transcript_expression_table.
+  # Throw an error if there are no common transcripts and subset tss_gr and transcript_expression_table
+  common_transcripts = intersect(names(tss_gr), row.names(transcript_expression_table))
+  if(length(common_transcripts) == 0){
+    stop("There are no common transcripts/genes between names(tss_gr) and row.names(transcript_expression_table)")
   } else {
-    transcript_expression_table <- transcript_expression_table[names(tss_gr), ]
+    message(paste("There are", length(common_transcripts), "genes/transcripts in common between tss_gr and transcript_expression_table"))
   }
+  transcript_expression_table <- transcript_expression_table[common_transcripts, ]
+  tss_gr <- tss_gr[common_transcripts]
   
   # Check that samples_subset are in meth_rse and transcript_expression_table
   if(!is.null(samples_subset)){
