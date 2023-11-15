@@ -21,7 +21,7 @@ extractGRangesMethSiteValues <- function(meth_rse, genomic_regions = NULL, sampl
   
   # Check that inputs have the correct data type
   stopifnot(is(meth_rse, "RangedSummarizedExperiment"), 
-    is(genomic_regions, "GRanges"), is(samples_subset, "character") | is.null(samples_subset),
+    is(genomic_regions, "GRanges") | is.null(genomic_regions), is(samples_subset, "character") | is.null(samples_subset),
     is(assay_number, "numeric"))
   
   # If samples_subset provided, check that all samples present in meth_rse and then subset meth_rse for those samples
