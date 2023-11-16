@@ -24,7 +24,8 @@ summarizeRegionMethylation(
 
 \item{genomic_regions}{GRanges object with regions to summarize methylation values for.}
 
-\item{genomic_region_names}{Names to give genomic_regions. Cannot be any duplicates. Default is to name them region_1, region_2, etc. if no names provided.}
+\item{genomic_region_names}{A vector of names to give genomic_regions in the output table. There cannot be any duplicated names.
+Default is to attempt to use \code{names(genomic_regions)} if they are present or to name them region_1, region_2, etc otherwise.}
 
 \item{keep_metadata_cols}{A logical value indicating whether to add the metadata columns of genomic_regions to the output. Default is FALSE.}
 

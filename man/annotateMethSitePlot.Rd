@@ -22,8 +22,12 @@ annotateMethSitePlot(
 There must be a metadata column named region_type giving the class of each region.
 If this is a factor, the levels will be used to order the region classes in the plot.}
 
-\item{reference_tss}{An optional GRanges object with a single range.
-If provided, the x-axis will show the distance of methylation sites to the start of this region with methylation sites upstream
+\item{reference_tss}{A logical value indicating whether to show distances on the X-axis
+relative to the TSS stored as an attribute \code{tss_range} of meth_site_plot.
+Alternatively, can provide a GRanges object with a single range for such a TSS site.
+In either case, will show the distance of methylation sites to the start of this region with methylation sites upstream
+relative to the reference_tss shown first.
+If FALSE (the default), the x-axis will instead show the start site coordinate of the methylation site.
 relative to the reference_tss shown first. If not, the x-axis will show the start site coordinate of the methylation site.}
 
 \item{region_class_colours}{An optional named vector of colours to use with different region classes. Names of vector match colours to region classes.}
