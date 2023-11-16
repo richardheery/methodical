@@ -31,7 +31,7 @@ adjust_covariates = function(values, covariates){
   }
   
   # Fit models
-  fit = limma::lmFit(values, design)
+  fit = suppressWarnings(limma::lmFit(values, design))
   
   # Return residuals from models
   return(limma::residuals.MArrayLM(fit, values))
@@ -91,6 +91,7 @@ adjust_covariates = function(values, covariates){
   cor_method <- correlation_objects[["cor_method"]]
   add_distance_to_region <- correlation_objects[["add_distance_to_region"]]
   results_dir <- correlation_objects[["results_dir"]]
+  n_covariates <- correlation_objects[["n_covariates"]]
       
   # Transpose meth_table
   meth_table <- t(meth_table)
@@ -329,9 +330,11 @@ calculateMethSiteTranscriptPartialCors <- function(meth_rse, assay_number = 1, t
     tss_for_chunk <- split(tss_for_chunk, names(tss_for_chunk))[names(tss_region_indices_list)] 
     
     # Create an iterator function for TSS sites
-    tss_iter = .tss_iterator_partial_cors(meth_values_chunk, meth_values_chunk_corrected, 
-      tss_region_indices_list, transcript_values, transcript_values_corrected, tss_for_chunk, 
-      cor_method, add_distance_to_region, results_dir, n_covariates)
+    tss_iter = .tss_iterator_partial_cors(meth_values_chunk = meth_values_chunk, 
+      meth_values_chunk_corrected = meth_values_chunk_corrected, tss_region_indices_list = tss_region_indices_list, 
+      transcript_values = transcript_values, transcript_values_corrected = transcript_values_corrected, 
+      tss_for_chunk = tss_for_chunk, cor_method = cor_method, add_distance_to_region = add_distance_to_region, 
+      results_dir = results_dir, n_covariates = n_covariates)
     
     # Calculate correlations for all TSS in chunk. 
     suppressWarnings(chunk_correlations <- BiocParallel::bpiterate(ITER = tss_iter, FUN = .tss_partial_correlations, BPPARAM = BPPARAM))

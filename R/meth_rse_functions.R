@@ -43,7 +43,7 @@ extractGRangesMethSiteValues <- function(meth_rse, genomic_regions = NULL, sampl
   meth_sites_subset <- as.character(SummarizedExperiment::rowRanges(meth_rse_subset))
   
   # Extract methylation values from meth_rse_subset
-  meth_values_subset <- as.data.frame(assay(meth_rse_subset, assay_number))
+  meth_values_subset <- as.data.frame(as.matrix(assay(meth_rse_subset, assay_number)))
   
   # Set row names as the names of the methylation sites and return
   row.names(meth_values_subset) <- meth_sites_subset
