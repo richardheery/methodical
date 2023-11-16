@@ -103,7 +103,7 @@ adjust_covariates = function(values, covariates){
       
   transcript_meth_site_cors <- tryCatch({
     
-    transcript_meth_site_cors <- methodical::rapidCorTest(
+    transcript_meth_site_cors <- rapidCorTest(
       table1 = meth_table, table2 = transcript_table, 
       table1_name = "meth_site", table2_name = "transcript_name", 
       cor_method = cor_method, p_adjust_method = "none")

@@ -113,11 +113,14 @@ rapidCorTest <- function(table1, table2, cor_method = "p", table1_name = "table1
   # Calculate specified correlation values
   cors <- cor(table1, table2, use = "p", method = cor_method)
   
+  # Get degrees of freedom
+  df = n - 2 - n_covariates
+  
   # Calculate t-statistics from correlations
-  t_stat <- cors * sqrt(n-2)/sqrt((1-cors^2))
+  t_stat <- cors * sqrt(df)/sqrt((1-cors^2))
   
   # Calculate p-values from t-statistics
-  p_val <- as.data.frame(2*(pt(-abs(t_stat), df = n - 2 - n_covariates)))
+  p_val <- as.data.frame(2*(pt(-abs(t_stat), df = df)))
   
   # Convert p-val to long format
   p_val <- tidyr::pivot_longer(
