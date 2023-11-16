@@ -107,7 +107,7 @@ adjust_covariates = function(values, covariates){
       table1_name = "meth_site", table2_name = "transcript_name", 
       cor_method = cor_method, p_adjust_method = "none")
     
-    transcript_meth_site_cors_corrected <- rapidCorTest2(
+    transcript_meth_site_cors_corrected <- rapidCorTest(
       table1 = meth_table_corrected, table2 = transcript_table_corrected, 
       table1_name = "meth_site", table2_name = "transcript_name", 
       cor_method = cor_method, p_adjust_method = "none", n_covariates = n_covariates)
