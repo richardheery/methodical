@@ -82,13 +82,28 @@ calculateRegionMethylationTranscriptCors <- function(meth_rse, assay_number = 1,
     genomic_region_transcripts <- genomic_regions$transcript_id
   }
   
-  # Check that all genomic_region_transcripts are in transcript_expression_table
-  if(!any(genomic_region_transcripts %in% row.names(transcript_expression_table))){
-    stop("All genomic_region_transcripts must be present in transcript table")
+  # Add names and transcript IDs to genomic_regions
+  names(genomic_regions) <- genomic_region_names
+  genomic_regions$transcript_id <- genomic_region_transcripts
+  
+  # Identify transcripts in common between tss_gr and transcript_expression_table.
+  # Throw an error if there are no common transcripts and subset tss_gr and transcript_expression_table
+  common_transcripts = intersect(genomic_regions$transcript_id, row.names(transcript_expression_table))
+  if(length(common_transcripts) == 0){
+    stop("There are no common transcripts/genes between genomic_region_transcripts and row.names(transcript_expression_table)")
+  } else {
+    message(paste("There are", length(common_transcripts), "genes/transcripts in common between genomic_region_transcripts and transcript_expression_table"))
   }
+  transcript_expression_table <- transcript_expression_table[common_transcripts, ]
+  genomic_regions <- genomic_regions[genomic_regions$transcript_id %in% common_transcripts]
+  
+  # # Check that all genomic_region_transcripts are in transcript_expression_table
+  # if(!any(genomic_region_transcripts %in% row.names(transcript_expression_table))){
+  #   stop("All genomic_region_transcripts must be present in transcript table")
+  # }
   
   # Check that there are no duplicates for genomic_region_names and that it has the same length as genomic_regions
-  if(length(genomic_region_names) != length(genomic_regions)){stop("genomic_region_names must have the same length as genomic_regions")}
+  # if(length(genomic_region_names) != length(genomic_regions)){stop("genomic_region_names must have the same length as genomic_regions")}
   if(anyDuplicated(genomic_region_names)){stop("genomic_region_names cannot contain duplicates")}
   
   # If genomic_region_methylation provided, check that it has the correct row and column names. 
@@ -114,7 +129,7 @@ calculateRegionMethylationTranscriptCors <- function(meth_rse, assay_number = 1,
     # Summarize methylation values for genomic_regions
     genomic_region_methylation <- summarizeRegionMethylation(
       meth_rse = meth_rse, assay_number = assay_number, genomic_regions = genomic_regions, 
-      genomic_region_names = genomic_region_names, 
+      genomic_region_names = names(genomic_regions), 
       summary_function = region_methylation_summary_function, BPPARAM = BPPARAM, ...
     )
     
@@ -128,7 +143,7 @@ calculateRegionMethylationTranscriptCors <- function(meth_rse, assay_number = 1,
   
   # Create a data.frame matching genomic_region_names and transcript_names
   feature_matches_df <- 
-    data.frame(genomic_region_names = genomic_region_names, transcript_id = genomic_region_transcripts)
+    data.frame(genomic_region_names = names(genomic_regions), transcript_id = genomic_regions$transcript_id)
   
   # Create a list of the transcripts associated with each genomic region
   feature_matches <- split(feature_matches_df$genomic_region_names, feature_matches_df$transcript_id)
@@ -149,7 +164,7 @@ calculateRegionMethylationTranscriptCors <- function(meth_rse, assay_number = 1,
   
   # Put methylation_transcript_correlations in order of genomic_region_names
   methylation_transcript_correlations <- methylation_transcript_correlations[match(
-    genomic_region_names, methylation_transcript_correlations$genomic_region_name), ]
+    names(genomic_regions), methylation_transcript_correlations$genomic_region_name), ]
   row.names(methylation_transcript_correlations) <- NULL
   
   # Return results

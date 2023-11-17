@@ -86,8 +86,8 @@ summarizeRegionMethylation <- function(meth_rse, assay_number = 1, genomic_regio
     is(summary_function, "function"), is(na.rm, "logical"), 
     is(BPPARAM, "BiocParallelParam"))
   
-  # If genomic_region_names if NULL, attempt to use names of genomic_regions
-  genomic_region_names = names(genomic_regions)
+  # If genomic_region_names is NULL, attempt to use names of genomic_regions
+  if(is.null(genomic_region_names)){genomic_region_names = names(genomic_regions)}
     
   # Add names to genomic_regions if they are not already present and also check that no names are duplicated. 
   if(is.null(genomic_region_names)){
