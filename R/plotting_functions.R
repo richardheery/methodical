@@ -381,7 +381,7 @@ plotMethodicalScores <- function(meth_site_values, reference_tss = NULL, p_value
   # Check that inputs have the correct data type
   stopifnot(is(meth_site_values, "data.frame"), 
     is(reference_tss, "GRanges") | is.null(reference_tss), 
-    is(p_value_threshold, "numeric"), is(smooth_scores, "logical"),
+    is(p_value_threshold, "numeric") | is.null(p_value_threshold), is(smooth_scores, "logical"),
     is(offset_length, "numeric"), is(smoothing_factor, "numeric"),
     is(smoothed_curve_colour, "character"), is(linewidth, "numeric"),
     is(curve_alpha, "numeric"), is(title, "character") | is.null(title),
