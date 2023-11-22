@@ -53,7 +53,7 @@ data("tubb6_transcript_counts", package = "methodical")
 
 ## Calculation of correlation values between DNA methylation and transcription
 
-The first step in the identifcation of TMRs is to calculate the correlation values between methylation
+The first step in the identification of TMRs is to calculate the correlation values between methylation
 of CpG sites close to a TSS and the expression of the associated transcript. We do this using the 
 `calculateMethSiteTranscriptCors` function which takes a RangedSummarizedExperiment with DNA 
 methylation data, a GRanges object with TSS of interest and a table with counts for the transcripts 
@@ -158,7 +158,7 @@ print(tubb6_smoothed_methodical_scores_plot)
 ```
 
 We can see two regions where the Methodical scores breach the thresholds: one region around 
-12,305,000 where the positive threshold is breahced and another just before 12,307,500 where the 
+12,305,000 where the positive threshold is breached and another just before 12,307,500 where the 
 negative threshold is breached. Thus, we should find one negative and one positive TMR for TUBB6.
 
 The calculation of Methodical scores, their smoothing and identification of TMRs is all 

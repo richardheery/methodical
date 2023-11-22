@@ -101,7 +101,7 @@ rapidCorTest <- function(table1, table2, cor_method = "p", table1_name = "table1
     is(cor_method, "character"), 
     is(p_adjust_method, "character") & p_adjust_method %in% p.adjust.methods)
     
-  # Check that the length of vec equals the number of rows of df
+  # Check that the number of rows in table1 and table2 are equal
   if(nrow(table1) != nrow(table2)){
     stop("Number of rows of table1 and table2 must be equal")
   }

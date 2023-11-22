@@ -29,7 +29,6 @@ Imports:
     cowplot,
     data.table,
     DelayedArray,
-    doParallel,
     dplyr,
     ExperimentHub,
     foreach,

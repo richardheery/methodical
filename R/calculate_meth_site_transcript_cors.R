@@ -77,7 +77,7 @@
       }
         
     
-    # Return transcript_meth_site_cors or else an emoty data.frame if there was an error
+    # Return transcript_meth_site_cors or else an empty data.frame if there was an error
     transcript_meth_site_cors}, error = function(error) data.frame())
     
 }

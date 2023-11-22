@@ -120,7 +120,7 @@ calculateRegionMethylationTranscriptCors <- function(meth_rse, assay_number = 1,
     }
   }
   
-  # Print correlation mthod being used
+  # Print correlation method being used
   message(paste("Using", match.arg(cor_method, c("pearson", "kendall", "spearman")), "correlation method"))
   
   # Create genomic_region_methylation if it is not provided

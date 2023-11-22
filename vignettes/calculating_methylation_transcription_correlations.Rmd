@@ -107,7 +107,7 @@ mcrpc_transcript_counts_normalized <- data.frame(counts(mcrpc_transcript_counts_
 We'll first demonstrate calculating the correlation values between all transcripts 
 on chromosome 11 and the methylation of all CpG sites within 5 KB of their TSS
 and also the significance of these correlation values. We do this with the 
-`calculateMethSiteTranscriptCors` function, which takesa methylation 
+`calculateMethSiteTranscriptCors` function, which takes methylation 
 RangedSummarizedExperiment and a table with transcript counts as input.
 
 It also takes a GRanges object with the TSS of interest. The arguments 
@@ -135,7 +135,7 @@ approximately 500 MB of RAM.
 `BPPARAM` controls the number of TSS within a chunk processed in parallel. As
 the TSS belong to the same chunk, several cores can be used simultaneously 
 without drastically increasing RAM consumption. The following example
-should jsut take a few minutes. 
+should just take a few minutes. 
 
 ```{r}
 # Find samples with both WGBS and RNA-seq count data
@@ -161,7 +161,7 @@ MANE select transcript for GSTP1.
 
 We see that we have five columns in the results table: the name of the CpG site,
 the name of the associated transcript, the correlation value, the p-value of 
-the correlation and the distance of the CpG site fo the TSS of the transcript. 
+the correlation and the distance of the CpG site to the TSS of the transcript. 
 
 The location of the TSS associated with the results is stored as a GRanges as an 
 attribute called `tss_range`, making it easy to retrieve this information. 
@@ -234,7 +234,7 @@ We'll now demonstrate calculating the correlation values between transcript
 expression and methylation of wider regions associated them instead of just 
 single CpG sites, e.g. promoters, gene bodies or enhancers. We use the 
 `calculateRegionMethylationTranscriptCors` function for this, which takes a 
-angedSummarizedExperiment with methylation values and a table with transcript 
+RangedSummarizedExperiment with methylation values and a table with transcript 
 expression values, like `calculateMethSiteTranscriptCors`. However, 
 `calculateRegionMethylationTranscriptCors` takes a GRanges object with wider
 regions which are associated with the transcripts. More than one region may be

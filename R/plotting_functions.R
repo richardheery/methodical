@@ -54,7 +54,7 @@ plotMethSiteValues <- function(meth_site_values, column_name, reference_tss = FA
       low_colour <- value_colours[1]; high_colour <- value_colours[2]
     } else {
       stop("value_colours should be either a vector with two colours or else 
-        one of either 'set1' or 'set2' if a single value os provided")
+        one of either 'set1' or 'set2' if a single value is provided")
     }
   }
   

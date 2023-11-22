@@ -5,7 +5,7 @@
 #' @param annotation_column Name of the metadata column of annotation_ranges indicating the feature group that regions belong to. Default is "region_type".
 #' @param ignore.strand A logical value indicating whether strand should be ignored when calculating intersections. Default is TRUE.
 #' @param overlap_measure One of "absolute", "proportion" or "jaccard" indicating whether to calculate 
-#' the absolute size of the intersection in base pairs, the proportion base paris of gr1 overlapping gr2 
+#' the absolute size of the intersection in base pairs, the proportion base pairs of gr1 overlapping gr2 
 #' or the Jaccard index of the intersection in terms of base pairs. Default value is "absolute".
 #' @return A numeric vector with the overlap measure for genomic_regions with each type of region in annotation_ranges
 #' @export

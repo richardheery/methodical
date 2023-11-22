@@ -83,8 +83,8 @@ One such GRanges object, `infinium_450k_probe_granges_hg19` for mapping probes
 from the Illumina HumanMethylation450 array to genomic coordinates of the hg19 
 human genome build is provided as part of the package. If mapping the probes to 
 a genome build besides hg19 or using a different methylation array, another 
-similar GRanges object with the coordiantes of probes and a metadata column
-with their names should be provided .
+similar GRanges object with the coordinates of probes and a metadata column
+with their names should be provided.
 
 We'll take a look at one of the methylation files we just downloaded and at
 `infinium_450k_probe_granges_hg19`.
@@ -99,7 +99,7 @@ head(infinium_450k_probe_granges_hg19)
 ```
 
 Now we'll create the meth RSE for the four files we downloaded. It is assumed
-that the first column in the methylation aray files is the name of the probes
+that the first column in the methylation array files is the name of the probes
 and the second is the values associated with them but this can be changed using
 the `probe_name_column` and `beta_value_column` arguments. 
 

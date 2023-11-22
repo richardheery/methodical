@@ -168,7 +168,7 @@ rangesRelativeToTSS <- function(genomic_regions, tss_gr){
 #' @param gr2 A GRanges object
 #' @param ignore.strand A logical value indicating whether strand should be ignored when calculating intersections. Default is TRUE.
 #' @param overlap_measure One of "absolute", "proportion" or "jaccard" indicating whether to calculate 
-#' the absolute size of the intersection in base pairs, the proportion base paris of gr1 overlapping gr2 
+#' the absolute size of the intersection in base pairs, the proportion base pairs of gr1 overlapping gr2 
 #' or the Jaccard index of the intersection in terms of base pairs. Default value is "absolute".
 #' @return An numeric value
 .calculate_regions_intersections <- function(gr1, gr2, ignore.strand = TRUE, overlap_measure = "absolute"){
@@ -184,7 +184,7 @@ rangesRelativeToTSS <- function(genomic_regions, tss_gr){
   intersection <- GenomicRanges::intersect(gr1, gr2, ignore.strand = ignore.strand)
   union <- c(gr1, gr2)
   
-  # Caluclate proportion, Jaccard index or absolute overlap depending on overlap_measure
+  # Calculate proportion, Jaccard index or absolute overlap depending on overlap_measure
   if(overlap_measure == "proportion"){
     return(.count_covered_bases(intersection)/.count_covered_bases(gr1))
   } else if(overlap_measure == "jaccard"){
@@ -212,7 +212,7 @@ rangesRelativeToTSS <- function(genomic_regions, tss_gr){
 #' Default is FALSE, indicating to make the probability proportional to a sequences length.
 #' @param stranded A logical value indicating if created regions should have a strand randomly assigned. Default is FALSE, indicating to make unstranded regions. 
 #' @param masked_regions An optional GRanges object which random regions will not be allowed to overlap. 
-#' @param allow_overlapping_regions A logical value inidicating if created random regions should be allowed to overlap. Default is FALSE. 
+#' @param allow_overlapping_regions A logical value indicating if created random regions should be allowed to overlap. Default is FALSE. 
 #' @param ignore.strand A logical value indicating whether strand should be ignored when 
 #' identifying overlaps between random regions with each other or with masked_regions. 
 #' Only relevant if stranded is TRUE and either allow_overlapping_regions is FALSE or masked_regions is provided. Default is TRUE.
@@ -283,7 +283,7 @@ createRandomRegions <- function(genome, n_regions = 1000, region_widths = 1000, 
     # Randomly assign a strand if specified
     if(stranded){random_gr_df$strand <- sample(c("+", "-"), nrow(random_gr_df), replace = TRUE)}
     
-    # Create a GRanges from the data.frame and return and initialize a column indicating if they pass the contrainsts to TRUE
+    # Create a GRanges from the data.frame and return and initialize a column indicating if they pass the contraints to TRUE
     temp_random_gr <- makeGRangesFromDataFrame(random_gr_df, keep.extra.columns = FALSE)
     temp_random_gr$pass <- TRUE
     

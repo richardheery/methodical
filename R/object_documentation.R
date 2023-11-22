@@ -28,7 +28,7 @@
 
 #' tubb6_cpg_meth_transcript_cors
 #'
-#' A data.frame with the methylation-transcription correlation results for CpGs arond the TUBB6 TSS.
+#' A data.frame with the methylation-transcription correlation results for CpGs around the TUBB6 TSS.
 #'
 #'@format A ggplot object.  
 "tubb6_cpg_meth_transcript_cors"
