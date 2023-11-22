@@ -15,7 +15,8 @@
 #' @param genomic_region_methylation Optional preprovided table with methylation values for genomic_regions 
 #' such as created using summarizeRegionMethylation(). Table will be created if it is not provided which will increase running time.
 #' Row names should match genomic_region_names and column names should match those of transcript_expression_table 
-#' @param cor_method A character string indicating which correlation coefficient is to be computed. Identical to methods from cor(). Default is "pearson".
+#' @param cor_method A character string indicating which correlation coefficient is to be computed. 
+#' One of either "pearson" or "spearman" or their abbreviations. 
 #' @param p_adjust_method Method used to adjust p-values. Same as the methods from p.adjust.methods. Default is Benjamini-Hochberg.
 #' @param region_methylation_summary_function A function that summarizes column values. Default is colMeans.
 #' @param BPPARAM A BiocParallelParam object for parallel processing. Defaults to `BiocParallel::bpparam()`. 
@@ -48,7 +49,7 @@ calculateRegionMethylationTranscriptCors <- function(meth_rse, assay_number = 1,
     is(genomic_region_methylation, "data.frame") | is(genomic_region_methylation, "matrix") | is.null(genomic_region_methylation),
     is(cor_method, "character"), is(p_adjust_method, "character") & p_adjust_method %in% p.adjust.methods,
     is(region_methylation_summary_function, "function"), is(BPPARAM, "BiocParallelParam"))
-  cor_method = match.arg(cor_method, c("pearson", "kendall", "spearman"))
+  cor_method = match.arg(cor_method, c("pearson", "spearman"))
   
   # Check that samples_subset are in meth_rse and transcript_expression_table
   if(!is.null(samples_subset)){

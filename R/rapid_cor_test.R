@@ -75,7 +75,8 @@
 #' @param table2 A data.frame
 #' @param table1_name Name to give the column giving the name of features in table1. Default is "table1". 
 #' @param table2_name Name to give the column giving the name of features in table2. Default is "table2".  
-#' @param cor_method A character string indicating which correlation coefficient is to be computed. Identical to methods from cor(). Default is "pearson".
+#' @param cor_method A character string indicating which correlation coefficient is to be computed. 
+#' One of either "pearson" or "spearman" or their abbreviations. 
 #' @param p_adjust_method Method used to adjust p-values. Same as the methods from p.adjust.methods. Default is Benjamini-Hochberg.
 #' Setting to "none" will result in no adjusted p-values being calculated.  
 #' @param n_covariates Number of covariates if calculating partial correlations. Defaults to 0. 
@@ -92,7 +93,7 @@
 #'   table1_name = "feature1", table2_name = "feature2")
 #' head(cor_results)
 #'
-rapidCorTest <- function(table1, table2, cor_method = "p", table1_name = "table1", table2_name = "table2", p_adjust_method = "BH", n_covariates = 0){
+rapidCorTest <- function(table1, table2, cor_method = "pearson", table1_name = "table1", table2_name = "table2", p_adjust_method = "BH", n_covariates = 0){
   
   # Check that inputs have the correct data type
   stopifnot(is(table1, "data.frame") | is(table1, "matrix"), 
@@ -100,6 +101,9 @@ rapidCorTest <- function(table1, table2, cor_method = "p", table1_name = "table1
     is(table1_name, "character"), is(table2_name, "character"),
     is(cor_method, "character"), 
     is(p_adjust_method, "character") & p_adjust_method %in% p.adjust.methods)
+  
+  # Check that cor_method is either "pearson" or "spearman"
+  match.arg(cor_method, choices = c("pearson", "spearman"))
     
   # Check that the number of rows in table1 and table2 are equal
   if(nrow(table1) != nrow(table2)){

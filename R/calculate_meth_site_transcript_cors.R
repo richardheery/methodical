@@ -86,7 +86,7 @@
 #'
 #' @param meth_rse A RangedSummarizedExperiment for methylation sites. 
 #' @param assay_number The assay from meth_rse to extract values from. Default is the first assay. 
-#' @param transcript_expression_table A table with the expression values for transcripts, where row names are transcript names and columns sample names. 
+#' @param transcript_expression_table A matrix or deata.frame with the expression values for transcripts, where row names are transcript names and columns sample names. 
 #' There should be a row corresponding to each transcript associated with each range in tss_gr. 
 #' Names of samples must match those in meth_rse unless samples_subset provided.
 #' @param samples_subset Sample names used to subset meth_rse and transcript_expression_table. Provided samples must be found in both meth_rse and transcript_expression_table.
@@ -95,7 +95,8 @@
 #' names(tss_gr) should give the name of the transcript associated with the TSS, which must be present in transcript_expression_table.
 #' @param expand_upstream Number of bases to add upstream of each TSS. Must be numeric vector of length 1 or equal to the length of tss_gr. Default is 5000.
 #' @param expand_downstream Number of bases to add downstream of each TSS. Must be numeric vector of length 1 or equal to the length of tss_gr. Default is 5000.
-#' @param cor_method A character string indicating which correlation coefficient is to be computed. Identical to methods from cor(). Default is "pearson".
+#' @param cor_method A character string indicating which correlation coefficient is to be computed. 
+#' One of either "pearson" or "spearman" or their abbreviations. 
 #' @param add_distance_to_region A logical value indicating whether to add the distance of methylation sites to the TSS. Default value is TRUE.
 #' Setting to FALSE will roughly half the total running time.
 #' @param max_sites_per_chunk The approximate maximum number of methylation sites to try to load into memory at once. 
@@ -136,7 +137,7 @@ calculateMethSiteTranscriptCors <- function(meth_rse, assay_number = 1, transcri
     is(cor_method, "character"), is(add_distance_to_region, "logical"),
     is(max_sites_per_chunk, "numeric") & max_sites_per_chunk >= 1 | is.null(max_sites_per_chunk), 
     is(BPPARAM, "BiocParallelParam"), is(results_dir, "character") | is.null(results_dir))
-  cor_method = match.arg(cor_method, c("pearson", "kendall", "spearman"))
+  cor_method = match.arg(cor_method, c("pearson", "spearman"))
   
   # Check that all regions in tss_gr have a length of 1 and that they have names
   if(any(width(tss_gr) != 1)){stop("All regions in tss_gr must have a width of 1")}
@@ -155,7 +156,7 @@ calculateMethSiteTranscriptCors <- function(meth_rse, assay_number = 1, transcri
   } else {
     message(paste("There are", length(common_transcripts), "genes/transcripts in common between tss_gr and transcript_expression_table"))
   }
-  transcript_expression_table <- transcript_expression_table[common_transcripts, ]
+  transcript_expression_table <- transcript_expression_table[common_transcripts, , drop = FALSE]
   tss_gr <- tss_gr[common_transcripts]
   
   # Check that samples_subset are in meth_rse and transcript_expression_table
@@ -163,13 +164,13 @@ calculateMethSiteTranscriptCors <- function(meth_rse, assay_number = 1, transcri
     if(any(!samples_subset %in% colnames(meth_rse))){
       stop("Some samples_subset are not in meth_rse")
     } else {meth_rse <- meth_rse[, samples_subset]}
-    if(any(!samples_subset %in% names(transcript_expression_table))){
+    if(any(!samples_subset %in% colnames(transcript_expression_table))){
       stop("Some samples_subset are not in transcript_expression_table")
     } else {transcript_expression_table <- dplyr::select(transcript_expression_table, dplyr::all_of(samples_subset))}
   }
 
   # Check that names of meth_rse and transcript_expression_table match
-  if(!all(colnames(meth_rse) == names(transcript_expression_table))){stop(
+  if(!all(colnames(meth_rse) == colnames(transcript_expression_table))){stop(
     "Sample names in meth_rse and transcript_expression_table do not match")
   }
   
@@ -211,7 +212,7 @@ calculateMethSiteTranscriptCors <- function(meth_rse, assay_number = 1, transcri
     tss_for_chunk <- tss_gr[names(regions_for_chunk)]
     
     # Get transcript values for chunk transcripts
-    transcript_expression_table_chunk <- transcript_expression_table[names(regions_for_chunk), ]
+    transcript_expression_table_chunk <- transcript_expression_table[names(regions_for_chunk), , drop = FALSE]
     
     # Subset meth_rse_for_chunk for regions overlapping regions_for_chunk
     meth_rse_for_chunk <- subsetByOverlaps(meth_rse, regions_for_chunk)
