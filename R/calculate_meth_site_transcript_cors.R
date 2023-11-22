@@ -134,10 +134,15 @@ calculateMethSiteTranscriptCors <- function(meth_rse, assay_number = 1, transcri
     is(transcript_expression_table, "data.frame") | is(transcript_expression_table, "matrix"),
     is(samples_subset, "character") | is.null(samples_subset), 
     is(tss_gr, "GRanges"), is(expand_upstream, "numeric"), is(expand_downstream, "numeric"),
-    is(cor_method, "character"), is(add_distance_to_region, "logical"),
+    is(cor_method, "character"), is(add_distance_to_region, "logical") && !is.na(add_distance_to_region),
     is(max_sites_per_chunk, "numeric") & max_sites_per_chunk >= 1 | is.null(max_sites_per_chunk), 
     is(BPPARAM, "BiocParallelParam"), is(results_dir, "character") | is.null(results_dir))
-  cor_method = match.arg(cor_method, c("pearson", "spearman"))
+    match.arg(cor_method, c("pearson", "spearman"))
+  
+  # Check that assay_number is not greater than the number of assays in meth_rse
+  if(assay_number > length(SummarizedExperiment::assays(meth_rse))){
+    stop(paste0("Provided value for assay_number (", assay_number, ") is greater than the number of assays in meth_rse"))
+  }
   
   # Check that all regions in tss_gr have a length of 1 and that they have names
   if(any(width(tss_gr) != 1)){stop("All regions in tss_gr must have a width of 1")}
@@ -162,11 +167,11 @@ calculateMethSiteTranscriptCors <- function(meth_rse, assay_number = 1, transcri
   # Check that samples_subset are in meth_rse and transcript_expression_table
   if(!is.null(samples_subset)){
     if(any(!samples_subset %in% colnames(meth_rse))){
-      stop("Some samples_subset are not in meth_rse")
+      stop("Some samples in samples_subset are not in meth_rse")
     } else {meth_rse <- meth_rse[, samples_subset]}
     if(any(!samples_subset %in% colnames(transcript_expression_table))){
-      stop("Some samples_subset are not in transcript_expression_table")
-    } else {transcript_expression_table <- dplyr::select(transcript_expression_table, dplyr::all_of(samples_subset))}
+      stop("Some samples in samples_subset are not in transcript_expression_table")
+    } else {transcript_expression_table <- transcript_expression_table[, samples_subset, drop = FALSE]}
   }
 
   # Check that names of meth_rse and transcript_expression_table match

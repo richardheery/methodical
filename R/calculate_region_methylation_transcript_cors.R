@@ -33,7 +33,8 @@
 #' 
 #' # Calculate correlation values between TMRs identified for TUBB6 and transcript expression
 #' tubb6_tmrs_transcript_cors <- methodical::calculateRegionMethylationTranscriptCors(
-#'   genomic_regions = tubb6_tmrs, genomic_region_names = tubb6_tmrs$tmr_name, meth_rse = tubb6_meth_rse, transcript_expression_table = tubb6_transcript_counts)
+#'   meth_rse = tubb6_meth_rse, transcript_expression_table = tubb6_transcript_counts,
+#'   genomic_regions = tubb6_tmrs, genomic_region_names = tubb6_tmrs$tmr_name)
 #' tubb6_tmrs_transcript_cors
 #'  
 calculateRegionMethylationTranscriptCors <- function(meth_rse, assay_number = 1, transcript_expression_table, samples_subset = NULL, 
@@ -47,18 +48,23 @@ calculateRegionMethylationTranscriptCors <- function(meth_rse, assay_number = 1,
     is(genomic_regions, "GRanges"), is(genomic_region_names, "character") | is.null(genomic_region_names),
     is(genomic_region_transcripts, "character") | is.null(genomic_region_transcripts), 
     is(genomic_region_methylation, "data.frame") | is(genomic_region_methylation, "matrix") | is.null(genomic_region_methylation),
-    is(cor_method, "character"), is(p_adjust_method, "character") & p_adjust_method %in% p.adjust.methods,
+    is(p_adjust_method, "character") & p_adjust_method %in% p.adjust.methods,
     is(region_methylation_summary_function, "function"), is(BPPARAM, "BiocParallelParam"))
-  cor_method = match.arg(cor_method, c("pearson", "spearman"))
+    match.arg(cor_method, choices = c("pearson", "spearman"))
+  
+  # Check that assay_number is not greater than the number of assays in meth_rse
+  if(assay_number > length(SummarizedExperiment::assays(meth_rse))){
+    stop(paste0("Provided value for assay_number (", assay_number, ") is greater than the number of assays in meth_rse"))
+  }
   
   # Check that samples_subset are in meth_rse and transcript_expression_table
   if(!is.null(samples_subset)){
     if(any(!samples_subset %in% colnames(meth_rse))){
-      stop("Some samples_subset are not in meth_rse")
+      stop("Some samples in samples_subset are not in meth_rse")
     } else {meth_rse <- meth_rse[, samples_subset]}
     if(any(!samples_subset %in% colnames(transcript_expression_table))){
-      stop("Some samples_subset are not in transcript_expression_table")
-    } else {transcript_expression_table <- dplyr::select(transcript_expression_table, dplyr::all_of(samples_subset))}
+      stop("Some samples in samples_subset are not in transcript_expression_table")
+    } else {transcript_expression_table <- transcript_expression_table[, samples_subset, drop = FALSE]}
   }
 
   # Check that names of meth_rse and transcript_expression_table match
@@ -78,14 +84,33 @@ calculateRegionMethylationTranscriptCors <- function(meth_rse, assay_number = 1,
     genomic_region_names <- names(genomic_regions)
   }
   
-  # If genomic_region_transcripts not provided, set to genomic_regions$transcript_id
-  if(is.null(genomic_region_transcripts)){
-    genomic_region_transcripts <- genomic_regions$transcript_id
+  # Add names to genomic_regions if they are not already present and also check that no names are duplicated. 
+  if(is.null(genomic_region_names)){
+    message("No names for provided regions so naming them region_1, region_2, etc.")
+    genomic_region_names <- paste0("region_", 1:length(genomic_regions))
+    names(genomic_regions) <- genomic_region_names
+  } else {
+    if(length(genomic_region_names) != length(genomic_regions)){
+      stop("genomic_region_names must be the same length as genomic_regions")
+    } 
+    if(anyDuplicated(genomic_region_names)){
+      stop("genomic_region_names cannot contain duplicates")
+    } else {
+      names(genomic_regions) <- genomic_region_names
+    }
+  }
+  
+  # If genomic_regions$transcript_id is NULL, set to genomic_region_transcripts
+  if(is.null(genomic_regions$transcript_id)){
+    if(is.null(genomic_region_transcripts)){
+      stop("genomic_regions$transcript_id and genomic_region_transcripts cannot both be NULL")
+    } else if(length(genomic_region_transcripts) != length(genomic_regions)){
+      stop("If provided, length of genomic_region_transcripts must equal length of genomic_regions")
+    } else {genomic_regions$transcript_id <- genomic_region_transcripts}
   }
   
   # Add names and transcript IDs to genomic_regions
   names(genomic_regions) <- genomic_region_names
-  genomic_regions$transcript_id <- genomic_region_transcripts
   
   # Identify transcripts in common between tss_gr and transcript_expression_table.
   # Throw an error if there are no common transcripts and subset tss_gr and transcript_expression_table
@@ -95,13 +120,8 @@ calculateRegionMethylationTranscriptCors <- function(meth_rse, assay_number = 1,
   } else {
     message(paste("There are", length(common_transcripts), "genes/transcripts in common between genomic_region_transcripts and transcript_expression_table"))
   }
-  transcript_expression_table <- transcript_expression_table[common_transcripts, ]
+  transcript_expression_table <- transcript_expression_table[common_transcripts, , drop = FALSE]
   genomic_regions <- genomic_regions[genomic_regions$transcript_id %in% common_transcripts]
-  
-  # # Check that all genomic_region_transcripts are in transcript_expression_table
-  # if(!any(genomic_region_transcripts %in% row.names(transcript_expression_table))){
-  #   stop("All genomic_region_transcripts must be present in transcript table")
-  # }
   
   # Check that there are no duplicates for genomic_region_names and that it has the same length as genomic_regions
   # if(length(genomic_region_names) != length(genomic_regions)){stop("genomic_region_names must have the same length as genomic_regions")}

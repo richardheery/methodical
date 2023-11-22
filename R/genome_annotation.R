@@ -1,27 +1,37 @@
 #' Annotate GRanges
 #' 
 #' @param genomic_regions A GRanges object to be annotated
-#' @param annotation_ranges A GRanges object with regions for different features e.g. introns, exons, enhancers. 
-#' @param annotation_column Name of the metadata column of annotation_ranges indicating the feature group that regions belong to. Default is "region_type".
+#' @param annotation_ranges A GRangesList object with GRanges for different features e.g. introns, exons, enhancers. 
 #' @param ignore.strand A logical value indicating whether strand should be ignored when calculating intersections. Default is TRUE.
 #' @param overlap_measure One of "absolute", "proportion" or "jaccard" indicating whether to calculate 
-#' the absolute size of the intersection in base pairs, the proportion base pairs of gr1 overlapping gr2 
+#' the absolute size of the intersection in base pairs, the proportion of base pairs of 
+#' genomic_ranges overlapping one of the component GRanges of annotation_ranges. 
 #' or the Jaccard index of the intersection in terms of base pairs. Default value is "absolute".
-#' @return A numeric vector with the overlap measure for genomic_regions with each type of region in annotation_ranges
+#' @return A numeric vector with the overlap measure for genomic_regions with each type of region in annotation_ranges. 
 #' @export
-annotateGRanges <- function(genomic_regions, annotation_ranges, annotation_column = "region_type", ignore.strand = TRUE, overlap_measure = "absolute"){
+#' @examples 
+#' 
+#' # Load annotation for CpG islands and repetitive DNA
+#' cpg_island_annotation <- annotatr::build_annotations(genome = "hg38", annotations = "hg38_cpgs")
+#' repeat_annotation_hg38 <- AnnotationHub::AnnotationHub()[["AH99003"]]
+#' 
+#' # Convert repeat_annotation_hg38 into a GRangesList
+#' repeat_annotation_hg38 <- GRangesList(split(repeat_annotation_hg38, repeat_annotation_hg38$repClass))
+#'  
+#' Calculate the proportion of base pairs in CpG islands overlapping different classes of repetitive elements
+#' annotateGRanges(genomic_regions = cpg_island_annotation, annotation_ranges = repeat_annotation_hg38, overlap_measure = "proportion")
+#' 
+annotateGRanges <- function(genomic_regions, annotation_ranges, ignore.strand = TRUE, overlap_measure = "absolute"){
   
   # Check that inputs have the correct data type
-  stopifnot(is(genomic_regions, "GRanges"), is(annotation_ranges, "GRanges"),
-    is(annotation_column, "character"), is(ignore.strand, "logical"), is(overlap_measure, "character"))
-    
-  # Check that provided annotation_ranges has a metadata column matching annotation_column
-  if(!annotation_column %in% names(mcols(annotation_ranges))){
-      stop(paste(annotation_ranges, "is not the name of a metadata column of annotation_ranges"))
-  }
+  stopifnot(is(genomic_regions, "GRanges"), is(annotation_ranges, "GRangesList"),
+    is(ignore.strand, "logical"), is(overlap_measure, "character"))
   
-  # Split annotation_ranges into a list using annotation_column
-  annotation_ranges <- split(annotation_ranges, mcols(annotation_ranges)[[annotation_column]]); gc()
+  # If annotation_ranges are missing names, print a warning and say that regions are being named 
+  if(is.null(names(annotation_ranges))){
+    message("annotation_ranges are missing names. They will be named granges_1, granges_2, etc. in the output")
+    names(annotation_ranges) = paste0("granges_", seq_along(annotation_ranges))
+  }
   
   # Calculate the intersection between genomic_regions and different groups of regions defined by annotation_ranges. 
   annotation_overlaps <- sapply(annotation_ranges, function(x) 
