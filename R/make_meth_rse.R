@@ -5,7 +5,7 @@
 #' @param start_column The column number in bedgraphs which corresponds to the start positions. Default is 2nd column. 
 #' @param end_column The column number in bedgraphs which corresponds to the end positions. Default is 3rd column. 
 #' @param value_column The column number in bedgraphs which corresponds to the methylation values. Default is 4th column. 
-#' @param zero_based A logical value indicating if files are zero-based. Default value is TRUE. 
+#' @param zero_based TRUE or FALSE indicating if files are zero-based. Default value is TRUE. 
 #' @param normalization_factor An optional numerical value to divide methylation values by to convert them to fractions e.g. 100 if they are percentages. 
 #' Default is not to leave values as they are in the input files. 
 #' @param decimal_places Optional integer indicating the number of decimal places to round beta values to. Default is not to round. 
@@ -13,7 +13,7 @@
 #' @param sample_metadata Sample metadata to be used as colData for the RangedSummarizedExperiment.
 #' @param hdf5_dir Directory to save HDF5 file. Is created if it doesn't exist. HDF5 file is called assays.h5. 
 #' @param dataset_name Name to give data set in HDF5 file. Default is "beta".
-#' @param overwrite Logical value indicating whether to allow overwriting if dataset_name already exists in assays.h5. Default is FALSE.
+#' @param overwrite TRUE or FALSE indicating whether to allow overwriting if dataset_name already exists in assays.h5. Default is FALSE.
 #' @param chunkdim The dimensions of the chunks for the HDF5 file. Should be a vector of length 2 giving the number of rows and then the number of columns in each chunk.
 #' Uses HDF5Array::getHDF5DumpChunkDim(length(meth_sites), length(bedgraphs))) by default. 
 #' @param temporary_dir Name to give temporary directory created to store intermediate files. A directory with this name cannot already exist. 
@@ -54,11 +54,11 @@ makeMethRSEFromBedgraphs <- function(bedgraphs,
   # Check that inputs have the correct data type
   stopifnot(is(bedgraphs, "character"), is(seqnames_column, "numeric") & seqnames_column >= 1,
     is(start_column, "numeric") & start_column >= 1, is(end_column, "numeric") & end_column >= 1,
-    is(value_column, "numeric") & value_column >= 1, is(zero_based, "logical"),
+    is(value_column, "numeric") & value_column >= 1, S4Vectors::isTRUEorFALSE(zero_based),
     is(normalization_factor, "numeric") | is.null(normalization_factor),
     is(decimal_places, "numeric") | is.na(decimal_places), is(meth_sites, "GRanges"),
     is(sample_metadata, "data.frame") | is.null(sample_metadata), is(hdf5_dir, "character"),
-    is(dataset_name, "character"), is(overwrite, "logical"), is(chunkdim, "numeric") | is.null(chunkdim),
+    is(dataset_name, "character"), S4Vectors::isTRUEorFALSE(overwrite), is(chunkdim, "numeric") | is.null(chunkdim),
     is(temporary_dir, "character") | is.null(temporary_dir), is(BPPARAM, "BiocParallelParam"))
     
   # Check that normalization_factor is a whole integer if provided
@@ -127,7 +127,7 @@ makeMethRSEFromBedgraphs <- function(bedgraphs,
 #' @param sample_metadata Sample metadata to be used as colData for the RangedSummarizedExperiment
 #' @param hdf5_dir Directory to save HDF5 file. Is created if it doesn't exist. HDF5 file is called assays.h5. 
 #' @param dataset_name Name to give data set in HDF5 file. Default is "beta".
-#' @param overwrite Logical value indicating whether to allow overwriting if dataset_name already exists in assays.h5. Default is FALSE.
+#' @param overwrite TRUE or FALSE indicating whether to allow overwriting if dataset_name already exists in assays.h5. Default is FALSE.
 #' @param chunkdim The dimensions of the chunks for the HDF5 file. Should be a vector of length 2 giving the number of rows and then the number of columns in each chunk.
 #' @param temporary_dir Name to give a temporary directory to store intermediate files. A directory with this name cannot already exist. 
 #' Default is to create a name using tempfile("temporary_meth_chunks_"). 
@@ -166,7 +166,7 @@ makeMethRSEFromArrayFiles <- function(array_files, probe_name_column = 1, beta_v
     is(normalization_factor, "numeric") | is.null(normalization_factor),
     is(decimal_places, "numeric") | is.na(decimal_places), is(probe_ranges, "GRanges"),
     is(sample_metadata, "data.frame") | is.null(sample_metadata), is(hdf5_dir, "character"),
-    is(dataset_name, "character"), is(overwrite, "logical"), is(chunkdim, "numeric") | is.null(chunkdim),
+    is(dataset_name, "character"), S4Vectors::isTRUEorFALSE(overwrite), is(chunkdim, "numeric") | is.null(chunkdim),
     is(temporary_dir, "character") | is.null(temporary_dir), is(BPPARAM, "BiocParallelParam"))
   
   # Check that normalization_factor is a whole integer if provided

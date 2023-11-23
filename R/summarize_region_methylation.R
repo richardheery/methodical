@@ -4,7 +4,7 @@
 #' @param meth_rse A RangedSummarizedExperiment with methylation values.
 #' @param assay_number The assay from meth_rse to extract values from.
 #' @param summary_function summary_function A function that summarizes column values.
-#' @param na.rm A logical value indicating whether to remove NA values when calculating summaries.
+#' @param na.rm TRUE or FALSE indicating whether to remove NA values when calculating summaries.
 #' @param ... Additional arguments to be passed to summary_function. 
 #' @return A function which returns a list with the 
 .summarize_chunk_methylation = function(chunk_regions, meth_rse, assay_number, summary_function, na.rm, ...){
@@ -46,7 +46,7 @@
 #' @param meth_rse A RangedSummarizedExperiment with methylation values.
 #' @param assay_number The assay from meth_rse to extract values from. Default is the first assay. 
 #' @param genomic_regions GRanges object with regions to summarize methylation values for. 
-#' @param keep_metadata_cols A logical value indicating whether to add the metadata columns of genomic_regions to the output. Default is FALSE.
+#' @param keep_metadata_cols TRUE or FALSE indicating whether to add the metadata columns of genomic_regions to the output. Default is FALSE.
 #' @param genomic_region_names A vector of names to give genomic_regions in the output table. There cannot be any duplicated names. 
 #' Default is to attempt to use `names(genomic_regions)` if they are present or to name them region_1, region_2, etc otherwise.
 #' @param max_sites_per_chunk The approximate maximum number of methylation sites to try to load into memory at once. 
@@ -56,7 +56,7 @@
 #' while high values will result in a large memory footprint without much improvement in running time. 
 #' Default is floor(62500000/ncol(meth_rse)), resulting in each chunk requiring approximately 500 MB of RAM. 
 #' @param summary_function A function that summarizes column values. Default is base::colMeans. 
-#' @param na.rm A logical value indicating whether to remove NA values when calculating summaries. Default value is TRUE. 
+#' @param na.rm TRUE or FALSE indicating whether to remove NA values when calculating summaries. Default value is TRUE. 
 #' @param BPPARAM A BiocParallelParam object. Defaults to `BiocParallel::bpparam()`. 
 #' @param ... Additional arguments to be passed to summary_function. 
 #' @return A data.table with the summary of methylation of each region in genomic_regions for each sample.
@@ -81,9 +81,9 @@ summarizeRegionMethylation <- function(meth_rse, assay_number = 1, genomic_regio
   # Check that inputs have the correct data type
   stopifnot(is(meth_rse, "RangedSummarizedExperiment"), is(assay_number, "numeric"),
     is(genomic_regions, "GRanges"), is(genomic_region_names, "character") | is.null(genomic_region_names),
-    is(keep_metadata_cols, "logical"), 
+    S4Vectors::isTRUEorFALSE(keep_metadata_cols), 
     (is(max_sites_per_chunk, "numeric") & max_sites_per_chunk >= 1) | is.null(max_sites_per_chunk),
-    is(summary_function, "function"), is(na.rm, "logical"), 
+    is(summary_function, "function"), S4Vectors::isTRUEorFALSE(na.rm), 
     is(BPPARAM, "BiocParallelParam"))
   
   # If genomic_region_names is NULL, attempt to use names of genomic_regions

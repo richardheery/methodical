@@ -46,7 +46,7 @@ adjust_covariates = function(values, covariates){
 #' @param transcript_values_corrected A list with corrected expression values for transcripts.
 #' @param tss_for_chunk A list of GRanges with the TSS for the current chunk.
 #' @param cor_method Correlation method to use. 
-#' @param add_distance_to_region Logical value indicating whether to add distance to TSS.
+#' @param add_distance_to_region TRUE or FALSE indicating whether to add distance to TSS.
 #' @param results_dir Location of results directory. 
 #' @param n_covariates Number of covariates to correct for
 #' @return An iterator function which returns a list with the parameters necessary for .tss_correlations. 
@@ -157,7 +157,7 @@ adjust_covariates = function(values, covariates){
 #' @param expand_upstream Number of bases to add upstream of each TSS. Must be numeric vector of length 1 or equal to the length of tss_gr. Default is 5000.
 #' @param expand_downstream Number of bases to add downstream of each TSS. Must be numeric vector of length 1 or equal to the length of tss_gr. Default is 5000.
 #' @param cor_method A character string indicating which correlation coefficient is to be computed. Identical to methods from cor(). Default is "pearson".
-#' @param add_distance_to_region A logical value indicating whether to add the distance of methylation sites to the TSS. Default value is TRUE.
+#' @param add_distance_to_region TRUE or FALSE indicating whether to add the distance of methylation sites to the TSS. Default value is TRUE.
 #' Setting to FALSE will roughly half the total running time.
 #' @param max_sites_per_chunk The approximate maximum number of methylation sites to try to load into memory at once. 
 #' The actual number loaded may vary depending on the number of methylation sites overlapping each region, 
@@ -195,7 +195,7 @@ calculateMethSiteTranscriptPartialCors <- function(meth_rse, assay_number = 1, t
     is(covariates, "data.frame") | is(covariates, "matrix"),
     is(samples_subset, "character") | is.null(samples_subset),
     is(tss_gr, "GRanges"), is(expand_upstream, "numeric"), is(expand_downstream, "numeric"),
-    is(cor_method, "character"), is(add_distance_to_region, "logical"),
+    is(cor_method, "character"), S4Vectors::isTRUEorFALSE(add_distance_to_region),
     is(max_sites_per_chunk, "numeric") & max_sites_per_chunk >= 1 | is.null(max_sites_per_chunk), 
     is(BPPARAM, "BiocParallelParam"), is(results_dir, "character") | is.null(results_dir))
   cor_method = match.arg(cor_method, c("pearson", "kendall", "spearman"))

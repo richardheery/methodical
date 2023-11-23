@@ -6,7 +6,7 @@
 #' @param sample_metadata Sample metadata to be used as colData for the RangedSummarizedExperiment.
 #' @param hdf5_dir Directory to save HDF5 file. Is created if it doesn't exist. HDF5 file is called assays.h5. 
 #' @param dataset_name Name to give data set in HDF5 file. 
-#' @param overwrite Logical value indicating whether to allow overwriting if dataset_name already exists in assays.h5. 
+#' @param overwrite TRUE or FALSE indicating whether to allow overwriting if dataset_name already exists in assays.h5. 
 #' @param chunkdim The dimensions of the chunks for the HDF5 file.
 #' @param temporary_dir Name to give a temporary directory to store intermediate files. A directory with this name cannot already exist. 
 #' @param ... Additional arguments to be passed to HDF5Array::HDF5RealizationSink. 
@@ -182,7 +182,7 @@
 #' @param meth_sites A GRanges object with the locations of the methylation sites of interest.
 #' @param meth_site_groups A list with the indices of the methylation sites in each group. 
 #' @param temp_chunk_dirs A vector giving the temporary directory associated with each chunk.
-#' @param zero_based A logical value indicating if files are zero-based. 
+#' @param zero_based TRUE or FALSE indicating if files are zero-based. 
 #' @param normalization_factor An optional numerical value to divide methylation values by to convert them to fractions e.g. 100 if they are percentages. 
 #' Default is not to leave values as they are in the input files.  
 #' @param decimal_places Integer indicating the number of decimal places to round beta values to. 

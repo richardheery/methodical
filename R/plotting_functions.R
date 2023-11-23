@@ -4,7 +4,7 @@
 #' First column should be called meth_site and give the names of methylation sites. 
 #' All methylation sites must be located on the same sequence. 
 #' @param column_name Name of column in meth_site_values to plot. 
-#' @param reference_tss A logical value indicating whether to show distances on the X-axis
+#' @param reference_tss TRUE or FALSE indicating whether to show distances on the X-axis
 #' relative to the TSS stored as an attribute `tss_range` of meth_site_values. 
 #' Alternatively, can provide a GRanges object with a single range for such a TSS site. 
 #' In either case, will show the distance of methylation sites to the start of this region with methylation sites upstream 
@@ -36,7 +36,7 @@ plotMethSiteValues <- function(meth_site_values, column_name, reference_tss = FA
   
   # Check that inputs have the correct data type
   stopifnot(is(meth_site_values, "data.frame"), is(column_name, "character"),
-    is(reference_tss, "logical") | is(reference_tss, "GRanges"), 
+    S4Vectors::isTRUEorFALSE(reference_tss) | is(reference_tss, "GRanges"), 
     is(title, "character") | is.null(title), is(xlabel, "character") | is.null(xlabel),
     is(ylabel, "character") | is.null(ylabel), is(value_colours, "character"))
   
@@ -140,7 +140,7 @@ plotMethSiteValues <- function(meth_site_values, column_name, reference_tss = FA
 #' @param annotation_gr A GRanges object giving the locations of different classes of regions. 
 #' There must be a metadata column named region_type giving the class of each region. 
 #' If this is a factor, the levels will be used to order the region classes in the plot. 
-#' @param reference_tss A logical value indicating whether to show distances on the X-axis
+#' @param reference_tss TRUE or FALSE indicating whether to show distances on the X-axis
 #' relative to the TSS stored as an attribute `tss_range` of meth_site_plot. 
 #' Alternatively, can provide a GRanges object with a single range for such a TSS site. 
 #' In either case, will show the distance of methylation sites to the start of this region with methylation sites upstream 
@@ -150,8 +150,8 @@ plotMethSiteValues <- function(meth_site_values, column_name, reference_tss = FA
 #' @param region_class_colours An optional named vector of colours to use with different region classes. Names of vector match colours to region classes. 
 #' @param annotation_line_size Linewidth for annotation plot. Default is 5. 
 #' @param annotation_plot_height A value giving the proportion of the height of the plot devoted to the annotation. Default is 0.5. 
-#' @param keep_meth_site_plot_legend A logical value indicating whether to retain the legend of meth_site_plot, if it has one. Default value is FALSE. 
-#' @param annotation_plot_only A logical value indicating whether to return only the annotation plot. Default is to combine meth_site_plot with the annotation. 
+#' @param keep_meth_site_plot_legend TRUE or FALSE indicating whether to retain the legend of meth_site_plot, if it has one. Default value is FALSE. 
+#' @param annotation_plot_only TRUE or FALSE indicating whether to return only the annotation plot. Default is to combine meth_site_plot with the annotation. 
 #' @return A ggplot object
 #' @export
 #' @examples 
@@ -170,11 +170,11 @@ annotateMethSitePlot <- function(meth_site_plot, annotation_gr, reference_tss = 
   
   # Check that inputs have the correct data type
   stopifnot(is(meth_site_plot, "ggplot"), is(annotation_gr, "GRanges"),
-    is(reference_tss, "logical") | is(reference_tss, "GRanges"), 
+    S4Vectors::isTRUEorFALSE(reference_tss) | is(reference_tss, "GRanges"), 
     is(region_class_colours, "character") | is.null(region_class_colours),
     is(annotation_line_size, "numeric"), is(annotation_line_size, "numeric"),
-    is(annotation_plot_height, "numeric"), is(keep_meth_site_plot_legend, "logical"),
-    is(annotation_plot_only, "logical"))
+    is(annotation_plot_height, "numeric"), S4Vectors::isTRUEorFALSE(keep_meth_site_plot_legend),
+    S4Vectors::isTRUEorFALSE(annotation_plot_only))
     
   # If reference_tss is TRUE, try to extract tss_range from meth_site_plot
   if(is(reference_tss, "logical")){
@@ -355,7 +355,7 @@ plotTMRs <- function(meth_site_plot, tmrs_gr, reference_tss = NULL, transcript_i
 #' @param reference_tss An optional GRanges object with a single range. If provided, the x-axis will show the distance of methylation sites to the start of this region with methylation sites upstream.
 #' relative to the reference_tss shown first. If not, the x-axis will show the start site coordinate of the methylation site. 
 #' @param p_value_threshold The p-value threshold used to identify TMRs. Default value is 0.005. Set to NULL to turn off significance thresholds.
-#' @param smooth_scores A logical value indicating whether to display a curve of smoothed Methodical scores on top of the plot. Default is TRUE.
+#' @param smooth_scores TRUE or FALSE indicating whether to display a curve of smoothed Methodical scores on top of the plot. Default is TRUE.
 #' @param offset_length Offset length to be supplied to calculateSmoothedMethodicalScores.
 #' @param smoothing_factor Smoothing factor to be provided to calculateSmoothedMethodicalScores.
 #' @param smoothed_curve_colour Colour of the smoothed curve. Default is "black".
@@ -381,7 +381,7 @@ plotMethodicalScores <- function(meth_site_values, reference_tss = NULL, p_value
   # Check that inputs have the correct data type
   stopifnot(is(meth_site_values, "data.frame"), 
     is(reference_tss, "GRanges") | is.null(reference_tss), 
-    is(p_value_threshold, "numeric") | is.null(p_value_threshold), is(smooth_scores, "logical"),
+    is(p_value_threshold, "numeric") | is.null(p_value_threshold), S4Vectors::isTRUEorFALSE(smooth_scores),
     is(offset_length, "numeric"), is(smoothing_factor, "numeric"),
     is(smoothed_curve_colour, "character"), is(linewidth, "numeric"),
     is(curve_alpha, "numeric"), is(title, "character") | is.null(title),

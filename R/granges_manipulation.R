@@ -2,11 +2,11 @@
 #'
 #' @param genome A BSgenome object or the name of one.  
 #' @param pattern A pattern to match in bsgenome. Default is "CG".
-#' @param plus_strand_only A logical value indicating whether to only return matches on "+" strand, 
+#' @param plus_strand_only TRUE or FALSE indicating whether to only return matches on "+" strand, 
 #' avoiding returning duplicate hits for palindromic sequences e.g. CG. Default is TRUE.
 #' @param meth_site_position Which position in the pattern corresponds to the methylation site of interest. 
 #' Default is the first position.
-#' @param standard_sequences_only A logical value indicating whether to only return sites 
+#' @param standard_sequences_only TRUE or FALSE indicating whether to only return sites 
 #' on standard sequences (those without "-" in their names). Default is TRUE. 
 #' @return A GRanges object with genomic regions matching the pattern.
 #' @export
@@ -21,8 +21,8 @@ extractMethSitesFromGenome <- function(genome, pattern = "CG", plus_strand_only 
   
   # Check that inputs have the correct data type
   stopifnot(is(genome, "character") | is(genome, "BSgenome"), is(pattern, "character"), 
-    is(plus_strand_only, "logical"), is(meth_site_position, "numeric") & meth_site_position >= 1,
-    is(standard_sequences_only, "logical"))
+    S4Vectors::isTRUEorFALSE(plus_strand_only), is(meth_site_position, "numeric") & meth_site_position >= 1,
+    S4Vectors::isTRUEorFALSE(standard_sequences_only))
   
   # If genome is a character, try to load genome with that name
   if(is.character(genome)){genome <- BSgenome::getBSgenome(genome)}
@@ -56,8 +56,8 @@ extractMethSitesFromGenome <- function(genome, pattern = "CG", plus_strand_only 
   meth_sites_gr <- resize(meth_sites_gr, meth_site_position, fix = "start")
   start(meth_sites_gr) <- end(meth_sites_gr)
   
-  # Return meth_sites_gr
-  return(meth_sites_gr)
+  # Sort and return meth_sites_gr
+  return(sort(meth_sites_gr, ignore.strand = TRUE))
   
 }
 
@@ -111,7 +111,8 @@ strandedDistance <- function(query_gr, subject_gr){
 #' @param genomic_regions A GRanges object. 
 #' @param tss_gr A GRanges object with transcription start sites. Each range should have width 1. 
 #' Upstream and downstream are relative to strand of tss_gr.
-#' @return A GRanges object where all regions have "relative" as the sequence names.  
+#' @return A GRanges object where all regions have "relative" as the sequence names and 
+#' ranges are the location of TMRs relative to the TSS.  
 #' @export
 #' @examples
 #' # Create query and subject GRanges 
@@ -166,7 +167,7 @@ rangesRelativeToTSS <- function(genomic_regions, tss_gr){
 #'
 #' @param gr1 A GRanges object
 #' @param gr2 A GRanges object
-#' @param ignore.strand A logical value indicating whether strand should be ignored when calculating intersections. Default is TRUE.
+#' @param ignore.strand TRUE or FALSE indicating whether strand should be ignored when calculating intersections. Default is TRUE.
 #' @param overlap_measure One of "absolute", "proportion" or "jaccard" indicating whether to calculate 
 #' the absolute size of the intersection in base pairs, the proportion base pairs of gr1 overlapping gr2 
 #' or the Jaccard index of the intersection in terms of base pairs. Default value is "absolute".
@@ -175,7 +176,7 @@ rangesRelativeToTSS <- function(genomic_regions, tss_gr){
   
   # Check that inputs have the correct data type
   stopifnot(is(gr1, "GRanges"), is(gr2, "GRanges"), 
-    is(ignore.strand, "logical"), is(overlap_measure, "character"))
+    S4Vectors::isTRUEorFALSE(ignore.strand), is(overlap_measure, "character"))
   
   # Check allowed value provided for overlap_measure
   match.arg(overlap_measure, c("absolute", "proportion", "jaccard"))
@@ -208,12 +209,12 @@ rangesRelativeToTSS <- function(genomic_regions, tss_gr){
 #' @param region_widths The widths of the random regions. Widths cannot be negative. 
 #' Can be just a single value if all regions are to have the same widths. Default is 1000.
 #' @param sequences The names of sequences to create random regions on. Default is to use all standard sequences (those without "_" in their name)
-#' @param all_sequences_equally_likely A logical value indicating if the probability of creating random regions on a sequence should be the same for each sequence.
+#' @param all_sequences_equally_likely TRUE or FALSE indicating if the probability of creating random regions on a sequence should be the same for each sequence.
 #' Default is FALSE, indicating to make the probability proportional to a sequences length.
-#' @param stranded A logical value indicating if created regions should have a strand randomly assigned. Default is FALSE, indicating to make unstranded regions. 
+#' @param stranded TRUE or FALSE indicating if created regions should have a strand randomly assigned. Default is FALSE, indicating to make unstranded regions. 
 #' @param masked_regions An optional GRanges object which random regions will not be allowed to overlap. 
-#' @param allow_overlapping_regions A logical value indicating if created random regions should be allowed to overlap. Default is FALSE. 
-#' @param ignore.strand A logical value indicating whether strand should be ignored when 
+#' @param allow_overlapping_regions TRUE or FALSE indicating if created random regions should be allowed to overlap. Default is FALSE. 
+#' @param ignore.strand TRUE or FALSE indicating whether strand should be ignored when 
 #' identifying overlaps between random regions with each other or with masked_regions. 
 #' Only relevant if stranded is TRUE and either allow_overlapping_regions is FALSE or masked_regions is provided. Default is TRUE.
 #' @param max_tries The maximum number of attempts to make to find non-overlapping regions which do not overlap masked_regions. Default value is 100. 
@@ -231,9 +232,9 @@ createRandomRegions <- function(genome, n_regions = 1000, region_widths = 1000, 
   # Check that inputs have the correct data type
   stopifnot(is(genome, "character") | is(genome, "BSgenome"), 
     is(n_regions, "numeric") & n_regions >= 1, is(region_widths, "numeric") & region_widths >= 1,
-    is(sequences, "character") | is.null(sequences), is(all_sequences_equally_likely, "logical"),
-    is(stranded, "logical"), is(masked_regions, "GRanges") | is.null(masked_regions),
-    is(allow_overlapping_regions, "logical"), is(ignore.strand, "logical"), 
+    is(sequences, "character") | is.null(sequences), S4Vectors::isTRUEorFALSE(all_sequences_equally_likely),
+    S4Vectors::isTRUEorFALSE(stranded), is(masked_regions, "GRanges") | is.null(masked_regions),
+    S4Vectors::isTRUEorFALSE(allow_overlapping_regions), S4Vectors::isTRUEorFALSE(ignore.strand), 
     is(max_tries, "numeric") & n_regions >= 1)
   
   # Check that all region_widths are positive

@@ -2,7 +2,7 @@
 #' 
 #' @param genomic_regions A GRanges object to be annotated
 #' @param annotation_ranges A GRangesList object with GRanges for different features e.g. introns, exons, enhancers. 
-#' @param ignore.strand A logical value indicating whether strand should be ignored when calculating intersections. Default is TRUE.
+#' @param ignore.strand TRUE or FALSE indicating whether strand should be ignored when calculating intersections. Default is TRUE.
 #' @param overlap_measure One of "absolute", "proportion" or "jaccard" indicating whether to calculate 
 #' the absolute size of the intersection in base pairs, the proportion of base pairs of 
 #' genomic_ranges overlapping one of the component GRanges of annotation_ranges. 
@@ -25,7 +25,7 @@ annotateGRanges <- function(genomic_regions, annotation_ranges, ignore.strand = 
   
   # Check that inputs have the correct data type
   stopifnot(is(genomic_regions, "GRanges"), is(annotation_ranges, "GRangesList"),
-    is(ignore.strand, "logical"), is(overlap_measure, "character"))
+    S4Vectors::isTRUEorFALSE(ignore.strand), is(overlap_measure, "character"))
   
   # If annotation_ranges are missing names, print a warning and say that regions are being named 
   if(is.null(names(annotation_ranges))){

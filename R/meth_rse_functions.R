@@ -57,7 +57,7 @@ extractGRangesMethSiteValues <- function(meth_rse, genomic_regions = NULL, sampl
 #' @param n_sites Number of sites to randomly sample. Default is 1000.
 #' @param genomic_ranges_filter An optional GRanges object used to first subset meth_rse. 
 #' Sites will then be chosen randomly from those overlapping these ranges.
-#' @param invert_filter A logical value indicating whether to invert the genomic_ranges_filter so 
+#' @param invert_filter TRUE or FALSE indicating whether to invert the genomic_ranges_filter so 
 #' as to exclude sites overlapping these regions. Default value is FALSE.
 #' @param samples_subset Optional sample names used to subset meth_rse.
 #' @param assay_number The assay from meth_rse to extract values from. Default is the first assay.
@@ -85,7 +85,7 @@ SampleMethSites <- function(meth_rse, n_sites = 1000, genomic_ranges_filter = NU
   # Check that inputs have the correct data type
   stopifnot(is(meth_rse, "RangedSummarizedExperiment"), is(n_sites, "numeric") & n_sites >= 1,
     is(genomic_ranges_filter, "GRanges") | is.null(genomic_ranges_filter), 
-    is(invert_filter, "logical"), is(samples_subset, "character") | is.null(samples_subset),
+    S4Vectors::isTRUEorFALSE(invert_filter), is(samples_subset, "character") | is.null(samples_subset),
     is(assay_number, "numeric"))
   
   # If genomic_ranges_filter provided, subset meth_rse with it
@@ -115,7 +115,7 @@ SampleMethSites <- function(meth_rse, n_sites = 1000, genomic_ranges_filter = NU
 #' 
 #' @param meth_rse A RangedSummarizedExperiment for methylation data
 #' @param chain A "Chain" object to be used with rtracklayer::liftOver
-#' @param remove_one_to_many_mapping A logical value indicating whether to remove regions in the source genome 
+#' @param remove_one_to_many_mapping TRUE or FALSE indicating whether to remove regions in the source genome 
 #' which map to multiple regions in the target genome. Default is TRUE.
 #' @param permitted_target_regions An optional GRanges object used to filter the rowRanges by overlaps after liftover, 
 #' for example CpG sites from the target genome. Any regions which do not overlap permitted_target_regions will be removed.  
@@ -142,7 +142,7 @@ liftoverMethRSE <- function(meth_rse, chain, remove_one_to_many_mapping = TRUE, 
   
   # Check that inputs have the correct data type
   stopifnot(is(meth_rse, "RangedSummarizedExperiment"), is(chain, "Chain"),
-    is(remove_one_to_many_mapping, "logical"), 
+    S4Vectors::isTRUEorFALSE(remove_one_to_many_mapping), 
     is(permitted_target_regions, "GRanges") | is.null(permitted_target_regions))
   
   # Liftover rowRanges for meth_rse using specified liftover chain file
