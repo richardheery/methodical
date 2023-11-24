@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 
 ```{r setup, message = F}
 library(methodical)
-library(TCGAbiolinks)
+library(dplyr)
 ```
 
 ## Introduction
@@ -40,16 +40,94 @@ overlapping certain genomic regions, e.g. repeats.
 Here we demonstrate this different functionality using a dataset downloaded
 from TumourMethData.
 
+```{r, eval=TRUE}
+## CHANGE TO USE TUMOURMETHDATA
 tcga_wgbs_hg38 = HDF5Array::loadHDF5SummarizedExperiment("~/wgbs/tcga_wgbs/tcga_wgbs_hg38/")
+```
 
 ## Extracting methylation data from methylation RangedSummarizedExperiments
 
-We'll first demonstrate how to extract methylation data for CpG islands from
-tcga_wgbs_hg38. 
+We'll first demonstrate how to extract methylation data for individual CpG sites 
+in tcga_wgbs_hg38 overlapping a supplied GRanges object with 
+`extractGRangesMethSiteValues`, using the APC gene body as an example.
+
+
+```{r, eval=TRUE}
+# Create a GRanges with the hg38 genomic coordinates around the start site of 
+# the APC gene, including 2 KB upstream of its designated start in Ensembl
+apc_gr <- GRanges("chr5:112705518-112716517:+")
+
+# Extract methylation values for CpG sites overlapping apc gene body
+apc_cpg_methylation <- extractGRangesMethSiteValues(
+  meth_rse = tcga_wgbs_hg38, genomic_regions = apc_gr)
+
+# View the first few rows and columns of the result. 
+# extractGRangesMethSiteValues returns a row for each methylation site and a 
+# separate column for each sample where row names give the coordinates of the 
+# methylation sites in character format. 
+apc_cpg_methylation[1:6, 1:6]
+```
+
+Next we'll show how to summarize the methylation of CpGs over regions of 
+interest with `summarizeRegionMethylation`, using CpG islands as an example. 
+`summarizeRegionMethylation` processes the the supplied genomic regions in 
+chunks so that the methylation data for CpG sites overlapping the regions of 
+interest is not all loaded into memory at once. The parameter 
+`max_sites_per_chunk` controls the approximate number of CpG sites maximally 
+read into memory at once and defaults to `floor(62500000/ncol(meth_rse)`. 
+Several chunks can be processed in parallel using BiocParallel via the 
+`BPPARAM` argument which takes a BiocParallelParam object. The number of workers
+indicated by BiocParallelParam determines the number of chunks that will be 
+processed in parallel. Some experimentation may be needed to find the optimal 
+choices for `max_sites_per_chunk` and the number of workers in terms of speed 
+and memory usage. 
 
 ```{r, eval=TRUE}
 # Load CpG islands annotation for hg38
-cpg_islands_hg38 <- annotatr::build_annotations(genome = "hg38", annotations = "hg38_cpgs")
+cpg_island_annotation <- annotatr::build_annotations(genome = "hg38", annotation = "hg38_cpgs")
+names(cpg_island_annotation) <- cpg_island_annotation$id
+cpg_island_annotation <- GRangesList(split(cpg_island_annotation, cpg_island_annotation$type))
+
+cpg_island_methylation <- summarizeRegionMethylation(
+  meth_rse = tcga_wgbs_hg38, genomic_regions = cpg_island_annotation$hg38_cpg_islands, 
+  BPPARAM = BiocParallel::MulticoreParam(workers = 4), summary_function = colMeans)
+
+# Print a few rows for the first few samples of the result
+cpg_island_methylation[1000:1006, 1:6]
+```
+
+# We can also summarize methylation values overlapping regions of interest
+
+# Load CpG islands annotation for hg38
+cpg_island_annotation <- annotatr::build_annotations(genome = "hg38", annotation = "hg38_cpgs")
+names(cpg_island_annotation) <- cpg_island_annotation$id
+cpg_island_annotation <- GRangesList(split(cpg_island_annotation, cpg_island_annotation$type))
+
+# Calculate the mean methylation of CpGs in each CpG island for each sample
+cpg_island_methylation <- summarizeRegionMethylation(
+  meth_rse = tcga_wgbs_hg38, genomic_regions = cpg_island_annotation$hg38_cpg_islands, 
+  BPPARAM = BiocParallel::bpparam(), summary_function = colMeans)
+
+
+# Plot the methylation values along the APC gene body for one colon tumour sample.
+plotMethSiteValues(apc_cpg_methylation, column_name = "TCGA_A2_A0YG_01", 
+  ylabel = "Methylation Level")
+
+# We can also plot the difference in methylation values between samples,
+# such as between colon tumour and its matching normal sample, by creating a 
+# data.frame with a column with these values.
+apc_cpg_methylation_change <- data.frame(meth_change = 
+  apc_cpg_methylation$TCGA_AA_3518_01 - apc_cpg_methylation$TCGA_AA_3518_11,
+  row.names = row.names(apc_cpg_methylation))
+
+# Plot mean difference in methylation between colon tumour and its matching normal sample.
+apc_coad_meth_change_plot <- plotMethSiteValues(apc_cpg_methylation_change, 
+  column_name = "meth_change", ylabel = "Methylation Change in Colon Cancer")
+print(apc_coad_meth_change_plot)
+  
+
+annotateMethSitePlot(meth_site_plot = apc_coad_meth_change_plot, 
+  annotation_grl = cpg_island_annotation, annotation_plot_proportion = 0.3)
 
 ```
 

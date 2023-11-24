@@ -144,6 +144,9 @@ summarizeRegionMethylation <- function(meth_rse, assay_number = 1, genomic_regio
     region_methylation <- cbind(region_methylation, data.frame(mcols(genomic_regions)))
   }
   
+  # Turn region_name back into row.names
+  region_methylation <- data.frame(tibble::column_to_rownames(region_methylation, "region_name"))
+  
   # Run the garbage collection and return region_methylation
   gc()
   return(region_methylation)

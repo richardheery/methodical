@@ -18,6 +18,8 @@
 #' Alternatively, can use one of two predefined colour sets by providing either "set1" or "set2":
 #' set1 uses "#53868B" (blue) for low values and "#CD2626" (red) for high values 
 #' while set2 uses "#7B5C90" (purple) for low values and ""#bfab25" (gold) for high values. Default is "set1". 
+#' @param reverse_x_axis TRUE or FALSE indicating whether x-axis should be reversed, 
+#' for example if plotting a region on the reverse strand so that left side of plot corresponds to upstream.
 #' @return A ggplot object 
 #' @examples 
 #' # Load methylation-transcript correlation results for TUBB6 gene
@@ -32,13 +34,14 @@
 #' 
 #' @export
 plotMethSiteValues <- function(meth_site_values, column_name, reference_tss = FALSE, 
-  title = NULL, xlabel = NULL, ylabel = "Value", value_colours = "set1"){
+  title = NULL, xlabel = NULL, ylabel = "Value", value_colours = "set1", reverse_x_axis = FALSE){
   
   # Check that inputs have the correct data type
   stopifnot(is(meth_site_values, "data.frame"), is(column_name, "character"),
     S4Vectors::isTRUEorFALSE(reference_tss) | is(reference_tss, "GRanges"), 
     is(title, "character") | is.null(title), is(xlabel, "character") | is.null(xlabel),
-    is(ylabel, "character") | is.null(ylabel), is(value_colours, "character"))
+    is(ylabel, "character") | is.null(ylabel), is(value_colours, "character"),
+    S4Vectors::isTRUEorFALSE(reverse_x_axis))
   
   # Check that suitable input provided for value_colours and set low and high value colours if so
   if(length(value_colours) == 1){
@@ -59,7 +62,10 @@ plotMethSiteValues <- function(meth_site_values, column_name, reference_tss = FA
   }
   
   # Change meth_site column to row names
-  meth_site_values <- tibble::column_to_rownames(meth_site_values, "meth_site")
+  # Check if row.names are genomic coordinates
+  tryCatch(GRanges(row.names(meth_site_values)),
+    error = function(e) stop("row.names(meth_site_values) do not seem to be genomic coordinates coercible to GRanges"))
+  # meth_site_values <- tibble::column_to_rownames(meth_site_values, "meth_site")
   
   # If reference_tss is TRUE, try to extract tss_range from meth_site_values
   if(is(reference_tss, "logical")){
@@ -120,7 +126,9 @@ plotMethSiteValues <- function(meth_site_values, column_name, reference_tss = FA
     geom_point(shape = 21, colour = "black", size = 4, alpha = 1, aes(fill = values)) +
     theme_bw() +
     theme(plot.title = element_text(hjust = 0.5, size = 24), legend.text = element_text(size = 12),
-      axis.title = element_text(size = 20), axis.text = element_text(size = 18), legend.position = "None") +
+      axis.title = element_text(size = 20), 
+      axis.text = element_text(size = 18), legend.position = "None", 
+      plot.margin = margin(, 2, , , "cm")) +
     scale_x_continuous(expand = c(0.005, 0.005), labels = scales::comma) +
     scale_y_continuous(expand = expansion(mult = c(0.05, 0.05))) + 
     scale_fill_gradient2(low = low_colour, high = high_colour, mid = "white", midpoint = 0) +
@@ -128,6 +136,11 @@ plotMethSiteValues <- function(meth_site_values, column_name, reference_tss = FA
   
   # Add reference_tss as an attribute to plot if it was provided
   if(!is.null(reference_tss)){attributes(meth_site_plot)$tss_range <- reference_tss}
+  
+  # Reverse x-axis if specified 
+  if(reverse_x_axis){
+    meth_site_plot = meth_site_plot + scale_x_reverse(expand = c(0.005, 0.005), labels = scales::comma)
+  }
   
   return(meth_site_plot)
 }
@@ -149,7 +162,7 @@ plotMethSiteValues <- function(meth_site_values, column_name, reference_tss = FA
 #' If FALSE (the default), the x-axis will instead show the start site coordinate of the methylation site. 
 #' relative to the reference_tss shown first. If not, the x-axis will show the start site coordinate of the methylation site.
 #' @param annotation_line_size Linewidth for annotation plot. Default is 5. 
-#' @param annotation_plot_height A value giving the proportion of the height of the plot devoted to the annotation. Default is 0.5. 
+#' @param annotation_plot_proportion A value giving the proportion of the height of the plot devoted to the annotation. Default is 0.5. 
 #' @param keep_meth_site_plot_legend TRUE or FALSE indicating whether to retain the legend of meth_site_plot, if it has one. Default value is FALSE. 
 #' @param annotation_plot_only TRUE or FALSE indicating whether to return only the annotation plot. Default is to combine meth_site_plot with the annotation. 
 #' @return A ggplot object
@@ -163,10 +176,10 @@ plotMethSiteValues <- function(meth_site_values, column_name, reference_tss = FA
 #' data("tubb6_correlation_plot", package = "methodical")
 #' 
 #' # Add positions of CpG islands to tubb6_correlation_plot
-#' methodical::annotateMethSitePlot(tubb6_correlation_plot, annotation_grl = cpg_island_annotation, annotation_plot_height = 0.3)
+#' methodical::annotateMethSitePlot(tubb6_correlation_plot, annotation_grl = cpg_island_annotation, annotation_plot_proportion = 0.3)
 #' 
 annotateMethSitePlot <- function(meth_site_plot, annotation_grl, reference_tss = F, region_class_colours = NULL, 
-  annotation_line_size = 5, annotation_plot_height = 0.5, keep_meth_site_plot_legend = FALSE, annotation_plot_only = FALSE){
+  annotation_line_size = 5, annotation_plot_proportion = 0.5, keep_meth_site_plot_legend = FALSE, annotation_plot_only = FALSE){
   
   # If annotation_grl is a list, attempt to coerce it to a GRangesList
   if(is(annotation_grl, "list")){
@@ -179,7 +192,7 @@ annotateMethSitePlot <- function(meth_site_plot, annotation_grl, reference_tss =
     S4Vectors::isTRUEorFALSE(reference_tss) | is(reference_tss, "GRanges"), 
     is(region_class_colours, "character") | is.null(region_class_colours),
     is(annotation_line_size, "numeric"), is(annotation_line_size, "numeric"),
-    is(annotation_plot_height, "numeric"), S4Vectors::isTRUEorFALSE(keep_meth_site_plot_legend),
+    is(annotation_plot_proportion, "numeric"), S4Vectors::isTRUEorFALSE(keep_meth_site_plot_legend),
     S4Vectors::isTRUEorFALSE(annotation_plot_only))
   
   # Create colours for region classes if region_class_colours not provided and 
@@ -219,9 +232,9 @@ annotateMethSitePlot <- function(meth_site_plot, annotation_grl, reference_tss =
   annotation_grl = unlist(annotation_grl)
   annotation_grl$region_type = factor(names(annotation_grl), unique(names(annotation_grl)))
   
-  # Check that annotation_plot_height is between 0 and 1
-  if(annotation_plot_height < 0 | annotation_plot_height > 1){
-    stop("annotation_plot_height should be between 0 and 1")
+  # Check that annotation_plot_proportion is between 0 and 1
+  if(annotation_plot_proportion < 0 | annotation_plot_proportion > 1){
+    stop("annotation_plot_proportion should be between 0 and 1")
   }
   
   # Get most extreme methylation sites in plot
@@ -263,7 +276,8 @@ annotateMethSitePlot <- function(meth_site_plot, annotation_grl, reference_tss =
     geom_linerange(linewidth = annotation_line_size, linetype = "dashed", position = position_dodge(0.06)) +
     theme_bw() + 
     theme(plot.title = element_text(hjust = 0.5, size = 24),
-      axis.title = element_text(size = axis_title_size), axis.text = element_text(size = axis_text_size ), legend.position = "None")  +
+      axis.title = element_text(size = axis_title_size), 
+      axis.text = element_text(size = axis_text_size ), legend.position = "None")  +
     labs(x = x_axis_title, y = "Genome Annotation") +
     scale_x_continuous(expand = expansion(mult = c(0, 0)), labels = scales::comma, limits = ggplot_build(meth_site_plot)$layout$panel_params[[1]]$x.range) + 
     scale_color_manual(values = region_class_colours, guide = guide_legend(override.aes = list(color = "white"))) +
@@ -278,12 +292,12 @@ annotateMethSitePlot <- function(meth_site_plot, annotation_grl, reference_tss =
   
   # Get legend from meth_site_plot
   meth_site_plot_legend <- cowplot::get_legend(meth_site_plot)
-  legends <- cowplot::plot_grid(meth_site_plot_legend, NULL, nrow = 2, rel_heights = c(1 - annotation_plot_height, annotation_plot_height))
+  legends <- cowplot::plot_grid(meth_site_plot_legend, NULL, nrow = 2, rel_heights = c(1 - annotation_plot_proportion, annotation_plot_proportion))
   
   # Combine meth_site_plot and annotation_plot
   annotated_meth_site_plot <- cowplot::plot_grid(meth_site_plot + theme(legend.position = "none", 
     axis.text.x = element_blank(), axis.ticks.x = element_blank(), axis.title.x = element_blank()), annotation_plot, 
-    nrow = 2, align = "v", rel_heights = c(1 - annotation_plot_height, annotation_plot_height))
+    nrow = 2, align = "v", rel_heights = c(1 - annotation_plot_proportion, annotation_plot_proportion))
   
   # Add legend if specified
   if(keep_meth_site_plot_legend){
