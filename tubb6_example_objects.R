@@ -3,7 +3,7 @@
 library(methodical)
 
 # Load TSS GRanges and get region +/- 5KB of the TSS
-tss_gr = readRDS("~/genomes/gencode/gencode_granges/pcg_transcript_ranges_gencode_v38.rds")
+tss_gr = readRDS("~/genomes/gencode/gencode_granges/pcg_transcript_tss_ranges_gencode_v38.rds")
 tubb6_tss = tss_gr[tss_gr$transcript_id == "ENST00000591909"]
 names(tubb6_tss) = tubb6_tss$transcript_id
 tubb6_gr = promoters(tubb6_tss, 5000, 5000 + 1)
@@ -19,8 +19,8 @@ tubb6_meth_rse = subsetByOverlaps(cpgea_rse, tubb6_gr)[, common_normal_samples]
 HDF5Array::saveHDF5SummarizedExperiment(x = tubb6_meth_rse, dir = "inst/extdata/tubb6_meth_rse")
 
 # Get methylation values for TUBB6 in CPGEA normal samples
-tubb6_tss_proximal_cpg_methylation = extractGRangesMethSiteValues(methRSE = tubb6_meth_rse, genomicRegions = tubb6_gr,
-  samplesSubset = common_normal_samples)
+tubb6_tss_proximal_cpg_methylation = extractGRangesMethSiteValues(meth_rse = tubb6_meth_rse, genomic_regions = tubb6_gr,
+  samples_subset = common_normal_samples)
 
 # Get transcript values for CPGEA
 cpgea_transcript_values = data.frame(data.table::fread("~/wgbs/cpgea/rnaseq/kallisto_tables//kallisto_deseq2_normalized_counts_pcg.tsv.gz"), row.names = 1)
@@ -29,16 +29,13 @@ cpgea_transcript_values = data.frame(data.table::fread("~/wgbs/cpgea/rnaseq/kall
 tubb6_transcript_counts = cpgea_transcript_values["ENST00000591909", common_normal_samples]
 
 # Calculate correlation values between methylation values and transcript values for TUBB6
-tubb6_cpg_meth_transcript_cors = methodical::calculat(meth_rse = tubb6_meth_rse, 
-  transcript_expression_table = tubb6TranscriptCounts, tss_gr = tubb6_tss, expand_upstream = 5000, expand_downstream = 5000)
+tubb6_cpg_meth_transcript_cors = methodical::calculateMethSiteTranscriptCors(meth_rse = tubb6_meth_rse, 
+  transcript_expression_table = tubb6_transcript_counts, tss_gr = tubb6_tss, expand_upstream = 5000, expand_downstream = 5000)
 tubb6_cpg_meth_transcript_cors = tubb6_cpg_meth_transcript_cors$ENST00000591909
   
-# Add TSS range to tubb6_cpg_meth_transcript_cors
-attributes(tubb6_cpg_meth_transcript_cors)$tssRange = tubb6_tss
-
 # Plot transcript cors for tubb6_cpg_meth_transcript_cors
 tubb6_correlation_plot = methodical::plotMethSiteValues(tubb6_cpg_meth_transcript_cors, 
-  columnName = "cor", ylabel = "Spearman Correlation", lowColour = "#7B5C90", highColour = "#bfab25")
+  column_name = "cor", ylabel = "Spearman Correlation", value_colours = "set2")
 
 # Plot Methdodical scores for TUBB6
 tubb6_methodical_plot = methodical::plotMethodicalScores(methSiteValues = tubb6_cpg_meth_transcript_cors, smoothScores = F)

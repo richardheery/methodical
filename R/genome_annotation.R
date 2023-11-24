@@ -13,6 +13,7 @@
 #' 
 #' # Load annotation for CpG islands and repetitive DNA
 #' cpg_island_annotation <- annotatr::build_annotations(genome = "hg38", annotations = "hg38_cpgs")
+#' cpg_island_annotation <- cpg_island_annotation[cpg_island_annotation$type == "hg38_cpg_islands"]
 #' repeat_annotation_hg38 <- AnnotationHub::AnnotationHub()[["AH99003"]]
 #' 
 #' # Convert repeat_annotation_hg38 into a GRangesList

@@ -71,7 +71,7 @@
 #' test_gr <- GRanges(c("chr18:12303400-12303500", "chr18:12303600-12303750", "chr18:12304000-12306000"))
 #' names(test_gr) <- paste("region", 1:3, sep = "_")
 #' 
-#' # Calculate mean methylation values for chr1 CpG islands in meth_h5 
+#' # Calculate mean methylation values for regions in test_gr
 #' test_gr_methylation <- methodical::summarizeRegionMethylation(tubb6_meth_rse, genomic_regions = test_gr,
 #'   genomic_region_names = names(test_gr))
 #' 

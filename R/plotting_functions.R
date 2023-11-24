@@ -137,9 +137,10 @@ plotMethSiteValues <- function(meth_site_values, column_name, reference_tss = FA
 #' Can combine the meth site values plot and genomic annotation together into a single plot or return the annotation plot separately. 
 #'
 #' @param meth_site_plot A plot of Value (generally methylation level or correlation of methylation with transcription) around a TSS
-#' @param annotation_gr A GRanges object giving the locations of different classes of regions. 
-#' There must be a metadata column named region_type giving the class of each region. 
-#' If this is a factor, the levels will be used to order the region classes in the plot. 
+#' @param annotation_grl A GRangesList object (or list coercible to a GRangesList) where each component GRanges gives 
+#' the locations of different classes of regions to display. Each class of region will 
+#' be given a seprate colour in the plot, with regions ordered by the order of `names(annotation_grl)`. 
+#' @param region_class_colours An optional vector of colours to use with different region classes. Must have same length as annotation_grl. 
 #' @param reference_tss TRUE or FALSE indicating whether to show distances on the X-axis
 #' relative to the TSS stored as an attribute `tss_range` of meth_site_plot. 
 #' Alternatively, can provide a GRanges object with a single range for such a TSS site. 
@@ -147,7 +148,6 @@ plotMethSiteValues <- function(meth_site_values, column_name, reference_tss = FA
 #' relative to the reference_tss shown first. 
 #' If FALSE (the default), the x-axis will instead show the start site coordinate of the methylation site. 
 #' relative to the reference_tss shown first. If not, the x-axis will show the start site coordinate of the methylation site.
-#' @param region_class_colours An optional named vector of colours to use with different region classes. Names of vector match colours to region classes. 
 #' @param annotation_line_size Linewidth for annotation plot. Default is 5. 
 #' @param annotation_plot_height A value giving the proportion of the height of the plot devoted to the annotation. Default is 0.5. 
 #' @param keep_meth_site_plot_legend TRUE or FALSE indicating whether to retain the legend of meth_site_plot, if it has one. Default value is FALSE. 
@@ -157,24 +157,40 @@ plotMethSiteValues <- function(meth_site_values, column_name, reference_tss = FA
 #' @examples 
 #' # Get CpG islands from UCSC
 #' cpg_island_annotation <- annotatr::build_annotations(genome = "hg38", annotations = "hg38_cpgs")
-#' cpg_island_annotation$region_type <- cpg_island_annotation$type
+#' cpg_island_annotation <- GRangesList(split(cpg_island_annotation, cpg_island_annotation$type))
 #'
 #' # Load plot with CpG methylation correlation values for TUBB6
 #' data("tubb6_correlation_plot", package = "methodical")
 #' 
 #' # Add positions of CpG islands to tubb6_correlation_plot
-#' methodical::annotateMethSitePlot(tubb6_correlation_plot, annotation_gr = cpg_island_annotation, annotation_plot_height = 0.3)
+#' methodical::annotateMethSitePlot(tubb6_correlation_plot, annotation_grl = cpg_island_annotation, annotation_plot_height = 0.3)
 #' 
-annotateMethSitePlot <- function(meth_site_plot, annotation_gr, reference_tss = NULL, region_class_colours = NULL, 
+annotateMethSitePlot <- function(meth_site_plot, annotation_grl, reference_tss = F, region_class_colours = NULL, 
   annotation_line_size = 5, annotation_plot_height = 0.5, keep_meth_site_plot_legend = FALSE, annotation_plot_only = FALSE){
   
+  # If annotation_grl is a list, attempt to coerce it to a GRangesList
+  if(is(annotation_grl, "list")){
+    tryCatch(annotation_grl <- GRangesList(annotation_grl), 
+      error = function(e) stop("annotation_grl is a list but cannot be coerced to a GRangesList"))
+  }
+  
   # Check that inputs have the correct data type
-  stopifnot(is(meth_site_plot, "ggplot"), is(annotation_gr, "GRanges"),
+  stopifnot(is(meth_site_plot, "ggplot"), is(annotation_grl, "GRangesList"),
     S4Vectors::isTRUEorFALSE(reference_tss) | is(reference_tss, "GRanges"), 
     is(region_class_colours, "character") | is.null(region_class_colours),
     is(annotation_line_size, "numeric"), is(annotation_line_size, "numeric"),
     is(annotation_plot_height, "numeric"), S4Vectors::isTRUEorFALSE(keep_meth_site_plot_legend),
     S4Vectors::isTRUEorFALSE(annotation_plot_only))
+  
+  # Create colours for region classes if region_class_colours not provided and 
+  # check that it has the same length as annotation_grl if it is
+  if(is.null(region_class_colours)){
+    palette <- c("#9E0142", "#D53E4F", "#F46D43", "#FDAE61", "#FEE08B", "#FFFFBF", 
+      "#E6F598", "#ABDDA4", "#66C2A5", "#3288BD", "#5E4FA2")
+    region_class_colours <- colorRampPalette(palette)(length(annotation_grl))
+  } else if(length(annotation_grl) != length(region_class_colours)){
+    stop("region_class_colours must have the same length as annotation_grl")
+  }
     
   # If reference_tss is TRUE, try to extract tss_range from meth_site_plot
   if(is(reference_tss, "logical")){
@@ -193,10 +209,15 @@ annotateMethSitePlot <- function(meth_site_plot, annotation_gr, reference_tss = 
     stop("GRanges indicated by reference_tss should have length of 1")
   }
   
-  # Check that annotation_gr contains a metadata column called region_type
-  if(is.null(annotation_gr$region_type)){
-    stop("annotation_gr must contain a metadata column called region_type")
+  # Check that annotation_grl contains a metadata column called region_type
+  if(is.null(names(annotation_grl))){
+    message("names(annotation_grl) is NULL. Setting to genomic_regions_1, genomic_regions_2, etc.")
+    names(annotation_grl) = paste0("genomic_regions_", seq_along(annotation_grl))
   }
+  
+  # Flatten annotation_grl
+  annotation_grl = unlist(annotation_grl)
+  annotation_grl$region_type = factor(names(annotation_grl), unique(names(annotation_grl)))
   
   # Check that annotation_plot_height is between 0 and 1
   if(annotation_plot_height < 0 | annotation_plot_height > 1){
@@ -211,22 +232,22 @@ annotateMethSitePlot <- function(meth_site_plot, annotation_gr, reference_tss = 
   plot_region <- reduce(GRanges(c(meth_site_min, meth_site_max)), min.gapwidth = .Machine$integer.max)
   
   # Filter annotation regions for those which overlap plot_region
-  annotation_gr <- subsetByOverlaps(annotation_gr, plot_region)
+  annotation_grl <- subsetByOverlaps(annotation_grl, plot_region)
   
-  # Update start and end of annotation_gr so that they lie within plot_region
-  start(annotation_gr) <- pmax(start(annotation_gr), start(plot_region))
-  end(annotation_gr) <- pmin(end(annotation_gr), end(plot_region))
+  # Update start and end of annotation_grl so that they lie within plot_region
+  start(annotation_grl) <- pmax(start(annotation_grl), start(plot_region))
+  end(annotation_grl) <- pmin(end(annotation_grl), end(plot_region))
   
   # Decide x-axis values for methylation sites depending on whether reference_tss provided
   if(!is.null(reference_tss)){
     meth_site_plot$data$meth_site_plot_position <- methodical::strandedDistance(query_gr = GRanges(row.names(meth_site_plot$data)), subject_gr = reference_tss)
-    annotation_gr <- methodical::rangesRelativeToTSS(genomic_regions = annotation_gr, tss_gr = reference_tss)
+    annotation_grl <- methodical::rangesRelativeToTSS(genomic_regions = annotation_grl, tss_gr = reference_tss)
   } else {
     meth_site_plot$data$meth_site_plot_position <- meth_site_plot$data$meth_site_start 
   }
   
-  # Convert annotation_gr to a data.frame
-  annotation_df <- data.frame(annotation_gr)
+  # Convert annotation_grl to a data.frame
+  annotation_df <- data.frame(annotation_grl)
   
   # Ensure region_type is a factor and reverse their order so that they are displayed from top to bottom in the plot
   annotation_df$region_type <- factor(annotation_df$region_type)
@@ -237,21 +258,13 @@ annotateMethSitePlot <- function(meth_site_plot, annotation_gr, reference_tss = 
   axis_title_size <- theme(meth_site_plot)[[1]]$theme$axis.title$size
   x_axis_title <- meth_site_plot$labels$x
   
-  # Create colours for region classes
-  if(is.null(region_class_colours)){
-    palette <- c("#9E0142", "#D53E4F", "#F46D43", "#FDAE61", "#FEE08B", "#FFFFBF", 
-      "#E6F598", "#ABDDA4", "#66C2A5", "#3288BD", "#5E4FA2")
-    region_class_colours <- setNames(colorRampPalette(palette)(length(levels(annotation_df$region_type))), 
-      levels(annotation_df$region_type))
-  }
-  
   # Create a linerange plot showing the positions of different genomic elements
   annotation_plot <- ggplot(annotation_df, aes(xmin = start, xmax = end, x = NULL, y = region_type,  group = region_type, color = region_type)) + 
     geom_linerange(linewidth = annotation_line_size, linetype = "dashed", position = position_dodge(0.06)) +
     theme_bw() + 
     theme(plot.title = element_text(hjust = 0.5, size = 24),
       axis.title = element_text(size = axis_title_size), axis.text = element_text(size = axis_text_size ), legend.position = "None")  +
-    labs(x = x_axis_title, y = "Region Classification") +
+    labs(x = x_axis_title, y = "Genome Annotation") +
     scale_x_continuous(expand = expansion(mult = c(0, 0)), labels = scales::comma, limits = ggplot_build(meth_site_plot)$layout$panel_params[[1]]$x.range) + 
     scale_color_manual(values = region_class_colours, guide = guide_legend(override.aes = list(color = "white"))) +
     # The following code makes the legend invisible

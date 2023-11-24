@@ -1,0 +1,117 @@
+---
+title: "Working with RangedSummarizedExperiments with DNA Methylation Data"
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{identifying_tmrs}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 12,
+  fig.height = 6.75
+)
+```
+
+```{r setup, message = F}
+library(methodical)
+library(TCGAbiolinks)
+```
+
+## Introduction
+
+Most functions from `methodical` take as input RangedSumamrizedExperiment objects 
+with methylation data. If there are many samples, there can be many millions
+or, in the case of WGBS data, even billions of data points within a DNA methylation 
+dataset. It can be unfeasible to load all this data into memory at once. This problem 
+can be overcome by using DelayedArrays backed by HDF5 files, enabling data to be 
+read into memory only as needed. Methodical provides a suite of functions 
+for working with such DNA methylation RangedSumamrizedExperiments, including 
+functions to extract methylation values for sites overlapping genomic regions of 
+interest `GRanges`, to randomly sample methylation sites, to liftover the
+methylation sites from one genome build to another and to mask methylation sites
+overlapping certain genomic regions, e.g. repeats. 
+
+Here we demonstrate this different functionality using a dataset downloaded
+from TumourMethData.
+
+tcga_wgbs_hg38 = HDF5Array::loadHDF5SummarizedExperiment("~/wgbs/tcga_wgbs/tcga_wgbs_hg38/")
+
+## Extracting methylation data from methylation RangedSummarizedExperiments
+
+We'll first demonstrate how to extract methylation data for CpG islands from
+tcga_wgbs_hg38. 
+
+```{r, eval=TRUE}
+# Load CpG islands annotation for hg38
+cpg_islands_hg38 <- annotatr::build_annotations(genome = "hg38", annotations = "hg38_cpgs")
+
+```
+
+## Creation of methylation RSE from array files
+
+Generally, files from methylation array files will have one column with the 
+name of the probe used to measure methylation at a particular CpG site and
+another column with the value associated with this probe. 
+`makeMethRSEFromArrayFiles` takes a GRanges object for the `probe_ranges` argument 
+to match the names of these probe to genomic coordinates when creating the meth RSE. 
+This should be a GRanges object with one metadata object called "name" which 
+gives the names of the probes and matches the names in the array files. 
+
+One such GRanges object, `infinium_450k_probe_granges_hg19` for mapping probes 
+from the Illumina HumanMethylation450 array to genomic coordinates of the hg19 
+human genome build is provided as part of the package. If mapping the probes to 
+a genome build besides hg19 or using a different methylation array, another 
+similar GRanges object with the coordinates of probes and a metadata column
+with their names should be provided.
+
+We'll take a look at one of the methylation files we just downloaded and at
+`infinium_450k_probe_granges_hg19`.
+
+```{r, eval=TRUE}
+# View the top of one of the COAD methylation array files
+system2("head", meth_array_files[1])
+
+# Load infinium_450k_probe_granges_hg19 and view the first few ranges
+data("infinium_450k_probe_granges_hg19")
+head(infinium_450k_probe_granges_hg19)
+```
+
+Now we'll create the meth RSE for the four files we downloaded. It is assumed
+that the first column in the methylation array files is the name of the probes
+and the second is the values associated with them but this can be changed using
+the `probe_name_column` and `beta_value_column` arguments. 
+
+Files can be processed in parallel using BiocParallel with the `BPPARAM` argument,
+which defaults to `BiocParallel::bpparam()`. 
+
+We'll save the HDF5 directory within the temporary directory using the `hdf5_dir`, 
+but this should be saved somewhere else if the meth RSE will be reused. 
+
+```{r, eval=TRUE}
+
+# Create a data.frame with sample metadata associated with the array files
+sample_metadata = data.frame(cancer_type = rep("COAD",  4),
+  sample_type = rep("primary_tumor", 4), row.names = names(meth_array_files))
+
+# Create meth RSE for COAD
+coad_meth_rse = makeMethRSEFromArrayFiles(
+  array_files = meth_array_files, 
+  probe_name_column = 1, beta_value_column = 2, 
+  probe_ranges = infinium_450k_probe_granges_hg19, 
+  sample_metadata = sample_metadata, BPPARAM = BiocParallel::bpparam(),
+  hdf5_dir = paste(tempdir(), "coad_meth_array_rse", sep = "/"))
+
+# Display coad_meth_rse
+print(coad_meth_rse)
+```
+
+## SessionInfo
+```{r}
+sessionInfo()
+```
