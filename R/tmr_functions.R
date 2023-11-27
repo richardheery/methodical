@@ -124,20 +124,24 @@ calculateSmoothedMethodicalScores <- function(correlation_df, offset_length = 10
 find_TMRs <- function(correlation_df, offset_length = 10, smoothing_factor = 0.75, p_value_threshold = 0.005, min_gapwidth = 150, min_meth_sites = 5){
   
   # Check that inputs have the correct data type
-  stopifnot(is(correlation_df, "data.frame"), is(offset_length, "numeric"), is(smoothing_factor, "numeric"),
-    is(p_value_threshold, "numeric"), is(min_gapwidth, "numeric"), is(min_meth_sites, "numeric"))
+  stopifnot(is(correlation_df, "data.frame") | is.character(correlation_df), is(offset_length, "numeric"), 
+    is(smoothing_factor, "numeric"), is(p_value_threshold, "numeric"), 
+    is(min_gapwidth, "numeric"), is(min_meth_sites, "numeric"))
   
   # If correlation_df is a character vector, try to read it as an RDS file and 
   # check that it is a data.frame with the correct columns
   if(is.character(correlation_df)){
     tryCatch({correlation_df <- readRDS(correlation_df)}, error = function() 
       stop("Character string provided for correlation_df but could not find an RDS file at indicated file path"))
-    if(!is.data.frame(correlation_df) | 
-        !all(names(correlation_df) == c("meth_site", "transcript_name", "cor", "p_val", "distance_to_tss"))){
-      stop("Object loaded from provided filepath is not a data.frame with the expected column names")
+    if(!is.data.frame(correlation_df)){
+      stop("Object loaded from provided filepath is not a data.frame")
     } 
   }
   
+  if(!all(names(correlation_df) == c("meth_site", "transcript_name", "cor", "p_val", "distance_to_tss"))){
+    stop("correlation_df does not seem to be a data.frame returned by calculateMethSiteTranscriptCors.\nShould have columns named 'meth_site', 'transcript_name', 'cor', 'p_val', 'distance_to_tss'")
+  }
+    
   # If all p-values are above p_value_threshold or are NA can immediately return an empty GRanges
   if(sum(correlation_df$p_val > p_value_threshold, na.rm = TRUE) == 0){return(GenomicRanges::GRanges())}
   

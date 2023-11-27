@@ -34,7 +34,10 @@ extractGRangesMethSiteValues <- function(meth_rse, genomic_regions = NULL, sampl
   }
   
   # Set genomic_regions to all regions in meth_rse if not provided
-  if(is.null(genomic_regions)){genomic_regions <- rowRanges(meth_rse)}
+  if(is.null(genomic_regions)){
+    message("genomic_regions not provided so extracting all methylation values from meth_rse")
+    genomic_regions <- rowRanges(meth_rse)
+  }
   
   # Subset meth_rse for sites overlapping genomic_ranges
   meth_rse_subset <- IRanges::subsetByOverlaps(meth_rse, genomic_regions)

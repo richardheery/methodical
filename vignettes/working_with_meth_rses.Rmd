@@ -42,7 +42,9 @@ from TumourMethData.
 
 ```{r, eval=TRUE}
 ## CHANGE TO USE TUMOURMETHDATA
-tcga_wgbs_hg38 = HDF5Array::loadHDF5SummarizedExperiment("~/wgbs/tcga_wgbs/tcga_wgbs_hg38/")
+library(TumourMethData)
+tcga_wgbs_hg38 = TumourMethData::download_meth_dataset("tcga_wgbs_hg38")
+#tcga_wgbs_hg38 = HDF5Array::loadHDF5SummarizedExperiment("~/wgbs/tcga_wgbs/tcga_wgbs_hg38/")
 ```
 
 ## Extracting methylation data from methylation RangedSummarizedExperiments

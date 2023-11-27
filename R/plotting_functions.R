@@ -1,9 +1,9 @@
-#' Create plot of methylation values
+#' Create a plot of methylation values for methylation sites in a region
 #'
 #' @param meth_site_values A data.frame with values associated with methylation sites. 
-#' First column should be called meth_site and give the names of methylation sites. 
+#' Row names should be the coordinates of methylation sites in character format. 
 #' All methylation sites must be located on the same sequence. 
-#' @param column_name Name of column in meth_site_values to plot. 
+#' @param column_name Name of column in meth_site_values to plot. Defaults to first column if none provided.  
 #' @param reference_tss TRUE or FALSE indicating whether to show distances on the X-axis
 #' relative to the TSS stored as an attribute `tss_range` of meth_site_values. 
 #' Alternatively, can provide a GRanges object with a single range for such a TSS site. 
@@ -13,7 +13,7 @@
 #' @param title Title of the plot. Default is no title. 
 #' @param xlabel Label for the X axis in the plot. Defaults to "Distance to TSS" if reference_tss is used or
 #' "seqname position" where seqname is the name of the relevant sequence.
-#' @param ylabel Label for the Y axis in the plot. Default is "Value".
+#' @param ylabel Label for the Y axis in the plot. Default is "Methylation Value".
 #' @param value_colours A vector with two colours to use, one for low values and the other for high values. 
 #' Alternatively, can use one of two predefined colour sets by providing either "set1" or "set2":
 #' set1 uses "#53868B" (blue) for low values and "#CD2626" (red) for high values 
@@ -22,22 +22,25 @@
 #' for example if plotting a region on the reverse strand so that left side of plot corresponds to upstream.
 #' @return A ggplot object 
 #' @examples 
-#' # Load methylation-transcript correlation results for TUBB6 gene
-#' data("tubb6_cpg_meth_transcript_cors", package = "methodical")
+#' # Load methylation-values around the TUBB6 TSS
+#' data("tubb6_meth_rse", package = "methodical")
+#' 
+#' # Extract methylation values from tubb6_meth_rse
+#' tubb6_methylation_values = methodical::extractGRangesMethSiteValues(meth_rse = tubb6_meth_rse)
 #' 
 #' # Plot methylation-transcript correlation values around TUBB6 TSS
-#' methodical::plotMethSiteValues(tubb6_cpg_meth_transcript_cors, column_name = "cor", ylabel = "Spearman Correlation")
+#' methodical::plotMethylationValues(tubb6_methylation_values, column_name = "N1")
 #' 
 #' # Create same plot but showing the distance to the TUBB6 TSS on the x-axis
-#' methodical::plotMethSiteValues(tubb6_cpg_meth_transcript_cors, column_name = "cor", 
-#'   ylabel = "Spearman Correlation", reference_tss = attributes(tubb6_cpg_meth_transcript_cors)$tss_range)
+#' methodical::plotMethylationValues(tubb6_methylation_values, column_name = "N1",
+#'   reference_tss = attributes(tubb6_cpg_meth_transcript_cors)$tss_range)
 #' 
 #' @export
-plotMethSiteValues <- function(meth_site_values, column_name, reference_tss = FALSE, 
-  title = NULL, xlabel = NULL, ylabel = "Value", value_colours = "set1", reverse_x_axis = FALSE){
+plotMethylationValues <- function(meth_site_values, column_name = NULL, reference_tss = FALSE, 
+  title = NULL, xlabel = NULL, ylabel = "Methylation Value", value_colours = "set1", reverse_x_axis = FALSE){
   
   # Check that inputs have the correct data type
-  stopifnot(is(meth_site_values, "data.frame"), is(column_name, "character"),
+  stopifnot(is(meth_site_values, "data.frame"), is(column_name, "character") | is.null(column_name),
     S4Vectors::isTRUEorFALSE(reference_tss) | is(reference_tss, "GRanges"), 
     is(title, "character") | is.null(title), is(xlabel, "character") | is.null(xlabel),
     is(ylabel, "character") | is.null(ylabel), is(value_colours, "character"),
@@ -61,11 +64,9 @@ plotMethSiteValues <- function(meth_site_values, column_name, reference_tss = FA
     }
   }
   
-  # Change meth_site column to row names
   # Check if row.names are genomic coordinates
   tryCatch(GRanges(row.names(meth_site_values)),
     error = function(e) stop("row.names(meth_site_values) do not seem to be genomic coordinates coercible to GRanges"))
-  # meth_site_values <- tibble::column_to_rownames(meth_site_values, "meth_site")
   
   # If reference_tss is TRUE, try to extract tss_range from meth_site_values
   if(is(reference_tss, "logical")){
@@ -89,11 +90,19 @@ plotMethSiteValues <- function(meth_site_values, column_name, reference_tss = FA
     stop("All methylation sites must be located on the same sequence")
   }
   
-  # Check that column_name has length 1 
-  if(length(column_name) > 1){stop("column_name should just be a character of length 1")}
+  # Check that column_name has length 1 if provided
+  if(is.null(column_name)){
+    column_name = names(meth_site_values)[1]
+  } else if(length(column_name) > 1){
+    stop("column_name should just be a character of length 1 if provided")
+  }
   
-  # Check that column_name is in the names of meth_site_values
-  if(!column_name %in% names(meth_site_values)){stop(paste(column_name, "not the name of a column in meth_site_values"))}
+  # Check that column_name is in the names of meth_site_values and that is is numeric
+  if(!column_name %in% names(meth_site_values)){
+    stop(paste(column_name, "not the name of a column in meth_site_values"))
+  } else if(!is(meth_site_values[[column_name]], "numeric")){
+    stop("meth_site_values[[\"column_name\"]] should be numeric")
+  }
   
   # Create a data.frame with the selected column
   plot_df <- dplyr::select(meth_site_values, values = !!column_name)
@@ -145,11 +154,325 @@ plotMethSiteValues <- function(meth_site_values, column_name, reference_tss = FA
   return(meth_site_plot)
 }
 
-#' Create a plot with genomic annotation for a plot returned by plotMethSiteValues()
+#' Plot the correlation coefficients for methylation sites within a region and an associated feature of interest
+#'
+#' @param meth_site_cor_values A data.frame with correlation values associated with methylation sites, such as
+#' returned by `calculateMethSiteTranscriptCors`. There should be one column called `meth_site` giving the 
+#' coordinates of methylation sites in character format and another column called `cor` giving the correlation 
+#' between the methylation values of the methylation sites and a feature of interest. All methylation sites must be 
+#' located on the same sequence. 
+#' @param reference_tss TRUE or FALSE indicating whether to show distances on the X-axis
+#' relative to the TSS stored as an attribute `tss_range` of meth_site_cor_values. 
+#' Alternatively, can provide a GRanges object with a single range for such a TSS site. 
+#' In either case, will show the distance of methylation sites to the start of this region with methylation sites upstream 
+#' relative to the reference_tss shown first. 
+#' If FALSE (the default), the x-axis will instead show the start site coordinate of the methylation site. 
+#' @param title Title of the plot. Default is no title. 
+#' @param xlabel Label for the X axis in the plot. Defaults to "Distance to TSS" if reference_tss is used or
+#' "seqname position" where seqname is the name of the relevant sequence.
+#' @param ylabel Label for the Y axis in the plot. Default is "Correlation Coefficient".
+#' @param value_colours A vector with two colours to use, one for low values and the other for high values. 
+#' Alternatively, can use one of two predefined colour sets by providing either "set1" or "set2":
+#' set1 uses "#53868B" (blue) for low values and "#CD2626" (red) for high values 
+#' while set2 uses "#7B5C90" (purple) for low values and ""#bfab25" (gold) for high values. Default is "set2". 
+#' @param reverse_x_axis TRUE or FALSE indicating whether x-axis should be reversed, 
+#' for example if plotting a region on the reverse strand so that left side of plot corresponds to upstream.
+#' @return A ggplot object 
+#' @examples 
+#' # Load methylation-transcript correlation results for TUBB6 gene
+#' data("tubb6_cpg_meth_transcript_cors", package = "methodical")
+#' 
+#' # Plot methylation-transcript correlation values around TUBB6 TSS
+#' methodical::plotMethSiteCorCoefs(tubb6_cpg_meth_transcript_cors, ylabel = "Spearman Correlation")
+#' 
+#' # Create same plot but showing the distance to the TUBB6 TSS on the x-axis
+#' methodical::plotMethSiteCorCoefs(tubb6_cpg_meth_transcript_cors, 
+#'   ylabel = "Spearman Correlation", reference_tss = attributes(tubb6_cpg_meth_transcript_cors)$tss_range)
+#' 
+#' @export
+plotMethSiteCorCoefs <- function(meth_site_cor_values, reference_tss = FALSE, 
+  title = NULL, xlabel = NULL, ylabel = "Correlation Coefficient", value_colours = "set2", reverse_x_axis = FALSE){
+  
+  # Check that inputs have the correct data type
+  stopifnot(is(meth_site_cor_values, "data.frame"),
+    S4Vectors::isTRUEorFALSE(reference_tss) | is(reference_tss, "GRanges"), 
+    is(title, "character") | is.null(title), is(xlabel, "character") | is.null(xlabel),
+    is(ylabel, "character") | is.null(ylabel), is(value_colours, "character"),
+    S4Vectors::isTRUEorFALSE(reverse_x_axis))
+  
+  # Check that suitable input provided for value_colours and set low and high value colours if so
+  if(length(value_colours) == 1){
+    if(value_colours == "set1"){
+      low_colour <- "#53868B"; high_colour <- "#CD2626"
+    } else if(value_colours == "set2"){
+      low_colour <- "#7B5C90"; high_colour <- "#bfab25"
+    } else {
+      stop("value_colours should be one of either set1 or set2 if only a single value provided")
+    }
+  } else {
+    if(length(value_colours) == 2){
+      low_colour <- value_colours[1]; high_colour <- value_colours[2]
+    } else {
+      stop("value_colours should be either a vector with two colours or else 
+        one of either 'set1' or 'set2' if a single value is provided")
+    }
+  }
+  
+  # Check that meth_site_cor_values has a column called meth_site that can be converted to GRanges and 
+  # a numeric column called cor with values between 0 and 1
+  if(!all(c("meth_site", "cor") %in% names(meth_site_cor_values))){
+    stop("meth_site_cor_values does not have columns called both meth_site and cor")
+  } 
+  tryCatch(GRanges(meth_site_cor_values[["meth_site"]]),
+    error = function(e) stop("meth_site_cor_values[[\"meth_site\"]] does not seem to be genomic coordinates coercible to GRanges"))
+  if(!is(meth_site_cor_values[["cor"]], "numeric") | max(abs(meth_site_cor_values[["cor"]]), na.rm = T) > 1){
+    stop("meth_site_cor_values[[\"cor\"]] should be a numeric value with a maximum absolute value of 1")
+  }
+  
+  # Change meth_site column to row names
+  meth_site_cor_values <- tibble::column_to_rownames(meth_site_cor_values, "meth_site")
+  
+  # If reference_tss is TRUE, try to extract tss_range from meth_site_cor_values
+  if(is(reference_tss, "logical")){
+    if(reference_tss){
+      reference_tss <- attributes(meth_site_cor_values)$tss_range 
+      if(is.null(reference_tss)){
+        stop("reference_tss was set to TRUE, but meth_site_cor_values does not have an attribute called tss_range")
+      }
+    } else {
+      reference_tss <- NULL
+    }
+  }
+  
+  # Check that reference_tss has a length of 1 if provided   
+  if(!is.null(reference_tss) & (length(reference_tss) > 1 | !is(reference_tss, "GRanges"))){
+    stop("GRanges indicated by reference_tss should have length of 1")
+  }
+  
+  # Check that all methylation sites are on the same sequence
+  if(length(unique(seqnames(GenomicRanges::GRanges(row.names(meth_site_cor_values))))) > 1){
+    stop("All methylation sites must be located on the same sequence")
+  }
+  
+  # Create a data.frame with the selected column
+  plot_df <- dplyr::select(meth_site_cor_values, values = cor)
+  
+  # Add meth_site_start position to plot_df
+  plot_df$meth_site_start <- GenomicRanges::start(GenomicRanges::GRanges(row.names(plot_df)))
+  
+  # Decide x-axis values for methylation sites depending on whether reference_tss provided
+  if(!is.null(reference_tss)){
+    plot_df$meth_cor_plot_position <- methodical::strandedDistance(query_gr = GRanges(row.names(plot_df)), subject_gr = reference_tss)
+  } else {
+    plot_df$meth_cor_plot_position <- plot_df$meth_site_start 
+  }
+  
+  # Subset plot_df for complete rows
+  plot_df <- plot_df[complete.cases(plot_df), ]
+  
+  # Create xlabel for plot if not provided
+  if(is.null(xlabel)){
+    if(!is.null(reference_tss)){
+      xlabel <- "Distance to TSS"
+    } else {
+      xlabel <- paste(seqnames(GenomicRanges::GRanges(row.names(meth_site_cor_values)))[1], "Position")
+    }
+  }
+  
+  # Create a scatter plot of Value and return
+  meth_cor_plot <- ggplot(data = plot_df, mapping = aes(x = meth_cor_plot_position, y = values)) +
+    geom_line(color = "black", alpha = 0.75) +
+    geom_point(shape = 21, colour = "black", size = 4, alpha = 1, aes(fill = values)) +
+    theme_bw() +
+    theme(plot.title = element_text(hjust = 0.5, size = 24), legend.text = element_text(size = 12),
+      axis.title = element_text(size = 20), 
+      axis.text = element_text(size = 18), legend.position = "None", 
+      plot.margin = margin(, 2, , , "cm")) +
+    scale_x_continuous(expand = c(0.005, 0.005), labels = scales::comma) +
+    scale_y_continuous(expand = expansion(mult = c(0.05, 0.05))) + 
+    scale_fill_gradient2(low = low_colour, high = high_colour, mid = "white", midpoint = 0) +
+    labs(x = xlabel, y = ylabel, title = title, color = NULL)
+  
+  # Add reference_tss as an attribute to plot if it was provided
+  if(!is.null(reference_tss)){attributes(meth_cor_plot)$tss_range <- reference_tss}
+  
+  # Reverse x-axis if specified 
+  if(reverse_x_axis){
+    meth_cor_plot = meth_cor_plot + scale_x_reverse(expand = c(0.005, 0.005), labels = scales::comma)
+  }
+  
+  return(meth_cor_plot)
+}
+
+#' Add TMRs to a methylation site value plot
+#'
+#' @param meth_site_plot A plot of Value around a TSS.
+#' @param tmrs_gr A GRanges object giving the position of TMRs.
+#' @param reference_tss An optional GRanges object with a single range. If provided, the x-axis will 
+#' show the distance of methylation sites to the start of this region with methylation sites upstream
+#' relative to the reference_tss shown first. If not, the x-axis will show the start site coordinate of the methylation site.
+#' @param transcript_id An optional transcript ID. If provided, will attempt to filter tmrs_gr and reference_tss using a metadata column called transcript_id with 
+#' a value identical to the provided one. 
+#' @param tmr_colours A vector with colours to use for negative and positive TMRs. Defaults to "#7B5C90" for negative and "#BFAB25" for positive TMRs. 
+#' @param linewidth A numeric value to be provided as linewidth for geom_segment(). 
+#' @return A ggplot object
+#' @export
+#' @examples 
+#' # Load methylation-transcript correlation results for TUBB6 gene
+#' data("tubb6_cpg_meth_transcript_cors", package = "methodical")
+#' 
+#' # Plot methylation-transcript correlation values around TUBB6 TSS
+#' tubb6_correlation_plot <- methodical::plotMethylationValues(tubb6_cpg_meth_transcript_cors, column_name = "cor", ylabel = "Spearman Correlation")
+#'   
+#' # Find TMRs for TUBB6
+#' tubb6_tmrs <- find_TMRs(correlation_df = tubb6_cpg_meth_transcript_cors)
+#' 
+#' # Plot TMRs on top of tubb6_correlation_plot
+#' methodical::plotTMRs(tubb6_correlation_plot, tmrs_gr = tubb6_tmrs)
+plotTMRs <- function(meth_site_plot, tmrs_gr, reference_tss = NULL, transcript_id = NULL, tmr_colours = c("#A28CB1", "#D2C465"), linewidth = 5){
+  
+  # Check that inputs have the correct data type
+  stopifnot(is(meth_site_plot, "ggplot"), is(tmrs_gr, "GRanges"),
+    is(reference_tss, "GRanges") | is.null(reference_tss), 
+    is(transcript_id, "character") | is.null(transcript_id),
+    is(tmr_colours, "character"), is(linewidth, "numeric"))
+    
+  # Filter tmrs_gr and reference_tss for transcript_id if provided
+  if(!is.null(transcript_id)){
+    tmrs_gr <- tmrs_gr[tmrs_gr$transcript_id == transcript_id]
+    reference_tss <- reference_tss[reference_tss$transcript_id == transcript_id]
+  }
+  
+  # Check that if reference_tss is provided, it has a length of 1
+  if(!is.null(reference_tss) & length(reference_tss) > 1){
+    stop("reference_tss should have length of 1 if provided")
+  }
+  
+  # Decide positions for tmrs depending on whether reference_tss provided
+  if(!is.null(reference_tss)){
+      tmrs_df <- data.frame(methodical::rangesRelativeToTSS(
+        genomic_regions = tmrs_gr, tss_gr = reference_tss))
+  } else {
+      tmrs_df <- data.frame(tmrs_gr)
+  }
+  
+  # Make direction a factor with both Negative and Positive
+  tmrs_df$direction = factor(tmrs_df$direction, levels = c("Negative", "Positive"))
+  
+  # Add TMRs to meth_site_plot
+  meth_site_plot_with_tmrs <- meth_site_plot +
+  geom_segment(data = tmrs_df, aes(x = start, xend = end, y = 0, yend = 0, color = direction), 
+    linewidth = linewidth) + 
+  scale_color_manual(values = setNames(tmr_colours, levels(tmrs_df$direction)), drop = FALSE) + 
+  labs(color = "TMR Direction")
+  
+  # Return meth_site_plot_with_tmrs
+  return(meth_site_plot_with_tmrs)
+  
+}
+
+#' Create plot of Methodical score values for methylation sites around a TSS
+#'
+#' @param meth_site_values A data.frame with correlation values for methylation sites. There should be one column called "cor".
+#' and another called "p_val" which are used to calculate the Methodical score. row.names should be the names of methylation sites and all methylation sites must be located on the same sequence. 
+#' @param reference_tss An optional GRanges object with a single range. If provided, the x-axis will show the distance of methylation sites to the start of this region with methylation sites upstream.
+#' relative to the reference_tss shown first. If not, the x-axis will show the start site coordinate of the methylation site. 
+#' @param p_value_threshold The p-value threshold used to identify TMRs. Default value is 0.005. Set to NULL to turn off significance thresholds.
+#' @param smooth_scores TRUE or FALSE indicating whether to display a curve of smoothed Methodical scores on top of the plot. Default is TRUE.
+#' @param offset_length Offset length to be supplied to calculateSmoothedMethodicalScores.
+#' @param smoothing_factor Smoothing factor to be provided to calculateSmoothedMethodicalScores.
+#' @param smoothed_curve_colour Colour of the smoothed curve. Default is "black".
+#' @param linewidth Line width of the smoothed curve. Default value is 1.
+#' @param curve_alpha Alpha value for the curve. Default value is 0.75. 
+#' @param title Title of the plot. Default is no title. 
+#' @param xlabel Label for the X axis in the plot. Default is "Genomic Position".
+#' @param low_colour Colour to use for low values. Default value is "#7B5C90".
+#' @param high_colour Colour to use for high values. Default value is "#BFAB25".
+#' @return A ggplot object 
+#' @export
+#' @examples 
+#' # Load methylation-transcript correlation results for TUBB6 gene
+#' data("tubb6_cpg_meth_transcript_cors", package = "methodical")
+#'   
+#' # Calculate and plot Methodical scores from correlation values
+#' methodical::plotMethodicalScores(tubb6_cpg_meth_transcript_cors, reference_tss = attributes(tubb6_cpg_meth_transcript_cors)$tss_range)
+plotMethodicalScores <- function(meth_site_values, reference_tss = NULL, p_value_threshold = 0.005,
+  smooth_scores = TRUE, offset_length = 10, smoothing_factor = 0.75, 
+  smoothed_curve_colour = "black", linewidth = 1, curve_alpha = 0.75, 
+  title = NULL, xlabel = "Genomic Position", low_colour = "#7B5C90", high_colour = "#BFAB25"){
+  
+  # Check that inputs have the correct data type
+  stopifnot(is(meth_site_values, "data.frame"), 
+    is(reference_tss, "GRanges") | is.null(reference_tss), 
+    is(p_value_threshold, "numeric") | is.null(p_value_threshold), S4Vectors::isTRUEorFALSE(smooth_scores),
+    is(offset_length, "numeric"), is(smoothing_factor, "numeric"),
+    is(smoothed_curve_colour, "character"), is(linewidth, "numeric"),
+    is(curve_alpha, "numeric"), is(title, "character") | is.null(title),
+    is(xlabel, "character") | is.null(xlabel), is(low_colour, "character"), 
+    is(high_colour, "character"))
+  
+  # Change meth_site column to row names
+  meth_site_values_plot_df <- tibble::column_to_rownames(meth_site_values, "meth_site")
+  
+  # Check that if reference_tss is provided, it has a length of 1
+  if(!is.null(reference_tss) & length(reference_tss) > 1){stop("reference_tss should have length of 1 if provided")}
+  
+  # Check that all methylation sites are on the same sequence
+  if(length(seqlevels(GenomicRanges::GRanges(row.names(meth_site_values_plot_df)))) > 1){
+    stop("All methylation sites must be located on the same sequence")
+  }
+  
+  # Add meth_site_start position to meth_site_values_plot_df
+  meth_site_values_plot_df$meth_site_start <- GenomicRanges::start(GenomicRanges::GRanges(row.names(meth_site_values_plot_df)))
+  
+  # Decide x-axis values for methylation sites depending on whether reference_tss provided
+  if(!is.null(reference_tss)){
+    meth_site_values_plot_df$meth_site_plot_position <- methodical::strandedDistance(query_gr = GRanges(row.names(meth_site_values_plot_df)), subject_gr = reference_tss)
+  } else {
+    meth_site_values_plot_df$meth_site_plot_position <- meth_site_values_plot_df$meth_site_start 
+  }
+  
+  # Convert p-values into methodical score
+  meth_site_values_plot_df$methodical_score <- log10(meth_site_values_plot_df$p_val) * -sign(meth_site_values_plot_df$cor)
+  
+  # Subset meth_site_values_plot_df for necessary columns
+  meth_site_values_plot_df <- dplyr::select(meth_site_values_plot_df, meth_site_start, meth_site_plot_position, methodical_score, cor)
+  
+  # Create a scatter plot of Value and return
+  meth_site_plot <- ggplot(data = meth_site_values_plot_df, mapping = aes(x = meth_site_plot_position, y = methodical_score)) +
+    geom_line(color = "black", alpha = 0.75) +
+    geom_point(shape = 21, colour = "black", size = 4, alpha = 1, aes(fill = cor)) +
+    theme_bw() +
+    theme(plot.title = element_text(hjust = 0.5, size = 24), legend.text = element_text(size = 12),
+      axis.title = element_text(size = 20), axis.text = element_text(size = 18), legend.position = "None") +
+    scale_x_continuous(expand = c(0.005, 0.005), labels = scales::comma) +
+    scale_y_continuous(expand = expansion(mult = c(0.05, 0.05))) + 
+    scale_fill_gradient2(low = low_colour, high = high_colour, mid = "white", midpoint = 0) +
+    labs(x = xlabel, y = "Methodical Score", title = title, color = NULL) 
+  
+  # Add TMR thresholds if specified
+  if(!is.null(p_value_threshold)){
+    meth_site_plot <- meth_site_plot + 
+      geom_hline(yintercept = log10(p_value_threshold), linetype = "dashed", colour = low_colour) +
+      geom_hline(yintercept = -log10(p_value_threshold), linetype = "dashed", colour = high_colour) 
+  }
+  
+  # Add smoothed Methodical scores if specified
+  if(smooth_scores){
+    smoothed_methodical_scores <- calculateSmoothedMethodicalScores(correlation_df = meth_site_values)
+    meth_site_plot <- meth_site_plot +
+    geom_line(mapping = aes(y = smoothed_methodical_scores), 
+      color = smoothed_curve_colour, alpha = curve_alpha, linewidth = linewidth)
+  }
+  
+  return(meth_site_plot)
+}
+
+#' Create a plot with genomic annotation for a plot returned by `plotMethylationValues()` or `plotMethSiteCorCoefs()`.
 #'
 #' Can combine the meth site values plot and genomic annotation together into a single plot or return the annotation plot separately. 
 #'
-#' @param meth_site_plot A plot of Value (generally methylation level or correlation of methylation with transcription) around a TSS
+#' @param meth_site_plot A plot of methylation site values (generally methylation level or correlation of methylation with transcription) around a TSS
 #' @param annotation_grl A GRangesList object (or list coercible to a GRangesList) where each component GRanges gives 
 #' the locations of different classes of regions to display. Each class of region will 
 #' be given a seprate colour in the plot, with regions ordered by the order of `names(annotation_grl)`. 
@@ -306,168 +629,4 @@ annotateMethSitePlot <- function(meth_site_plot, annotation_grl, reference_tss =
   
   # Return annotated_meth_site_plot
   return(annotated_meth_site_plot)
-}
-
-#' Add TMRs to a methylation site value plot
-#'
-#' @param meth_site_plot A plot of Value around a TSS.
-#' @param tmrs_gr A GRanges object giving the position of TMRs.
-#' @param reference_tss An optional GRanges object with a single range. If provided, the x-axis will 
-#' show the distance of methylation sites to the start of this region with methylation sites upstream
-#' relative to the reference_tss shown first. If not, the x-axis will show the start site coordinate of the methylation site.
-#' @param transcript_id An optional transcript ID. If provided, will attempt to filter tmrs_gr and reference_tss using a metadata column called transcript_id with 
-#' a value identical to the provided one. 
-#' @param tmr_colours A vector with colours to use for negative and positive TMRs. Defaults to "#7B5C90" for negative and "#BFAB25" for positive TMRs. 
-#' @param linewidth A numeric value to be provided as linewidth for geom_segment(). 
-#' @return A ggplot object
-#' @export
-#' @examples 
-#' # Load methylation-transcript correlation results for TUBB6 gene
-#' data("tubb6_cpg_meth_transcript_cors", package = "methodical")
-#' 
-#' # Plot methylation-transcript correlation values around TUBB6 TSS
-#' tubb6_correlation_plot <- methodical::plotMethSiteValues(tubb6_cpg_meth_transcript_cors, column_name = "cor", ylabel = "Spearman Correlation")
-#'   
-#' # Find TMRs for TUBB6
-#' tubb6_tmrs <- find_TMRs(correlation_df = tubb6_cpg_meth_transcript_cors)
-#' 
-#' # Plot TMRs on top of tubb6_correlation_plot
-#' methodical::plotTMRs(tubb6_correlation_plot, tmrs_gr = tubb6_tmrs)
-plotTMRs <- function(meth_site_plot, tmrs_gr, reference_tss = NULL, transcript_id = NULL, tmr_colours = c("#A28CB1", "#D2C465"), linewidth = 5){
-  
-  # Check that inputs have the correct data type
-  stopifnot(is(meth_site_plot, "ggplot"), is(tmrs_gr, "GRanges"),
-    is(reference_tss, "GRanges") | is.null(reference_tss), 
-    is(transcript_id, "character") | is.null(transcript_id),
-    is(tmr_colours, "character"), is(linewidth, "numeric"))
-    
-  # Filter tmrs_gr and reference_tss for transcript_id if provided
-  if(!is.null(transcript_id)){
-    tmrs_gr <- tmrs_gr[tmrs_gr$transcript_id == transcript_id]
-    reference_tss <- reference_tss[reference_tss$transcript_id == transcript_id]
-  }
-  
-  # Check that if reference_tss is provided, it has a length of 1
-  if(!is.null(reference_tss) & length(reference_tss) > 1){
-    stop("reference_tss should have length of 1 if provided")
-  }
-  
-  # Decide positions for tmrs depending on whether reference_tss provided
-  if(!is.null(reference_tss)){
-      tmrs_df <- data.frame(methodical::rangesRelativeToTSS(
-        genomic_regions = tmrs_gr, tss_gr = reference_tss))
-  } else {
-      tmrs_df <- data.frame(tmrs_gr)
-  }
-  
-  # Make direction a factor with both Negative and Positive
-  tmrs_df$direction = factor(tmrs_df$direction, levels = c("Negative", "Positive"))
-  
-  # Add TMRs to meth_site_plot
-  meth_site_plot_with_tmrs <- meth_site_plot +
-  geom_segment(data = tmrs_df, aes(x = start, xend = end, y = 0, yend = 0, color = direction), 
-    linewidth = linewidth) + 
-  scale_color_manual(values = setNames(tmr_colours, levels(tmrs_df$direction)), drop = FALSE) + 
-  labs(color = "TMR Direction")
-  
-  # Return meth_site_plot_with_tmrs
-  return(meth_site_plot_with_tmrs)
-  
-}
-
-#' Create plot of Methodical score values for methylation sites around a TSS
-#'
-#' @param meth_site_values A data.frame with correlation values for methylation sites. There should be one column called "cor".
-#' and another called "p_val" which are used to calculate the Methodical score. row.names should be the names of methylation sites and all methylation sites must be located on the same sequence. 
-#' @param reference_tss An optional GRanges object with a single range. If provided, the x-axis will show the distance of methylation sites to the start of this region with methylation sites upstream.
-#' relative to the reference_tss shown first. If not, the x-axis will show the start site coordinate of the methylation site. 
-#' @param p_value_threshold The p-value threshold used to identify TMRs. Default value is 0.005. Set to NULL to turn off significance thresholds.
-#' @param smooth_scores TRUE or FALSE indicating whether to display a curve of smoothed Methodical scores on top of the plot. Default is TRUE.
-#' @param offset_length Offset length to be supplied to calculateSmoothedMethodicalScores.
-#' @param smoothing_factor Smoothing factor to be provided to calculateSmoothedMethodicalScores.
-#' @param smoothed_curve_colour Colour of the smoothed curve. Default is "black".
-#' @param linewidth Line width of the smoothed curve. Default value is 1.
-#' @param curve_alpha Alpha value for the curve. Default value is 0.75. 
-#' @param title Title of the plot. Default is no title. 
-#' @param xlabel Label for the X axis in the plot. Default is "Genomic Position".
-#' @param low_colour Colour to use for low values. Default value is "#7B5C90".
-#' @param high_colour Colour to use for high values. Default value is "#BFAB25".
-#' @return A ggplot object 
-#' @export
-#' @examples 
-#' # Load methylation-transcript correlation results for TUBB6 gene
-#' data("tubb6_cpg_meth_transcript_cors", package = "methodical")
-#'   
-#' # Calculate and plot Methodical scores from correlation values
-#' methodical::plotMethodicalScores(tubb6_cpg_meth_transcript_cors, reference_tss = attributes(tubb6_cpg_meth_transcript_cors)$tss_range)
-plotMethodicalScores <- function(meth_site_values, reference_tss = NULL, p_value_threshold = 0.005,
-  smooth_scores = TRUE, offset_length = 10, smoothing_factor = 0.75, 
-  smoothed_curve_colour = "black", linewidth = 1, curve_alpha = 0.75, 
-  title = NULL, xlabel = "Genomic Position", low_colour = "#7B5C90", high_colour = "#BFAB25"){
-  
-  # Check that inputs have the correct data type
-  stopifnot(is(meth_site_values, "data.frame"), 
-    is(reference_tss, "GRanges") | is.null(reference_tss), 
-    is(p_value_threshold, "numeric") | is.null(p_value_threshold), S4Vectors::isTRUEorFALSE(smooth_scores),
-    is(offset_length, "numeric"), is(smoothing_factor, "numeric"),
-    is(smoothed_curve_colour, "character"), is(linewidth, "numeric"),
-    is(curve_alpha, "numeric"), is(title, "character") | is.null(title),
-    is(xlabel, "character") | is.null(xlabel), is(low_colour, "character"), 
-    is(high_colour, "character"))
-  
-  # Change meth_site column to row names
-  meth_site_values_plot_df <- tibble::column_to_rownames(meth_site_values, "meth_site")
-  
-  # Check that if reference_tss is provided, it has a length of 1
-  if(!is.null(reference_tss) & length(reference_tss) > 1){stop("reference_tss should have length of 1 if provided")}
-  
-  # Check that all methylation sites are on the same sequence
-  if(length(seqlevels(GenomicRanges::GRanges(row.names(meth_site_values_plot_df)))) > 1){
-    stop("All methylation sites must be located on the same sequence")
-  }
-  
-  # Add meth_site_start position to meth_site_values_plot_df
-  meth_site_values_plot_df$meth_site_start <- GenomicRanges::start(GenomicRanges::GRanges(row.names(meth_site_values_plot_df)))
-  
-  # Decide x-axis values for methylation sites depending on whether reference_tss provided
-  if(!is.null(reference_tss)){
-    meth_site_values_plot_df$meth_site_plot_position <- methodical::strandedDistance(query_gr = GRanges(row.names(meth_site_values_plot_df)), subject_gr = reference_tss)
-  } else {
-    meth_site_values_plot_df$meth_site_plot_position <- meth_site_values_plot_df$meth_site_start 
-  }
-  
-  # Convert p-values into methodical score
-  meth_site_values_plot_df$methodical_score <- log10(meth_site_values_plot_df$p_val) * -sign(meth_site_values_plot_df$cor)
-  
-  # Subset meth_site_values_plot_df for necessary columns
-  meth_site_values_plot_df <- dplyr::select(meth_site_values_plot_df, meth_site_start, meth_site_plot_position, methodical_score, cor)
-  
-  # Create a scatter plot of Value and return
-  meth_site_plot <- ggplot(data = meth_site_values_plot_df, mapping = aes(x = meth_site_plot_position, y = methodical_score)) +
-    geom_line(color = "black", alpha = 0.75) +
-    geom_point(shape = 21, colour = "black", size = 4, alpha = 1, aes(fill = cor)) +
-    theme_bw() +
-    theme(plot.title = element_text(hjust = 0.5, size = 24), legend.text = element_text(size = 12),
-      axis.title = element_text(size = 20), axis.text = element_text(size = 18), legend.position = "None") +
-    scale_x_continuous(expand = c(0.005, 0.005), labels = scales::comma) +
-    scale_y_continuous(expand = expansion(mult = c(0.05, 0.05))) + 
-    scale_fill_gradient2(low = low_colour, high = high_colour, mid = "white", midpoint = 0) +
-    labs(x = xlabel, y = "Methodical Score", title = title, color = NULL) 
-  
-  # Add TMR thresholds if specified
-  if(!is.null(p_value_threshold)){
-    meth_site_plot <- meth_site_plot + 
-      geom_hline(yintercept = log10(p_value_threshold), linetype = "dashed", colour = low_colour) +
-      geom_hline(yintercept = -log10(p_value_threshold), linetype = "dashed", colour = high_colour) 
-  }
-  
-  # Add smoothed Methodical scores if specified
-  if(smooth_scores){
-    smoothed_methodical_scores <- calculateSmoothedMethodicalScores(correlation_df = meth_site_values)
-    meth_site_plot <- meth_site_plot +
-    geom_line(mapping = aes(y = smoothed_methodical_scores), 
-      color = smoothed_curve_colour, alpha = curve_alpha, linewidth = linewidth)
-  }
-  
-  return(meth_site_plot)
 }
