@@ -53,6 +53,7 @@ Create a plot of methylation values for methylation sites in a region
 \examples{
 # Load methylation-values around the TUBB6 TSS
 data("tubb6_meth_rse", package = "methodical")
+tubb6_meth_rse <- eval(tubb6_meth_rse)
 
 # Extract methylation values from tubb6_meth_rse
 tubb6_methylation_values = methodical::extractGRangesMethSiteValues(meth_rse = tubb6_meth_rse)

@@ -36,5 +36,5 @@ tubb6_meth_rse <- eval(tubb6_meth_rse)
 test_region <- GRanges("chr18:12305000-12310000")
 
 # Get methylation values for CpG sites overlapping HDAC1 gene
-test_region_methylation <- methodical::extractGRangesMethSiteValues(tubb6_meth_rse, genomic_regions = test_region)
+test_region_methylation <- methodical::extractGRangesMethSiteValues(meth_rse = tubb6_meth_rse, genomic_regions = test_region)
 }

@@ -5,7 +5,7 @@ output:
     toc: true
     toc_depth: 2
 vignette: >
-  %\VignetteIndexEntry{identifying_tmrs}
+  %\VignetteIndexEntry{creating_a_methylation_rse_from_methylation_array_files}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

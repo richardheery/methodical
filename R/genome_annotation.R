@@ -19,7 +19,7 @@
 #' # Convert repeat_annotation_hg38 into a GRangesList
 #' repeat_annotation_hg38 <- GRangesList(split(repeat_annotation_hg38, repeat_annotation_hg38$repClass))
 #'  
-#' Calculate the proportion of base pairs in CpG islands overlapping different classes of repetitive elements
+#' # Calculate the proportion of base pairs in CpG islands overlapping different classes of repetitive elements
 #' annotateGRanges(genomic_regions = cpg_island_annotation, annotation_ranges = repeat_annotation_hg38, overlap_measure = "proportion")
 #' 
 annotateGRanges <- function(genomic_regions, annotation_ranges, ignore.strand = TRUE, overlap_measure = "absolute"){

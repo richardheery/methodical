@@ -5,7 +5,7 @@ output:
     toc: true
     toc_depth: 2
 vignette: >
-  %\VignetteIndexEntry{identifying_tmrs}
+  %\VignetteIndexEntry{working_with_meth_rses}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.width = 12,
-  fig.height = 6.75
+  fig.height = 6.75,
   fig.show='hide'
 )
 ```
@@ -45,7 +45,6 @@ from TumourMethData.
 ```{r, eval=TRUE}
 ## CHANGE TO USE TUMOURMETHDATA
 tcga_wgbs_hg38 = TumourMethData::download_meth_dataset("tcga_wgbs_hg38")
-#tcga_wgbs_hg38 = HDF5Array::loadHDF5SummarizedExperiment("~/wgbs/tcga_wgbs/tcga_wgbs_hg38/")
 ```
 
 ## Extracting methylation data from methylation RangedSummarizedExperiments

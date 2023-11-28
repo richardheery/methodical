@@ -138,8 +138,8 @@ find_TMRs <- function(correlation_df, offset_length = 10, smoothing_factor = 0.7
     } 
   }
   
-  if(!all(names(correlation_df) == c("meth_site", "transcript_name", "cor", "p_val", "distance_to_tss"))){
-    stop("correlation_df does not seem to be a data.frame returned by calculateMethSiteTranscriptCors.\nShould have columns named 'meth_site', 'transcript_name', 'cor', 'p_val', 'distance_to_tss'")
+  if(!all(c("meth_site", "transcript_name", "cor", "p_val") %in% names(correlation_df))){
+    stop("correlation_df does not seem to be a data.frame returned by calculateMethSiteTranscriptCors.\nShould have columns named 'meth_site', 'transcript_name', 'cor' and 'p_val'")
   }
     
   # If all p-values are above p_value_threshold or are NA can immediately return an empty GRanges

@@ -16,7 +16,7 @@
 #' test_region <- GRanges("chr18:12305000-12310000")
 #' 
 #' # Get methylation values for CpG sites overlapping HDAC1 gene
-#' test_region_methylation <- methodical::extractGRangesMethSiteValues(tubb6_meth_rse, genomic_regions = test_region)
+#' test_region_methylation <- methodical::extractGRangesMethSiteValues(meth_rse = tubb6_meth_rse, genomic_regions = test_region)
 extractGRangesMethSiteValues <- function(meth_rse, genomic_regions = NULL, samples_subset = NULL, assay_number = 1){
   
   # Check that inputs have the correct data type

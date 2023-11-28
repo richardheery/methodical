@@ -154,9 +154,6 @@ calculateRegionMethylationTranscriptCors <- function(meth_rse, assay_number = 1,
       summary_function = region_methylation_summary_function, BPPARAM = BPPARAM, ...
     )
     
-    # Set region_name of genomic_region_methylation as row.names
-    genomic_region_methylation <- tibble::column_to_rownames(genomic_region_methylation, "region_name")
-    
   }
   
   # Calculate correlations between region methylation values and transcript expression

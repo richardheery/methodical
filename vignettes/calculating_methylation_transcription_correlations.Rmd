@@ -181,7 +181,7 @@ attributes(gstp1_cpg_meth_transcript_cors)$tss_range
 
 Plotting the methylation-transcription correlation values around a TSS enable
 us to visualize how the relationship between DNA methylation and transcription 
-changes around the TSS. We can use the `plotMethSiteValues` function to 
+changes around the TSS. We can use the `plotMethSiteCorCoefs` function to 
 plot values for methylation sites, such as their correlation values or 
 methylation levels. It takes a data.frame as input which should have a column 
 called "meth_site" which gives the location of CpG sites as a character string
@@ -197,19 +197,17 @@ whether `reference_tss` is set to TRUE or FALSE.
 ```{r, fig.show='hide'}
 # Plot methylation-transcription correlation values for GSTP1 showing 
 # chromosome 11 position on the x-axis
-meth_cor_plot_absolute_distance <- plotMethSiteValues(
+meth_cor_plot_absolute_distance <- plotMethSiteCorCoefs(
   meth_site_values = gstp1_cpg_meth_transcript_cors, 
-  column_name = "cor", 
   reference_tss = FALSE, 
   ylabel = "Correlation Value", 
   title = "Correlation Between GSTP1 Transcription and CpG Methylation")
 print(meth_cor_plot_absolute_distance)
 
-# Plot methylation-transcription correlation values for GSTP1 showing position 
+# Plot methylation-transcription correlation values for GSTP1 showing 
 # distance to the GSTP1 on the x-axis
-meth_cor_plot_relative_distance <- plotMethSiteValues(
+meth_cor_plot_relative_distance <- plotMethSiteCorCoefs(
   meth_site_values = gstp1_cpg_meth_transcript_cors, 
-  column_name = "cor", 
   reference_tss = TRUE,   
   ylabel = "Correlation Value", 
   title = "Correlation Between GSTP1 Transcription and CpG Methylation")
