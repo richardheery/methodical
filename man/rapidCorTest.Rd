@@ -66,7 +66,7 @@ Rapidly calculate the correlation and the significance of pairs of columns from 
 rapidCorTest(
   table1,
   table2,
-  cor_method = "p",
+  cor_method = "pearson",
   table1_name = "table1",
   table2_name = "table2",
   p_adjust_method = "BH",
@@ -78,7 +78,8 @@ rapidCorTest(
 
 \item{table2}{A data.frame}
 
-\item{cor_method}{A character string indicating which correlation coefficient is to be computed. Identical to methods from cor(). Default is "pearson".}
+\item{cor_method}{A character string indicating which correlation coefficient is to be computed.
+One of either "pearson" or "spearman" or their abbreviations.}
 
 \item{table1_name}{Name to give the column giving the name of features in table1. Default is "table1".}
 

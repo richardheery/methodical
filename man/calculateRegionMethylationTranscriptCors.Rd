@@ -44,7 +44,8 @@ If not provided, attempts to use genomic_regions$transcript_id. All transcripts 
 such as created using summarizeRegionMethylation(). Table will be created if it is not provided which will increase running time.
 Row names should match genomic_region_names and column names should match those of transcript_expression_table}
 
-\item{cor_method}{A character string indicating which correlation coefficient is to be computed. Identical to methods from cor(). Default is "pearson".}
+\item{cor_method}{A character string indicating which correlation coefficient is to be computed.
+One of either "pearson" or "spearman" or their abbreviations.}
 
 \item{p_adjust_method}{Method used to adjust p-values. Same as the methods from p.adjust.methods. Default is Benjamini-Hochberg.}
 
@@ -70,7 +71,8 @@ data(tubb6_transcript_counts, package = "methodical")
 
 # Calculate correlation values between TMRs identified for TUBB6 and transcript expression
 tubb6_tmrs_transcript_cors <- methodical::calculateRegionMethylationTranscriptCors(
-  genomic_regions = tubb6_tmrs, genomic_region_names = tubb6_tmrs$tmr_name, meth_rse = tubb6_meth_rse, transcript_expression_table = tubb6_transcript_counts)
+  meth_rse = tubb6_meth_rse, transcript_expression_table = tubb6_transcript_counts,
+  genomic_regions = tubb6_tmrs, genomic_region_names = tubb6_tmrs$tmr_name)
 tubb6_tmrs_transcript_cors
  
 }

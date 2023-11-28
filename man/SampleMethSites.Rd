@@ -21,7 +21,7 @@ SampleMethSites(
 \item{genomic_ranges_filter}{An optional GRanges object used to first subset meth_rse.
 Sites will then be chosen randomly from those overlapping these ranges.}
 
-\item{invert_filter}{A logical value indicating whether to invert the genomic_ranges_filter so
+\item{invert_filter}{TRUE or FALSE indicating whether to invert the genomic_ranges_filter so
 as to exclude sites overlapping these regions. Default value is FALSE.}
 
 \item{samples_subset}{Optional sample names used to subset meth_rse.}

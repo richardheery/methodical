@@ -35,7 +35,7 @@ makeMethRSEFromBedgraphs(
 
 \item{value_column}{The column number in bedgraphs which corresponds to the methylation values. Default is 4th column.}
 
-\item{zero_based}{A logical value indicating if files are zero-based. Default value is TRUE.}
+\item{zero_based}{TRUE or FALSE indicating if files are zero-based. Default value is TRUE.}
 
 \item{normalization_factor}{An optional numerical value to divide methylation values by to convert them to fractions e.g. 100 if they are percentages.
 Default is not to leave values as they are in the input files.}
@@ -50,7 +50,7 @@ Default is not to leave values as they are in the input files.}
 
 \item{dataset_name}{Name to give data set in HDF5 file. Default is "beta".}
 
-\item{overwrite}{Logical value indicating whether to allow overwriting if dataset_name already exists in assays.h5. Default is FALSE.}
+\item{overwrite}{TRUE or FALSE indicating whether to allow overwriting if dataset_name already exists in assays.h5. Default is FALSE.}
 
 \item{chunkdim}{The dimensions of the chunks for the HDF5 file. Should be a vector of length 2 giving the number of rows and then the number of columns in each chunk.
 Uses HDF5Array::getHDF5DumpChunkDim(length(meth_sites), length(bedgraphs))) by default.}

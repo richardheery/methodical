@@ -25,7 +25,7 @@
 
 \item{cor_method}{Correlation method to use.}
 
-\item{add_distance_to_region}{Logical value indicating whether to add distance to TSS.}
+\item{add_distance_to_region}{TRUE or FALSE indicating whether to add distance to TSS.}
 
 \item{results_dir}{Location of results directory.}
 }

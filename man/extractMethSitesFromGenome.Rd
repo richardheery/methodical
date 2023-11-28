@@ -17,13 +17,13 @@ extractMethSitesFromGenome(
 
 \item{pattern}{A pattern to match in bsgenome. Default is "CG".}
 
-\item{plus_strand_only}{A logical value indicating whether to only return matches on "+" strand,
+\item{plus_strand_only}{TRUE or FALSE indicating whether to only return matches on "+" strand,
 avoiding returning duplicate hits for palindromic sequences e.g. CG. Default is TRUE.}
 
 \item{meth_site_position}{Which position in the pattern corresponds to the methylation site of interest.
 Default is the first position.}
 
-\item{standard_sequences_only}{A logical value indicating whether to only return sites
+\item{standard_sequences_only}{TRUE or FALSE indicating whether to only return sites
 on standard sequences (those without "-" in their names). Default is TRUE.}
 }
 \value{

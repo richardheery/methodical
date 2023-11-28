@@ -29,7 +29,7 @@ relative to the reference_tss shown first. If not, the x-axis will show the star
 
 \item{p_value_threshold}{The p-value threshold used to identify TMRs. Default value is 0.005. Set to NULL to turn off significance thresholds.}
 
-\item{smooth_scores}{A logical value indicating whether to display a curve of smoothed Methodical scores on top of the plot. Default is TRUE.}
+\item{smooth_scores}{TRUE or FALSE indicating whether to display a curve of smoothed Methodical scores on top of the plot. Default is TRUE.}
 
 \item{offset_length}{Offset length to be supplied to calculateSmoothedMethodicalScores.}
 

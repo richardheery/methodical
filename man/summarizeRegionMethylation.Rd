@@ -27,7 +27,7 @@ summarizeRegionMethylation(
 \item{genomic_region_names}{A vector of names to give genomic_regions in the output table. There cannot be any duplicated names.
 Default is to attempt to use \code{names(genomic_regions)} if they are present or to name them region_1, region_2, etc otherwise.}
 
-\item{keep_metadata_cols}{A logical value indicating whether to add the metadata columns of genomic_regions to the output. Default is FALSE.}
+\item{keep_metadata_cols}{TRUE or FALSE indicating whether to add the metadata columns of genomic_regions to the output. Default is FALSE.}
 
 \item{max_sites_per_chunk}{The approximate maximum number of methylation sites to try to load into memory at once.
 The actual number loaded may vary depending on the number of methylation sites overlapping each region,
@@ -38,7 +38,7 @@ Default is floor(62500000/ncol(meth_rse)), resulting in each chunk requiring app
 
 \item{summary_function}{A function that summarizes column values. Default is base::colMeans.}
 
-\item{na.rm}{A logical value indicating whether to remove NA values when calculating summaries. Default value is TRUE.}
+\item{na.rm}{TRUE or FALSE indicating whether to remove NA values when calculating summaries. Default value is TRUE.}
 
 \item{BPPARAM}{A BiocParallelParam object. Defaults to \code{BiocParallel::bpparam()}.}
 
@@ -60,7 +60,7 @@ tubb6_meth_rse <- eval(tubb6_meth_rse)
 test_gr <- GRanges(c("chr18:12303400-12303500", "chr18:12303600-12303750", "chr18:12304000-12306000"))
 names(test_gr) <- paste("region", 1:3, sep = "_")
 
-# Calculate mean methylation values for chr1 CpG islands in meth_h5 
+# Calculate mean methylation values for regions in test_gr
 test_gr_methylation <- methodical::summarizeRegionMethylation(tubb6_meth_rse, genomic_regions = test_gr,
   genomic_region_names = names(test_gr))
 

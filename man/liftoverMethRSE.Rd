@@ -16,7 +16,7 @@ liftoverMethRSE(
 
 \item{chain}{A "Chain" object to be used with rtracklayer::liftOver}
 
-\item{remove_one_to_many_mapping}{A logical value indicating whether to remove regions in the source genome
+\item{remove_one_to_many_mapping}{TRUE or FALSE indicating whether to remove regions in the source genome
 which map to multiple regions in the target genome. Default is TRUE.}
 
 \item{permitted_target_regions}{An optional GRanges object used to filter the rowRanges by overlaps after liftover,

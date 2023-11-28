@@ -44,7 +44,7 @@ names(tss_gr) should give the name of the transcript associated with the TSS, wh
 
 \item{cor_method}{A character string indicating which correlation coefficient is to be computed. Identical to methods from cor(). Default is "pearson".}
 
-\item{add_distance_to_region}{A logical value indicating whether to add the distance of methylation sites to the TSS. Default value is TRUE.
+\item{add_distance_to_region}{TRUE or FALSE indicating whether to add the distance of methylation sites to the TSS. Default value is TRUE.
 Setting to FALSE will roughly half the total running time.}
 
 \item{max_sites_per_chunk}{The approximate maximum number of methylation sites to try to load into memory at once.

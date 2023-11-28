@@ -43,7 +43,7 @@ Any probes in array_files that are not in probe_ranges are ignored.}
 
 \item{dataset_name}{Name to give data set in HDF5 file. Default is "beta".}
 
-\item{overwrite}{Logical value indicating whether to allow overwriting if dataset_name already exists in assays.h5. Default is FALSE.}
+\item{overwrite}{TRUE or FALSE indicating whether to allow overwriting if dataset_name already exists in assays.h5. Default is FALSE.}
 
 \item{chunkdim}{The dimensions of the chunks for the HDF5 file. Should be a vector of length 2 giving the number of rows and then the number of columns in each chunk.}
 

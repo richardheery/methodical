@@ -3,7 +3,7 @@
 #' @param meth_site_values A data.frame with values associated with methylation sites. 
 #' Row names should be the coordinates of methylation sites in character format. 
 #' All methylation sites must be located on the same sequence. 
-#' @param column_name Name of column in meth_site_values to plot. Defaults to first column if none provided.  
+#' @param sample_name Name of column in meth_site_values to plot. Defaults to first column if none provided.  
 #' @param reference_tss TRUE or FALSE indicating whether to show distances on the X-axis
 #' relative to the TSS stored as an attribute `tss_range` of meth_site_values. 
 #' Alternatively, can provide a GRanges object with a single range for such a TSS site. 
@@ -29,18 +29,18 @@
 #' tubb6_methylation_values = methodical::extractGRangesMethSiteValues(meth_rse = tubb6_meth_rse)
 #' 
 #' # Plot methylation-transcript correlation values around TUBB6 TSS
-#' methodical::plotMethylationValues(tubb6_methylation_values, column_name = "N1")
+#' methodical::plotMethylationValues(tubb6_methylation_values, sample_name = "N1")
 #' 
 #' # Create same plot but showing the distance to the TUBB6 TSS on the x-axis
-#' methodical::plotMethylationValues(tubb6_methylation_values, column_name = "N1",
+#' methodical::plotMethylationValues(tubb6_methylation_values, sample_name = "N1",
 #'   reference_tss = attributes(tubb6_cpg_meth_transcript_cors)$tss_range)
 #' 
 #' @export
-plotMethylationValues <- function(meth_site_values, column_name = NULL, reference_tss = FALSE, 
+plotMethylationValues <- function(meth_site_values, sample_name = NULL, reference_tss = FALSE, 
   title = NULL, xlabel = NULL, ylabel = "Methylation Value", value_colours = "set1", reverse_x_axis = FALSE){
   
   # Check that inputs have the correct data type
-  stopifnot(is(meth_site_values, "data.frame"), is(column_name, "character") | is.null(column_name),
+  stopifnot(is(meth_site_values, "data.frame"), is(sample_name, "character") | is.null(sample_name),
     S4Vectors::isTRUEorFALSE(reference_tss) | is(reference_tss, "GRanges"), 
     is(title, "character") | is.null(title), is(xlabel, "character") | is.null(xlabel),
     is(ylabel, "character") | is.null(ylabel), is(value_colours, "character"),
@@ -90,22 +90,22 @@ plotMethylationValues <- function(meth_site_values, column_name = NULL, referenc
     stop("All methylation sites must be located on the same sequence")
   }
   
-  # Check that column_name has length 1 if provided
-  if(is.null(column_name)){
-    column_name = names(meth_site_values)[1]
-  } else if(length(column_name) > 1){
-    stop("column_name should just be a character of length 1 if provided")
+  # Check that sample_name has length 1 if provided
+  if(is.null(sample_name)){
+    sample_name = names(meth_site_values)[1]
+  } else if(length(sample_name) > 1){
+    stop("sample_name should just be a character of length 1 if provided")
   }
   
-  # Check that column_name is in the names of meth_site_values and that is is numeric
-  if(!column_name %in% names(meth_site_values)){
-    stop(paste(column_name, "not the name of a column in meth_site_values"))
-  } else if(!is(meth_site_values[[column_name]], "numeric")){
-    stop("meth_site_values[[\"column_name\"]] should be numeric")
+  # Check that sample_name is in the names of meth_site_values and that is is numeric
+  if(!sample_name %in% names(meth_site_values)){
+    stop(paste(sample_name, "not the name of a column in meth_site_values"))
+  } else if(!is(meth_site_values[[sample_name]], "numeric")){
+    stop("meth_site_values[[\"sample_name\"]] should be numeric")
   }
   
   # Create a data.frame with the selected column
-  plot_df <- dplyr::select(meth_site_values, values = !!column_name)
+  plot_df <- dplyr::select(meth_site_values, values = !!sample_name)
   
   # Add meth_site_start position to plot_df
   plot_df$meth_site_start <- GenomicRanges::start(GenomicRanges::GRanges(row.names(plot_df)))
@@ -322,7 +322,7 @@ plotMethSiteCorCoefs <- function(meth_site_cor_values, reference_tss = FALSE,
 #' data("tubb6_cpg_meth_transcript_cors", package = "methodical")
 #' 
 #' # Plot methylation-transcript correlation values around TUBB6 TSS
-#' tubb6_correlation_plot <- methodical::plotMethylationValues(tubb6_cpg_meth_transcript_cors, column_name = "cor", ylabel = "Spearman Correlation")
+#' tubb6_correlation_plot <- methodical::plotMethSiteCorCoefs(tubb6_cpg_meth_transcript_cors, ylabel = "Spearman Correlation")
 #'   
 #' # Find TMRs for TUBB6
 #' tubb6_tmrs <- find_TMRs(correlation_df = tubb6_cpg_meth_transcript_cors)
@@ -468,15 +468,18 @@ plotMethodicalScores <- function(meth_site_values, reference_tss = NULL, p_value
   return(meth_site_plot)
 }
 
-#' Create a plot with genomic annotation for a plot returned by `plotMethylationValues()` or `plotMethSiteCorCoefs()`.
-#'
-#' Can combine the meth site values plot and genomic annotation together into a single plot or return the annotation plot separately. 
+#' Create a plot with genomic annotation for a plot of values at methylation sites. 
+#' 
+#' Works with plots returned by `plotMethylationValues()`, `plotMethSiteCorCoefs()` or `plotMethodicalScores`.
+#' Can combine the meth site values plot and genomic annotation together into a 
+#' single plot or return the annotation plot separately. 
 #'
 #' @param meth_site_plot A plot of methylation site values (generally methylation level or correlation of methylation with transcription) around a TSS
 #' @param annotation_grl A GRangesList object (or list coercible to a GRangesList) where each component GRanges gives 
 #' the locations of different classes of regions to display. Each class of region will 
 #' be given a seprate colour in the plot, with regions ordered by the order of `names(annotation_grl)`. 
-#' @param region_class_colours An optional vector of colours to use with different region classes. Must have same length as annotation_grl. 
+#' @param grl_colours An optional vector of colours used to display each of the 
+#' GRanges making up annotation_grl. Must have same length as annotation_grl. 
 #' @param reference_tss TRUE or FALSE indicating whether to show distances on the X-axis
 #' relative to the TSS stored as an attribute `tss_range` of meth_site_plot. 
 #' Alternatively, can provide a GRanges object with a single range for such a TSS site. 
@@ -499,9 +502,9 @@ plotMethodicalScores <- function(meth_site_values, reference_tss = NULL, p_value
 #' data("tubb6_correlation_plot", package = "methodical")
 #' 
 #' # Add positions of CpG islands to tubb6_correlation_plot
-#' methodical::annotateMethSitePlot(tubb6_correlation_plot, annotation_grl = cpg_island_annotation, annotation_plot_proportion = 0.3)
+#' methodical::annotatePlot(tubb6_correlation_plot, annotation_grl = cpg_island_annotation, annotation_plot_proportion = 0.3)
 #' 
-annotateMethSitePlot <- function(meth_site_plot, annotation_grl, reference_tss = F, region_class_colours = NULL, 
+annotatePlot <- function(meth_site_plot, annotation_grl, reference_tss = FALSE, grl_colours = NULL, 
   annotation_line_size = 5, annotation_plot_proportion = 0.5, keep_meth_site_plot_legend = FALSE, annotation_plot_only = FALSE){
   
   # If annotation_grl is a list, attempt to coerce it to a GRangesList
@@ -513,19 +516,19 @@ annotateMethSitePlot <- function(meth_site_plot, annotation_grl, reference_tss =
   # Check that inputs have the correct data type
   stopifnot(is(meth_site_plot, "ggplot"), is(annotation_grl, "GRangesList"),
     S4Vectors::isTRUEorFALSE(reference_tss) | is(reference_tss, "GRanges"), 
-    is(region_class_colours, "character") | is.null(region_class_colours),
+    is(grl_colours, "character") | is.null(grl_colours),
     is(annotation_line_size, "numeric"), is(annotation_line_size, "numeric"),
     is(annotation_plot_proportion, "numeric"), S4Vectors::isTRUEorFALSE(keep_meth_site_plot_legend),
     S4Vectors::isTRUEorFALSE(annotation_plot_only))
   
-  # Create colours for region classes if region_class_colours not provided and 
+  # Create colours for region classes if grl_colours not provided and 
   # check that it has the same length as annotation_grl if it is
-  if(is.null(region_class_colours)){
+  if(is.null(grl_colours)){
     palette <- c("#9E0142", "#D53E4F", "#F46D43", "#FDAE61", "#FEE08B", "#FFFFBF", 
       "#E6F598", "#ABDDA4", "#66C2A5", "#3288BD", "#5E4FA2")
-    region_class_colours <- colorRampPalette(palette)(length(annotation_grl))
-  } else if(length(annotation_grl) != length(region_class_colours)){
-    stop("region_class_colours must have the same length as annotation_grl")
+    grl_colours <- colorRampPalette(palette)(length(annotation_grl))
+  } else if(length(annotation_grl) != length(grl_colours)){
+    stop("grl_colours must have the same length as annotation_grl")
   }
     
   # If reference_tss is TRUE, try to extract tss_range from meth_site_plot
@@ -545,14 +548,14 @@ annotateMethSitePlot <- function(meth_site_plot, annotation_grl, reference_tss =
     stop("GRanges indicated by reference_tss should have length of 1")
   }
   
-  # Check that annotation_grl contains a metadata column called region_type
+  # Gives GRanges generic names if names are missing
   if(is.null(names(annotation_grl))){
     message("names(annotation_grl) is NULL. Setting to genomic_regions_1, genomic_regions_2, etc.")
     names(annotation_grl) = paste0("genomic_regions_", seq_along(annotation_grl))
   }
   
   # Flatten annotation_grl
-  annotation_grl = unlist(annotation_grl)
+  annotation_grl = unlist(GRangesList(lapply(annotation_grl, unname)))
   annotation_grl$region_type = factor(names(annotation_grl), unique(names(annotation_grl)))
   
   # Check that annotation_plot_proportion is between 0 and 1
@@ -603,7 +606,7 @@ annotateMethSitePlot <- function(meth_site_plot, annotation_grl, reference_tss =
       axis.text = element_text(size = axis_text_size ), legend.position = "None")  +
     labs(x = x_axis_title, y = "Genome Annotation") +
     scale_x_continuous(expand = expansion(mult = c(0, 0)), labels = scales::comma, limits = ggplot_build(meth_site_plot)$layout$panel_params[[1]]$x.range) + 
-    scale_color_manual(values = region_class_colours, guide = guide_legend(override.aes = list(color = "white"))) +
+    scale_color_manual(values = grl_colours, guide = guide_legend(override.aes = list(color = "white"))) +
     # The following code makes the legend invisible
     theme(
         legend.text = element_text(color = "white"),

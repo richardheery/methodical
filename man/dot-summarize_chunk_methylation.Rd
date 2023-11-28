@@ -22,7 +22,7 @@
 
 \item{summary_function}{summary_function A function that summarizes column values.}
 
-\item{na.rm}{A logical value indicating whether to remove NA values when calculating summaries.}
+\item{na.rm}{TRUE or FALSE indicating whether to remove NA values when calculating summaries.}
 
 \item{...}{Additional arguments to be passed to summary_function.}
 }

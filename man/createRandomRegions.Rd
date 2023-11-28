@@ -27,16 +27,16 @@ Can be just a single value if all regions are to have the same widths. Default i
 
 \item{sequences}{The names of sequences to create random regions on. Default is to use all standard sequences (those without "_" in their name)}
 
-\item{all_sequences_equally_likely}{A logical value indicating if the probability of creating random regions on a sequence should be the same for each sequence.
+\item{all_sequences_equally_likely}{TRUE or FALSE indicating if the probability of creating random regions on a sequence should be the same for each sequence.
 Default is FALSE, indicating to make the probability proportional to a sequences length.}
 
-\item{stranded}{A logical value indicating if created regions should have a strand randomly assigned. Default is FALSE, indicating to make unstranded regions.}
+\item{stranded}{TRUE or FALSE indicating if created regions should have a strand randomly assigned. Default is FALSE, indicating to make unstranded regions.}
 
 \item{masked_regions}{An optional GRanges object which random regions will not be allowed to overlap.}
 
-\item{allow_overlapping_regions}{A logical value inidicating if created random regions should be allowed to overlap. Default is FALSE.}
+\item{allow_overlapping_regions}{TRUE or FALSE indicating if created random regions should be allowed to overlap. Default is FALSE.}
 
-\item{ignore.strand}{A logical value indicating whether strand should be ignored when
+\item{ignore.strand}{TRUE or FALSE indicating whether strand should be ignored when
 identifying overlaps between random regions with each other or with masked_regions.
 Only relevant if stranded is TRUE and either allow_overlapping_regions is FALSE or masked_regions is provided. Default is TRUE.}
 

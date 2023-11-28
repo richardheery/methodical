@@ -17,7 +17,7 @@ tubb6_cpg_meth_transcript_cors
 tubb6_cpg_meth_transcript_cors
 }
 \description{
-A data.frame with the methylation-transcription correlation results for CpGs arond the TUBB6 TSS.
+A data.frame with the methylation-transcription correlation results for CpGs around the TUBB6 TSS.
 
 A data.frame with the correlation results for CpG sites within +/- 5 KB of the TUBB6 (ENST00000591909) TSS.
 }

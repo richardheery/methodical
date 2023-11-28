@@ -1,5 +1,5 @@
 ---
-title: "Working with RangedSummarizedExperiments with DNA Methylation Data"
+title: "Working with RangedSummarizedExperiments Big DNA Methylation Data"
 output:
   BiocStyle::html_document:
     toc: true
@@ -15,12 +15,14 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.width = 12,
   fig.height = 6.75
+  fig.show='hide'
 )
 ```
 
 ```{r setup, message = F}
 library(methodical)
 library(dplyr)
+library(TumourMethData)
 ```
 
 ## Introduction
@@ -33,16 +35,15 @@ can be overcome by using DelayedArrays backed by HDF5 files, enabling data to be
 read into memory only as needed. Methodical provides a suite of functions 
 for working with such DNA methylation RangedSumamrizedExperiments, including 
 functions to extract methylation values for sites overlapping genomic regions of 
-interest `GRanges`, to randomly sample methylation sites, to liftover the
-methylation sites from one genome build to another and to mask methylation sites
-overlapping certain genomic regions, e.g. repeats. 
+interest `GRanges`, to liftover the methylation sites from one genome build to 
+another and to mask methylation sites overlapping certain genomic regions, e.g. 
+repeats. 
 
 Here we demonstrate this different functionality using a dataset downloaded
 from TumourMethData.
 
 ```{r, eval=TRUE}
 ## CHANGE TO USE TUMOURMETHDATA
-library(TumourMethData)
 tcga_wgbs_hg38 = TumourMethData::download_meth_dataset("tcga_wgbs_hg38")
 #tcga_wgbs_hg38 = HDF5Array::loadHDF5SummarizedExperiment("~/wgbs/tcga_wgbs/tcga_wgbs_hg38/")
 ```
@@ -53,15 +54,14 @@ We'll first demonstrate how to extract methylation data for individual CpG sites
 in tcga_wgbs_hg38 overlapping a supplied GRanges object with 
 `extractGRangesMethSiteValues`, using the APC gene body as an example.
 
-
 ```{r, eval=TRUE}
 # Create a GRanges with the hg38 genomic coordinates around the start site of 
 # the APC gene, including 2 KB upstream of its designated start in Ensembl
-apc_gr <- GRanges("chr5:112705518-112716517:+")
+apc_start_site_region <- GRanges("chr5:112705518-112717518:+")
 
 # Extract methylation values for CpG sites overlapping apc gene body
 apc_cpg_methylation <- extractGRangesMethSiteValues(
-  meth_rse = tcga_wgbs_hg38, genomic_regions = apc_gr)
+  meth_rse = tcga_wgbs_hg38, genomic_regions = apc_start_site_region )
 
 # View the first few rows and columns of the result. 
 # extractGRangesMethSiteValues returns a row for each methylation site and a 
@@ -85,7 +85,7 @@ choices for `max_sites_per_chunk` and the number of workers in terms of speed
 and memory usage. 
 
 ```{r, eval=TRUE}
-# Load CpG islands annotation for hg38
+# Load CpG islands annotation for hg38 and turn into a GRangesList
 cpg_island_annotation <- annotatr::build_annotations(genome = "hg38", annotation = "hg38_cpgs")
 names(cpg_island_annotation) <- cpg_island_annotation$id
 cpg_island_annotation <- GRangesList(split(cpg_island_annotation, cpg_island_annotation$type))
@@ -98,97 +98,148 @@ cpg_island_methylation <- summarizeRegionMethylation(
 cpg_island_methylation[1000:1006, 1:6]
 ```
 
-# We can also summarize methylation values overlapping regions of interest
+## Plotting methylation values in genomic regions and annotating genomic regions in plots
 
-# Load CpG islands annotation for hg38
-cpg_island_annotation <- annotatr::build_annotations(genome = "hg38", annotation = "hg38_cpgs")
-names(cpg_island_annotation) <- cpg_island_annotation$id
-cpg_island_annotation <- GRangesList(split(cpg_island_annotation, cpg_island_annotation$type))
+We can plot methylation values extracted from a genomic region for a single 
+sample using the `plotMethylationValues()` function. We'll demonstrate this 
+using the values we extracted in the region surrounding the 5' end of APC for 
+the TCGA_A2_A0YG_01 colon tumour sample. We indicate the sample we want to plot
+with the `sample_name` parameter. 
 
-# Calculate the mean methylation of CpGs in each CpG island for each sample
-cpg_island_methylation <- summarizeRegionMethylation(
-  meth_rse = tcga_wgbs_hg38, genomic_regions = cpg_island_annotation$hg38_cpg_islands, 
-  BPPARAM = BiocParallel::bpparam(), summary_function = colMeans)
-
-
+```{r, eval=TRUE}
 # Plot the methylation values along the APC gene body for one colon tumour sample.
-plotMethSiteValues(apc_cpg_methylation, column_name = "TCGA_A2_A0YG_01", 
-  ylabel = "Methylation Level")
+plotMethylationValues(apc_cpg_methylation, sample_name = "TCGA_A2_A0YG_01")
+```
 
-# We can also plot the difference in methylation values between samples,
-# such as between colon tumour and its matching normal sample, by creating a 
-# data.frame with a column with these values.
+We can also plot the difference in methylation values between samples, such as 
+between colon tumour and its matching normal sample, by creating a new 
+data.frame with a column with these values.
+
+```{r, eval=TRUE}
+# Create data.frame with a column with the difference in methylation between 
+# tumour sample TCGA_AA_3518_01 and its matching normal sample TCGA_AA_3518_11
 apc_cpg_methylation_change <- data.frame(meth_change = 
   apc_cpg_methylation$TCGA_AA_3518_01 - apc_cpg_methylation$TCGA_AA_3518_11,
   row.names = row.names(apc_cpg_methylation))
 
-# Plot mean difference in methylation between colon tumour and its matching normal sample.
-apc_coad_meth_change_plot <- plotMethSiteValues(apc_cpg_methylation_change, 
-  column_name = "meth_change", ylabel = "Methylation Change in Colon Cancer")
+# Plot the difference in methylation values between TCGA_AA_3518_01 and TCGA_AA_3518_11
+apc_coad_meth_change_plot <- plotMethylationValues(apc_cpg_methylation_change, 
+  sample_name = "meth_change", ylabel = "Methylation Change in Colon Cancer")
 print(apc_coad_meth_change_plot)
-  
+```
 
-annotateMethSitePlot(meth_site_plot = apc_coad_meth_change_plot, 
-  annotation_grl = cpg_island_annotation, annotation_plot_proportion = 0.3)
+Additionally, we can also annotate our plots using the `annotatePlot()` function. 
+It uses a GRangeList provided with the `annotation_grl` parameter to create an 
+annotation plot showing the regions in the GRangesList which overlap the 
+genomic region displayed in the main plot. Each of the GRanges objects making up 
+the GRangesList is given a different colour in the annotation 
+plot and the names of these component GRanges are indicated. We can control 
+the colours used with the `grl_colours` parameter if we don't want to use the 
+default colours. 
+
+If we provide a GRanges object with the location of a transcription start site 
+to the `reference_tss`, parameter, we can show the distance of methylation sites 
+upstream and donwstream of this. 
+
+By default, the main plot and annotation plot are combined into a single plot
+and returned. The `annotation_plot_proportion` parameter sets the proportion of 
+the total plot height dedicated to the annotation plot. We can instead return 
+the annotation plot by itself by setting the `annotation_plot_only` parameter to
+TRUE. 
+
+We'll annotate the lcoation of CpG islands, CpG shores, CpG shores and 
+inter CpG island regions `apc_coad_meth_change_plot` using the 
+`cpg_island_annotation` GRangesList we created. 
+
+```{r, eval=TRUE}
+# Annotate apc_coad_meth_change_plot with cpg_island_annotation
+annotatePlot(meth_site_plot = apc_coad_meth_change_plot, 
+  annotation_grl = cpg_island_annotation, annotation_plot_proportion = 0.3, 
+  grl_colours = c("#DEEBF7", "#9ECAE1", "#4292C6", "#08519C"))
+
+# Return the annotation plot by itself
+annotatePlot(meth_site_plot = apc_coad_meth_change_plot, 
+  annotation_grl = cpg_island_annotation, annotation_plot_proportion = 0.3, 
+  grl_colours = c("#DEEBF7", "#9ECAE1", "#4292C6", "#08519C"), annotation_plot_only = TRUE)
+```
+
+## Masking regions in a methylation RangedSummarizedExperiments
+
+We may want to mask certain regions in a methylation RangedSummarizedExperiment.
+With the `maskRangesInRSE()` function, we can mask regions across
+all samples (which could be useful for repetitive regions or polymorphic 
+regions) or on a sample by sample basis (which could be appropriate for different 
+regions that are known to be mutated in different tumour samples). All 
+methylation values within the masked regions will be set to `NA`.  
+
+The `mask_ranges` argument takes either a GRanges or GRangesList with the 
+regions that should be masked. If a GRanges object is provided, all 
+methylation sites overlapping these regions will be masked across all samples.
+If a GRangesList is provided, the names of the component GRanges should match
+sample names in the RangedSummarizedExperiment and in each sample, the 
+methylation sites overlapping the regions in its corresponding GRangesList 
+entry will be masked.
+
+We will demonstrate how to mask LINE repetitive regions across all samples.
+
+```{r, eval=TRUE}
+# Download repetitive sequences from AnnotationHub and filter for LINE elements
+repeat_annotation_hg38 <- AnnotationHub::AnnotationHub()[["AH99003"]]
+line_elements_hg38 <- repeat_annotation_hg38[repeat_annotation_hg38$repClass == "SINE"]
+
+# Mask LINE elements in tcga_wgbs_hg38
+tcga_wgbs_hg38_lines_masked <- maskRangesInRSE(rse = tcga_wgbs_hg38, 
+  mask_ranges = line_elements_hg38)
+
+# Extract the methylation values for one of the LINE elements in the 
+# unmasked and masked RSE
+extractGRangesMethSiteValues(meth_rse = tcga_wgbs_hg38, 
+  genomic_regions = line_elements_hg38[1000])[, 1:6]
+extractGRangesMethSiteValues(meth_rse = tcga_wgbs_hg38_repeats_masked, 
+  genomic_regions = line_elements_hg38[1000])[, 1:6]
 
 ```
 
-## Creation of methylation RSE from array files
+## Lifting over methylation sites in a RangedSummarizedExperiment from one genome build to another
 
-Generally, files from methylation array files will have one column with the 
-name of the probe used to measure methylation at a particular CpG site and
-another column with the value associated with this probe. 
-`makeMethRSEFromArrayFiles` takes a GRanges object for the `probe_ranges` argument 
-to match the names of these probe to genomic coordinates when creating the meth RSE. 
-This should be a GRanges object with one metadata object called "name" which 
-gives the names of the probes and matches the names in the array files. 
+Sometimes we may want to work with a different genome build to that used to construct
+a methylation RangedSummarizedExperiment. We can easily liftover the genomic coordinates 
+of the methylation sites using `liftoverMethRSE()` function. To do this, we
+need a liftover chain file for the appropriate source and target genome builds
+and which we provide to the `chain` argument. 
 
-One such GRanges object, `infinium_450k_probe_granges_hg19` for mapping probes 
-from the Illumina HumanMethylation450 array to genomic coordinates of the hg19 
-human genome build is provided as part of the package. If mapping the probes to 
-a genome build besides hg19 or using a different methylation array, another 
-similar GRanges object with the coordinates of probes and a metadata column
-with their names should be provided.
+All methylation sites which cannot be mapped to the target genome build and 
+those which result in many-to-one mappings are removed. We also need to decide
+whether we want to remove methylation sites in the source genome build which 
+map to multiple sites in the target genome build. We do this using the 
+`remove_one_to_many_mapping` argument, which has a default value of TRUE. We 
+can also remove any regions which do not map to desired regions in the target
+genome, for example CpG sites, by providing a GRanges object to the argument
+`permitted_target_regions`.
 
-We'll take a look at one of the methylation files we just downloaded and at
-`infinium_450k_probe_granges_hg19`.
-
-```{r, eval=TRUE}
-# View the top of one of the COAD methylation array files
-system2("head", meth_array_files[1])
-
-# Load infinium_450k_probe_granges_hg19 and view the first few ranges
-data("infinium_450k_probe_granges_hg19")
-head(infinium_450k_probe_granges_hg19)
-```
-
-Now we'll create the meth RSE for the four files we downloaded. It is assumed
-that the first column in the methylation array files is the name of the probes
-and the second is the values associated with them but this can be changed using
-the `probe_name_column` and `beta_value_column` arguments. 
-
-Files can be processed in parallel using BiocParallel with the `BPPARAM` argument,
-which defaults to `BiocParallel::bpparam()`. 
-
-We'll save the HDF5 directory within the temporary directory using the `hdf5_dir`, 
-but this should be saved somewhere else if the meth RSE will be reused. 
+We will demonstrate how to liftover tcga_wgbs_hg38 to hg19. 
 
 ```{r, eval=TRUE}
+# Get CpG sites for hg19
+hg19_cpgs <- methodical::extractMethSitesFromGenome("BSgenome.Hsapiens.UCSC.hg19")
 
-# Create a data.frame with sample metadata associated with the array files
-sample_metadata = data.frame(cancer_type = rep("COAD",  4),
-  sample_type = rep("primary_tumor", 4), row.names = names(meth_array_files))
+# Download hg38 to hg19 liftover chain from AnnotationHub
+hg38tohg19Chain <- AnnotationHub::AnnotationHub()[["AH14108"]]
 
-# Create meth RSE for COAD
-coad_meth_rse = makeMethRSEFromArrayFiles(
-  array_files = meth_array_files, 
-  probe_name_column = 1, beta_value_column = 2, 
-  probe_ranges = infinium_450k_probe_granges_hg19, 
-  sample_metadata = sample_metadata, BPPARAM = BiocParallel::bpparam(),
-  hdf5_dir = paste(tempdir(), "coad_meth_array_rse", sep = "/"))
+# Liftover tcga_wgbs_hg38 to tcga_wgbs_hg19
+tcga_wgbs_hg19 <- liftoverMethRSE(meth_rse = tcga_wgbs_hg38, chain = hg38tohg19Chain, 
+  remove_one_to_many_mapping = TRUE, permitted_target_regions = hg19_cpgs)
 
-# Display coad_meth_rse
-print(coad_meth_rse)
+# Compare the dimensions of tcga_wgbs_hg38 and tcga_wgbs_hg19. 
+# 1,423,050 methylation sites could not be lifted over from hg38 to hg19. 
+dim(tcga_wgbs_hg38)
+dim(tcga_wgbs_hg19)
+
+# chr1:921635 should be lifted over to chr1:857015 so confirm that they have 
+# the same methylation values in hg38 and hg19
+rtracklayer::liftOver(GRanges("chr1:921635"), hg38tohg19Chain)
+extractGRangesMethSiteValues(tcga_wgbs_hg38, GRanges("chr1:921635"))[, 1:8]
+extractGRangesMethSiteValues(tcga_wgbs_hg19, GRanges("chr1:857015"))[, 1:8]
 ```
 
 ## SessionInfo

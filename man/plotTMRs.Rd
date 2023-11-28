@@ -40,7 +40,7 @@ Add TMRs to a methylation site value plot
 data("tubb6_cpg_meth_transcript_cors", package = "methodical")
 
 # Plot methylation-transcript correlation values around TUBB6 TSS
-tubb6_correlation_plot <- methodical::plotMethSiteValues(tubb6_cpg_meth_transcript_cors, column_name = "cor", ylabel = "Spearman Correlation")
+tubb6_correlation_plot <- methodical::plotMethSiteCorCoefs(tubb6_cpg_meth_transcript_cors, ylabel = "Spearman Correlation")
   
 # Find TMRs for TUBB6
 tubb6_tmrs <- find_TMRs(correlation_df = tubb6_cpg_meth_transcript_cors)

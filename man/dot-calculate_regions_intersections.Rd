@@ -16,10 +16,10 @@
 
 \item{gr2}{A GRanges object}
 
-\item{ignore.strand}{A logical value indicating whether strand should be ignored when calculating intersections. Default is TRUE.}
+\item{ignore.strand}{TRUE or FALSE indicating whether strand should be ignored when calculating intersections. Default is TRUE.}
 
 \item{overlap_measure}{One of "absolute", "proportion" or "jaccard" indicating whether to calculate
-the absolute size of the intersection in base pairs, the proportion base paris of gr1 overlapping gr2
+the absolute size of the intersection in base pairs, the proportion base pairs of gr1 overlapping gr2
 or the Jaccard index of the intersection in terms of base pairs. Default value is "absolute".}
 }
 \value{

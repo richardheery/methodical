@@ -39,7 +39,7 @@
 
 \item{temp_chunk_dirs}{A vector giving the temporary directory associated with each chunk.}
 
-\item{zero_based}{A logical value indicating if files are zero-based.}
+\item{zero_based}{TRUE or FALSE indicating if files are zero-based.}
 
 \item{normalization_factor}{An optional numerical value to divide methylation values by to convert them to fractions e.g. 100 if they are percentages.
 Default is not to leave values as they are in the input files.}

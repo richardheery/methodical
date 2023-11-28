@@ -7,7 +7,6 @@
 annotateGRanges(
   genomic_regions,
   annotation_ranges,
-  annotation_column = "region_type",
   ignore.strand = TRUE,
   overlap_measure = "absolute"
 )
@@ -15,19 +14,32 @@ annotateGRanges(
 \arguments{
 \item{genomic_regions}{A GRanges object to be annotated}
 
-\item{annotation_ranges}{A GRanges object with regions for different features e.g. introns, exons, enhancers.}
+\item{annotation_ranges}{A GRangesList object with GRanges for different features e.g. introns, exons, enhancers.}
 
-\item{annotation_column}{Name of the metadata column of annotation_ranges indicating the feature group that regions belong to. Default is "region_type".}
-
-\item{ignore.strand}{A logical value indicating whether strand should be ignored when calculating intersections. Default is TRUE.}
+\item{ignore.strand}{TRUE or FALSE indicating whether strand should be ignored when calculating intersections. Default is TRUE.}
 
 \item{overlap_measure}{One of "absolute", "proportion" or "jaccard" indicating whether to calculate
-the absolute size of the intersection in base pairs, the proportion base paris of gr1 overlapping gr2
+the absolute size of the intersection in base pairs, the proportion of base pairs of
+genomic_ranges overlapping one of the component GRanges of annotation_ranges.
 or the Jaccard index of the intersection in terms of base pairs. Default value is "absolute".}
 }
 \value{
-A numeric vector with the overlap measure for genomic_regions with each type of region in annotation_ranges
+A numeric vector with the overlap measure for genomic_regions with each type of region in annotation_ranges.
 }
 \description{
 Annotate GRanges
+}
+\examples{
+
+# Load annotation for CpG islands and repetitive DNA
+cpg_island_annotation <- annotatr::build_annotations(genome = "hg38", annotations = "hg38_cpgs")
+cpg_island_annotation <- cpg_island_annotation[cpg_island_annotation$type == "hg38_cpg_islands"]
+repeat_annotation_hg38 <- AnnotationHub::AnnotationHub()[["AH99003"]]
+
+# Convert repeat_annotation_hg38 into a GRangesList
+repeat_annotation_hg38 <- GRangesList(split(repeat_annotation_hg38, repeat_annotation_hg38$repClass))
+ 
+Calculate the proportion of base pairs in CpG islands overlapping different classes of repetitive elements
+annotateGRanges(genomic_regions = cpg_island_annotation, annotation_ranges = repeat_annotation_hg38, overlap_measure = "proportion")
+
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/make_meth_rse_accessory_functions.R
 \name{.make_meth_rse_setup}
 \alias{.make_meth_rse_setup}
-\title{Perform setup for make_meth_rse_from_bedgaphs or makeMethRSEFromArrayFiles}
+\title{Perform setup for makeMethRSEFromBedgraphs or makeMethRSEFromArrayFiles}
 \usage{
 .make_meth_rse_setup(
   meth_files,
@@ -28,7 +28,7 @@ Automatically detects if meth_files contain a header if every field in the first
 
 \item{dataset_name}{Name to give data set in HDF5 file.}
 
-\item{overwrite}{Logical value indicating whether to allow overwriting if dataset_name already exists in assays.h5.}
+\item{overwrite}{TRUE or FALSE indicating whether to allow overwriting if dataset_name already exists in assays.h5.}
 
 \item{chunkdim}{The dimensions of the chunks for the HDF5 file.}
 
@@ -40,5 +40,5 @@ Automatically detects if meth_files contain a header if every field in the first
 A list describing the setup to be used for makeMethRSEFromBedgraphs or makeMethRSEFromArrayFiles.
 }
 \description{
-Perform setup for make_meth_rse_from_bedgaphs or makeMethRSEFromArrayFiles
+Perform setup for makeMethRSEFromBedgraphs or makeMethRSEFromArrayFiles
 }

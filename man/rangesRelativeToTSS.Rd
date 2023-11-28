@@ -13,7 +13,8 @@ rangesRelativeToTSS(genomic_regions, tss_gr)
 Upstream and downstream are relative to strand of tss_gr.}
 }
 \value{
-A GRanges object where all regions have "relative" as the sequence names.
+A GRanges object where all regions have "relative" as the sequence names and
+ranges are the location of TMRs relative to the TSS.
 }
 \description{
 Find locations of genomic regions relative to transcription start sites.

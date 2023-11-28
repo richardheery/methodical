@@ -24,7 +24,7 @@ calculateMethSiteTranscriptCors(
 
 \item{assay_number}{The assay from meth_rse to extract values from. Default is the first assay.}
 
-\item{transcript_expression_table}{A table with the expression values for transcripts, where row names are transcript names and columns sample names.
+\item{transcript_expression_table}{A matrix or deata.frame with the expression values for transcripts, where row names are transcript names and columns sample names.
 There should be a row corresponding to each transcript associated with each range in tss_gr.
 Names of samples must match those in meth_rse unless samples_subset provided.}
 
@@ -38,9 +38,10 @@ names(tss_gr) should give the name of the transcript associated with the TSS, wh
 
 \item{expand_downstream}{Number of bases to add downstream of each TSS. Must be numeric vector of length 1 or equal to the length of tss_gr. Default is 5000.}
 
-\item{cor_method}{A character string indicating which correlation coefficient is to be computed. Identical to methods from cor(). Default is "pearson".}
+\item{cor_method}{A character string indicating which correlation coefficient is to be computed.
+One of either "pearson" or "spearman" or their abbreviations.}
 
-\item{add_distance_to_region}{A logical value indicating whether to add the distance of methylation sites to the TSS. Default value is TRUE.
+\item{add_distance_to_region}{TRUE or FALSE indicating whether to add the distance of methylation sites to the TSS. Default value is TRUE.
 Setting to FALSE will roughly half the total running time.}
 
 \item{max_sites_per_chunk}{The approximate maximum number of methylation sites to try to load into memory at once.
