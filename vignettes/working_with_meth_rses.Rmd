@@ -21,8 +21,8 @@ knitr::opts_chunk$set(
 
 ```{r setup, message = F}
 library(methodical)
-library(dplyr)
 library(TumourMethData)
+library(BSgenome.Hsapiens.UCSC.hg19)
 ```
 
 ## Introduction
@@ -43,7 +43,7 @@ Here we demonstrate this different functionality using a dataset downloaded
 from TumourMethData.
 
 ```{r, eval=TRUE}
-## CHANGE TO USE TUMOURMETHDATA
+# Download RangedSummarizedExperiment with methylation data for prostate metastases from TumourMethData
 mcrpc_wgbs_hg38_chr11 = TumourMethData::download_meth_dataset(dataset = "mcrpc_wgbs_hg38_chr11")
 ```
 
@@ -51,22 +51,22 @@ mcrpc_wgbs_hg38_chr11 = TumourMethData::download_meth_dataset(dataset = "mcrpc_w
 
 We'll first demonstrate how to extract methylation data for individual CpG sites 
 in mcrpc_wgbs_hg38_chr11 overlapping a supplied GRanges object with 
-`extractGRangesMethSiteValues`, using the APC gene body as an example.
+`extractGRangesMethSiteValues`, using the gene body as an example.
 
 ```{r, eval=TRUE}
-# Create a GRanges with the hg38 genomic coordinates around the start site of 
-# the APC gene, including 2 KB upstream of its designated start in Ensembl
-apc_start_site_region <- GRanges("chr5:112705518-112717518:+")
+# Create a GRanges with the hg38 genomic coordinates for the GSTP1, including 
+# 2 KB upstream of its designated start in Ensembl
+gstp1_start_site_region <- GRanges("chr11:67581742-67586656:+")
 
-# Extract methylation values for CpG sites overlapping apc gene body
-apc_cpg_methylation <- extractGRangesMethSiteValues(
-  meth_rse = mcrpc_wgbs_hg38_chr11, genomic_regions = apc_start_site_region )
+# Extract methylation values for CpG sites overlapping GSTP1 gene body
+gstp1_cpg_methylation <- extractGRangesMethSiteValues(
+  meth_rse = mcrpc_wgbs_hg38_chr11, genomic_regions = gstp1_start_site_region )
 
 # View the first few rows and columns of the result. 
 # extractGRangesMethSiteValues returns a row for each methylation site and a 
 # separate column for each sample where row names give the coordinates of the 
 # methylation sites in character format. 
-apc_cpg_methylation[1:6, 1:6]
+gstp1_cpg_methylation[1:6, 1:6]
 ```
 
 Next we'll show how to summarize the methylation of CpGs over regions of 
@@ -84,11 +84,17 @@ choices for `max_sites_per_chunk` and the number of workers in terms of speed
 and memory usage. 
 
 ```{r, eval=TRUE}
-# Load CpG islands annotation for hg38 and turn into a GRangesList
+# Load CpG islands annotation for hg38 
 cpg_island_annotation <- annotatr::build_annotations(genome = "hg38", annotation = "hg38_cpgs")
 names(cpg_island_annotation) <- cpg_island_annotation$id
+
+# Filter for annotation for chr11
+cpg_island_annotation = cpg_island_annotation[seqnames(cpg_island_annotation) == "chr11"]
+
+# Convert into a GRangesList with separate GRanges for islands, shores, shelves and inter island regions
 cpg_island_annotation <- GRangesList(split(cpg_island_annotation, cpg_island_annotation$type))
 
+# Summarize methylation levels for CpG islands
 cpg_island_methylation <- summarizeRegionMethylation(
   meth_rse = mcrpc_wgbs_hg38_chr11, genomic_regions = cpg_island_annotation$hg38_cpg_islands, 
   BPPARAM = BiocParallel::MulticoreParam(workers = 4), summary_function = colMeans)
@@ -101,30 +107,14 @@ cpg_island_methylation[1000:1006, 1:6]
 
 We can plot methylation values extracted from a genomic region for a single 
 sample using the `plotMethylationValues()` function. We'll demonstrate this 
-using the values we extracted in the region surrounding the 5' end of APC for 
-the TCGA_A2_A0YG_01 colon tumour sample. We indicate the sample we want to plot
+using the values we extracted in the region surrounding the 5' end of GSTP1 for 
+the DTB_003 prostate metastastis sample. We indicate the sample we want to plot
 with the `sample_name` parameter. 
 
 ```{r, eval=TRUE}
-# Plot the methylation values along the APC gene body for one colon tumour sample.
-plotMethylationValues(apc_cpg_methylation, sample_name = "TCGA_A2_A0YG_01")
-```
-
-We can also plot the difference in methylation values between samples, such as 
-between colon tumour and its matching normal sample, by creating a new 
-data.frame with a column with these values.
-
-```{r, eval=TRUE}
-# Create data.frame with a column with the difference in methylation between 
-# tumour sample TCGA_AA_3518_01 and its matching normal sample TCGA_AA_3518_11
-apc_cpg_methylation_change <- data.frame(meth_change = 
-  apc_cpg_methylation$TCGA_AA_3518_01 - apc_cpg_methylation$TCGA_AA_3518_11,
-  row.names = row.names(apc_cpg_methylation))
-
-# Plot the difference in methylation values between TCGA_AA_3518_01 and TCGA_AA_3518_11
-apc_coad_meth_change_plot <- plotMethylationValues(apc_cpg_methylation_change, 
-  sample_name = "meth_change", ylabel = "Methylation Change in Colon Cancer")
-print(apc_coad_meth_change_plot)
+# Plot the methylation values along the GSTP1 gene body for one prostate metastastis sample.
+gstp1_methylation_plot = plotMethylationValues(gstp1_cpg_methylation, sample_name = "DTB_003")
+print(gstp1_methylation_plot)
 ```
 
 Additionally, we can also annotate our plots using the `annotatePlot()` function. 
@@ -146,18 +136,24 @@ the total plot height dedicated to the annotation plot. We can instead return
 the annotation plot by itself by setting the `annotation_plot_only` parameter to
 TRUE. 
 
-We'll annotate the lcoation of CpG islands, CpG shores, CpG shores and 
-inter CpG island regions `apc_coad_meth_change_plot` using the 
+We'll annotate the location of CpG islands, CpG shores, CpG shores and 
+inter CpG island regions for `gstp1_methylation_plot` using the 
 `cpg_island_annotation` GRangesList we created. 
 
 ```{r, eval=TRUE}
-# Annotate apc_coad_meth_change_plot with cpg_island_annotation
-annotatePlot(meth_site_plot = apc_coad_meth_change_plot, 
+# Annotate gstp1_methylation_plot with cpg_island_annotation
+annotatePlot(meth_site_plot = gstp1_methylation_plot, 
   annotation_grl = cpg_island_annotation, annotation_plot_proportion = 0.3, 
   grl_colours = c("#DEEBF7", "#9ECAE1", "#4292C6", "#08519C"))
 
+# Create same plot, except showing the distance to the GSTP1 start site on the x-axis
+annotatePlot(meth_site_plot = gstp1_methylation_plot, 
+  annotation_grl = cpg_island_annotation, 
+  reference_tss = GRanges("chr11:67583742"),annotation_plot_proportion = 0.3, 
+  grl_colours = c("#DEEBF7", "#9ECAE1", "#4292C6", "#08519C"))
+
 # Return the annotation plot by itself
-annotatePlot(meth_site_plot = apc_coad_meth_change_plot, 
+annotatePlot(meth_site_plot = gstp1_methylation_plot, 
   annotation_grl = cpg_island_annotation, annotation_plot_proportion = 0.3, 
   grl_colours = c("#DEEBF7", "#9ECAE1", "#4292C6", "#08519C"), annotation_plot_only = TRUE)
 ```
@@ -219,26 +215,29 @@ genome, for example CpG sites, by providing a GRanges object to the argument
 We will demonstrate how to liftover mcrpc_wgbs_hg38_chr11 to hg19. 
 
 ```{r, eval=TRUE}
-# Get CpG sites for hg19
-hg19_cpgs <- methodical::extractMethSitesFromGenome("BSgenome.Hsapiens.UCSC.hg19")
+# Create a DNAStringSet for chromosome11
+chr11_dss = setNames(DNAStringSet(BSgenome.Hsapiens.UCSC.hg19[["chr11"]]), "chr11")
+
+# Get CpG sites for hg19 for chromsome 11
+hg19_cpgs <- methodical::extractMethSitesFromGenome(genome = chr11_dss)
 
 # Download hg38 to hg19 liftover chain from AnnotationHub
 hg38tohg19Chain <- AnnotationHub::AnnotationHub()[["AH14108"]]
 
-# Liftover mcrpc_wgbs_hg38_chr11 to tcga_wgbs_hg19
-tcga_wgbs_hg19 <- liftoverMethRSE(meth_rse = mcrpc_wgbs_hg38_chr11, chain = hg38tohg19Chain, 
+# Liftover mcrpc_wgbs_hg38_chr11 to mcrpc_wgbs_hg19_chr11
+mcrpc_wgbs_hg19_chr11 <- liftoverMethRSE(meth_rse = mcrpc_wgbs_hg38_chr11, chain = hg38tohg19Chain, 
   remove_one_to_many_mapping = TRUE, permitted_target_regions = hg19_cpgs)
 
-# Compare the dimensions of mcrpc_wgbs_hg38_chr11 and tcga_wgbs_hg19. 
+# Compare the dimensions of mcrpc_wgbs_hg38_chr11 and mcrpc_wgbs_hg19_chr11. 
 # 1,423,050 methylation sites could not be lifted over from hg38 to hg19. 
 dim(mcrpc_wgbs_hg38_chr11)
-dim(tcga_wgbs_hg19)
+dim(mcrpc_wgbs_hg19_chr11)
 
 # chr1:921635 should be lifted over to chr1:857015 so confirm that they have 
 # the same methylation values in hg38 and hg19
-rtracklayer::liftOver(GRanges("chr1:921635"), hg38tohg19Chain)
-extractGRangesMethSiteValues(mcrpc_wgbs_hg38_chr11, GRanges("chr1:921635"))[, 1:8]
-extractGRangesMethSiteValues(tcga_wgbs_hg19, GRanges("chr1:857015"))[, 1:8]
+rtracklayer::liftOver(GRanges("chr11:67581759"), hg38tohg19Chain)
+extractGRangesMethSiteValues(mcrpc_wgbs_hg38_chr11, GRanges("chr11:67581759"))[, 1:8]
+extractGRangesMethSiteValues(mcrpc_wgbs_hg19_chr11, GRanges("chr11:67349230"))[, 1:8]
 ```
 
 ## SessionInfo

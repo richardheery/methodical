@@ -1,9 +1,10 @@
 #' Create a GRanges with methylation sites of interest from a BSgenome. 
 #'
-#' @param genome A BSgenome object or the name of one.  
+#' @param genome A BSgenome object (or the name of one) or a DNAStringSet with names indicating the sequences.  
 #' @param pattern A pattern to match in bsgenome. Default is "CG".
 #' @param plus_strand_only TRUE or FALSE indicating whether to only return matches on "+" strand, 
-#' avoiding returning duplicate hits for palindromic sequences e.g. CG. Default is TRUE.
+#' avoiding returning duplicate hits for palindromic sequences e.g. CG. 
+#' Not relevant if genome is a DNAStringSet. Default is TRUE.
 #' @param meth_site_position Which position in the pattern corresponds to the methylation site of interest. 
 #' Default is the first position.
 #' @param standard_sequences_only TRUE or FALSE indicating whether to only return sites 
@@ -20,23 +21,27 @@ extractMethSitesFromGenome <- function(genome, pattern = "CG", plus_strand_only 
   meth_site_position = 1, standard_sequences_only = TRUE){
   
   # Check that inputs have the correct data type
-  stopifnot(is(genome, "character") | is(genome, "BSgenome"), is(pattern, "character"), 
-    S4Vectors::isTRUEorFALSE(plus_strand_only), is(meth_site_position, "numeric") & meth_site_position >= 1,
+  stopifnot(is(genome, "character") | is(genome, "BSgenome") | is(genome, "DNAStringSet"), 
+    is(pattern, "character"), S4Vectors::isTRUEorFALSE(plus_strand_only), 
+    is(meth_site_position, "numeric") & meth_site_position >= 1,
     S4Vectors::isTRUEorFALSE(standard_sequences_only))
   
   # If genome is a character, try to load genome with that name
   if(is.character(genome)){genome <- BSgenome::getBSgenome(genome)}
+  if(is(genome, "DNASringSet") & is.null(names(genome))){
+    stop("If genome is a DNASringSet, it must have names indicating the sequence")
+  }
   
   # Check that meth_site_position is not greater than the length of the pattern
   if(meth_site_position > nchar(pattern)){
     stop("meth_site_position cannot be greater than the number of characters in pattern")
   }
   
-  # Find sites matching pattern in genome
-  meth_sites_gr <- Biostrings::vmatchPattern(pattern, genome, fixed = "subject")
+  # Find sites matching pattern in genome 
+  meth_sites_gr <- GRanges(Biostrings::vmatchPattern(pattern, genome, fixed = "subject"))
   
   # Filter for matches on "+" strand if specified
-  if(plus_strand_only){
+  if(plus_strand_only & is(genome, "BSgenome")){
     meth_sites_gr <- meth_sites_gr[GenomicRanges::strand(meth_sites_gr) == "+"]
   }
   
