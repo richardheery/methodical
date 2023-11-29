@@ -44,13 +44,13 @@ from TumourMethData.
 
 ```{r, eval=TRUE}
 ## CHANGE TO USE TUMOURMETHDATA
-tcga_wgbs_hg38 = TumourMethData::download_meth_dataset("tcga_wgbs_hg38")
+mcrpc_wgbs_hg38_chr11 = TumourMethData::download_meth_dataset(dataset = "mcrpc_wgbs_hg38_chr11")
 ```
 
 ## Extracting methylation data from methylation RangedSummarizedExperiments
 
 We'll first demonstrate how to extract methylation data for individual CpG sites 
-in tcga_wgbs_hg38 overlapping a supplied GRanges object with 
+in mcrpc_wgbs_hg38_chr11 overlapping a supplied GRanges object with 
 `extractGRangesMethSiteValues`, using the APC gene body as an example.
 
 ```{r, eval=TRUE}
@@ -60,7 +60,7 @@ apc_start_site_region <- GRanges("chr5:112705518-112717518:+")
 
 # Extract methylation values for CpG sites overlapping apc gene body
 apc_cpg_methylation <- extractGRangesMethSiteValues(
-  meth_rse = tcga_wgbs_hg38, genomic_regions = apc_start_site_region )
+  meth_rse = mcrpc_wgbs_hg38_chr11, genomic_regions = apc_start_site_region )
 
 # View the first few rows and columns of the result. 
 # extractGRangesMethSiteValues returns a row for each methylation site and a 
@@ -90,7 +90,7 @@ names(cpg_island_annotation) <- cpg_island_annotation$id
 cpg_island_annotation <- GRangesList(split(cpg_island_annotation, cpg_island_annotation$type))
 
 cpg_island_methylation <- summarizeRegionMethylation(
-  meth_rse = tcga_wgbs_hg38, genomic_regions = cpg_island_annotation$hg38_cpg_islands, 
+  meth_rse = mcrpc_wgbs_hg38_chr11, genomic_regions = cpg_island_annotation$hg38_cpg_islands, 
   BPPARAM = BiocParallel::MulticoreParam(workers = 4), summary_function = colMeans)
 
 # Print a few rows for the first few samples of the result
@@ -186,15 +186,15 @@ We will demonstrate how to mask LINE repetitive regions across all samples.
 repeat_annotation_hg38 <- AnnotationHub::AnnotationHub()[["AH99003"]]
 line_elements_hg38 <- repeat_annotation_hg38[repeat_annotation_hg38$repClass == "SINE"]
 
-# Mask LINE elements in tcga_wgbs_hg38
-tcga_wgbs_hg38_lines_masked <- maskRangesInRSE(rse = tcga_wgbs_hg38, 
+# Mask LINE elements in mcrpc_wgbs_hg38_chr11
+mcrpc_wgbs_hg38_chr11_lines_masked <- maskRangesInRSE(rse = mcrpc_wgbs_hg38_chr11, 
   mask_ranges = line_elements_hg38)
 
 # Extract the methylation values for one of the LINE elements in the 
 # unmasked and masked RSE
-extractGRangesMethSiteValues(meth_rse = tcga_wgbs_hg38, 
+extractGRangesMethSiteValues(meth_rse = mcrpc_wgbs_hg38_chr11, 
   genomic_regions = line_elements_hg38[1000])[, 1:6]
-extractGRangesMethSiteValues(meth_rse = tcga_wgbs_hg38_repeats_masked, 
+extractGRangesMethSiteValues(meth_rse = mcrpc_wgbs_hg38_chr11_lines_masked, 
   genomic_regions = line_elements_hg38[1000])[, 1:6]
 
 ```
@@ -216,7 +216,7 @@ can also remove any regions which do not map to desired regions in the target
 genome, for example CpG sites, by providing a GRanges object to the argument
 `permitted_target_regions`.
 
-We will demonstrate how to liftover tcga_wgbs_hg38 to hg19. 
+We will demonstrate how to liftover mcrpc_wgbs_hg38_chr11 to hg19. 
 
 ```{r, eval=TRUE}
 # Get CpG sites for hg19
@@ -225,19 +225,19 @@ hg19_cpgs <- methodical::extractMethSitesFromGenome("BSgenome.Hsapiens.UCSC.hg19
 # Download hg38 to hg19 liftover chain from AnnotationHub
 hg38tohg19Chain <- AnnotationHub::AnnotationHub()[["AH14108"]]
 
-# Liftover tcga_wgbs_hg38 to tcga_wgbs_hg19
-tcga_wgbs_hg19 <- liftoverMethRSE(meth_rse = tcga_wgbs_hg38, chain = hg38tohg19Chain, 
+# Liftover mcrpc_wgbs_hg38_chr11 to tcga_wgbs_hg19
+tcga_wgbs_hg19 <- liftoverMethRSE(meth_rse = mcrpc_wgbs_hg38_chr11, chain = hg38tohg19Chain, 
   remove_one_to_many_mapping = TRUE, permitted_target_regions = hg19_cpgs)
 
-# Compare the dimensions of tcga_wgbs_hg38 and tcga_wgbs_hg19. 
+# Compare the dimensions of mcrpc_wgbs_hg38_chr11 and tcga_wgbs_hg19. 
 # 1,423,050 methylation sites could not be lifted over from hg38 to hg19. 
-dim(tcga_wgbs_hg38)
+dim(mcrpc_wgbs_hg38_chr11)
 dim(tcga_wgbs_hg19)
 
 # chr1:921635 should be lifted over to chr1:857015 so confirm that they have 
 # the same methylation values in hg38 and hg19
 rtracklayer::liftOver(GRanges("chr1:921635"), hg38tohg19Chain)
-extractGRangesMethSiteValues(tcga_wgbs_hg38, GRanges("chr1:921635"))[, 1:8]
+extractGRangesMethSiteValues(mcrpc_wgbs_hg38_chr11, GRanges("chr1:921635"))[, 1:8]
 extractGRangesMethSiteValues(tcga_wgbs_hg19, GRanges("chr1:857015"))[, 1:8]
 ```
 

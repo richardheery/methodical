@@ -43,7 +43,7 @@
 #' # Create a HDF5-backed RangedSummarizedExperiment from bedGraphs
 #' meth_rse <- makeMethRSEFromBedgraphs(bedgraphs = bedgraphs, 
 #'   meth_sites = hg38_cpgs_subset, sample_metadata = sample_metadata, 
-#'   hdf5_dir = "bedgraph_hdf5_1")
+#'   hdf5_dir = paste0(tempdir(), "/bedgraph_hdf5_1"))
 #'   
 makeMethRSEFromBedgraphs <- function(bedgraphs, 
   seqnames_column = 1, start_column = 2, end_column = 3, value_column = 4,
@@ -154,7 +154,7 @@ makeMethRSEFromBedgraphs <- function(bedgraphs,
 #' # Create a HDF5-backed RangedSummarizedExperiment from array files using default chumk dimensions
 #' meth_rse <- makeMethRSEFromArrayFiles(array_files = array_files, 
 #'  probe_ranges = infinium_450k_probe_granges_hg19, 
-#'  sample_metadata = sample_metadata, hdf5_dir = "array_file_hdf5_1")
+#'  sample_metadata = sample_metadata, hdf5_dir =  paste0(tempdir(), "/array_file_hdf5_1"))
 #'
 makeMethRSEFromArrayFiles <- function(array_files, probe_name_column = 1, beta_value_column = 2, 
   normalization_factor = NULL, decimal_places = NA, probe_ranges, sample_metadata = NULL, hdf5_dir, dataset_name = "beta", 
