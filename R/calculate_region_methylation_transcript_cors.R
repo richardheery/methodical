@@ -101,14 +101,14 @@ calculateRegionMethylationTranscriptCors <- function(meth_rse, assay_number = 1,
   }
   
   # If genomic_regions$transcript_id is NULL, set to genomic_region_transcripts
-  if(is.null(genomic_regions$transcript_id)){
-    if(is.null(genomic_region_transcripts)){
-      stop("genomic_regions$transcript_id and genomic_region_transcripts cannot both be NULL")
-    } else if(length(genomic_region_transcripts) != length(genomic_regions)){
+  if(!is.null(genomic_region_transcripts)){
+    if(length(genomic_region_transcripts) != length(genomic_regions)){
       stop("If provided, length of genomic_region_transcripts must equal length of genomic_regions")
     } else {genomic_regions$transcript_id <- genomic_region_transcripts}
+  } else if(is.null(genomic_regions$transcript_id)){
+     stop("genomic_regions$transcript_id and genomic_region_transcripts cannot both be NULL")
   }
-  
+    
   # Add names and transcript IDs to genomic_regions
   names(genomic_regions) <- genomic_region_names
   

@@ -29,12 +29,13 @@
 #' # Extract methylation values from tubb6_meth_rse
 #' tubb6_methylation_values = methodical::extractGRangesMethSiteValues(meth_rse = tubb6_meth_rse)
 #' 
-#' # Plot methylation-transcript correlation values around TUBB6 TSS
+#' # Plot methylation values around TUBB6 TSS
 #' methodical::plotMethylationValues(tubb6_methylation_values, sample_name = "N1")
 #' 
 #' # Create same plot but showing the distance to the TUBB6 TSS on the x-axis
+#' data("tubb6_tss", package = "methodical")
 #' methodical::plotMethylationValues(tubb6_methylation_values, sample_name = "N1",
-#'   reference_tss = attributes(tubb6_cpg_meth_transcript_cors)$tss_range)
+#'   reference_tss = tubb6_tss)
 #' 
 #' @export
 plotMethylationValues <- function(meth_site_values, sample_name = NULL, reference_tss = FALSE, 

@@ -198,7 +198,7 @@ whether `reference_tss` is set to TRUE or FALSE.
 # Plot methylation-transcription correlation values for GSTP1 showing 
 # chromosome 11 position on the x-axis
 meth_cor_plot_absolute_distance <- plotMethSiteCorCoefs(
-  meth_site_values = gstp1_cpg_meth_transcript_cors, 
+  meth_site_cor_values = gstp1_cpg_meth_transcript_cors, 
   reference_tss = FALSE, 
   ylabel = "Correlation Value", 
   title = "Correlation Between GSTP1 Transcription and CpG Methylation")
@@ -207,7 +207,7 @@ print(meth_cor_plot_absolute_distance)
 # Plot methylation-transcription correlation values for GSTP1 showing 
 # distance to the GSTP1 on the x-axis
 meth_cor_plot_relative_distance <- plotMethSiteCorCoefs(
-  meth_site_values = gstp1_cpg_meth_transcript_cors, 
+  meth_site_cor_values = gstp1_cpg_meth_transcript_cors, 
   reference_tss = TRUE,   
   ylabel = "Correlation Value", 
   title = "Correlation Between GSTP1 Transcription and CpG Methylation")
