@@ -79,6 +79,6 @@ sample_metadata <- data.frame(
 # Create a HDF5-backed RangedSummarizedExperiment from array files using default chumk dimensions
 meth_rse <- makeMethRSEFromArrayFiles(array_files = array_files, 
  probe_ranges = infinium_450k_probe_granges_hg19, 
- sample_metadata = sample_metadata, hdf5_dir = "array_file_hdf5_1")
+ sample_metadata = sample_metadata, hdf5_dir =  paste0(tempdir(), "/array_file_hdf5_1"))
 
 }

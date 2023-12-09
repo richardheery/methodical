@@ -89,6 +89,6 @@ sample_metadata <- data.frame(
 # Create a HDF5-backed RangedSummarizedExperiment from bedGraphs
 meth_rse <- makeMethRSEFromBedgraphs(bedgraphs = bedgraphs, 
   meth_sites = hg38_cpgs_subset, sample_metadata = sample_metadata, 
-  hdf5_dir = "bedgraph_hdf5_1")
+  hdf5_dir = paste0(tempdir(), "/bedgraph_hdf5_1"))
   
 }
