@@ -44,8 +44,10 @@ plotMethylationValues <- function(meth_site_values, sample_name = NULL, referenc
   # Check that inputs have the correct data type
   stopifnot(is(meth_site_values, "data.frame"), is(sample_name, "character") | is.null(sample_name),
     S4Vectors::isTRUEorFALSE(reference_tss) | is(reference_tss, "GRanges"), 
-    is(title, "character") | is.null(title), is(xlabel, "character") | is.null(xlabel),
-    is(ylabel, "character") | is.null(ylabel), is(value_colours, "character"),
+    is(title, "character") | is.null(title) | is(title, "expression"), 
+    is(xlabel, "character") | is.null(xlabel) | is(xlabel, "expression"),
+    is(ylabel, "character") | is.null(ylabel) | is(ylabel, "expression"),
+    is(value_colours, "character"),
     S4Vectors::isTRUEorFALSE(reverse_x_axis))
   
   # Check that suitable input provided for value_colours and set low and high value colours if so
@@ -138,8 +140,7 @@ plotMethylationValues <- function(meth_site_values, sample_name = NULL, referenc
     theme_bw() +
     theme(plot.title = element_text(hjust = 0.5, size = 24), legend.text = element_text(size = 12),
       axis.title = element_text(size = 20), 
-      axis.text = element_text(size = 18), legend.position = "None", 
-      plot.margin = margin(, 2, , , "cm")) +
+      axis.text = element_text(size = 18), legend.position = "None") +
     scale_x_continuous(expand = c(0.005, 0.005), labels = scales::comma) +
     scale_y_continuous(expand = expansion(mult = c(0.05, 0.05))) + 
     scale_fill_gradient2(low = low_colour, high = high_colour, mid = "white", midpoint = 0) +
@@ -288,8 +289,7 @@ plotMethSiteCorCoefs <- function(meth_site_cor_values, reference_tss = FALSE,
     theme_bw() +
     theme(plot.title = element_text(hjust = 0.5, size = 24), legend.text = element_text(size = 12),
       axis.title = element_text(size = 20), 
-      axis.text = element_text(size = 18), legend.position = "None", 
-      plot.margin = margin(, 2, , , "cm")) +
+      axis.text = element_text(size = 18), legend.position = "None") +
     scale_x_continuous(expand = c(0.005, 0.005), labels = scales::comma) +
     scale_y_continuous(expand = expansion(mult = c(0.05, 0.05))) + 
     scale_fill_gradient2(low = low_colour, high = high_colour, mid = "white", midpoint = 0) +
