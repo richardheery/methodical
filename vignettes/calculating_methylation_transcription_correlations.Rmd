@@ -142,7 +142,8 @@ should just take a few minutes.
 common_mcprc_samples <- intersect(names(mcrpc_transcript_counts), colnames(mcrpc_wgbs_hg38_chr11))
 
 # Create a BPPARAM class
-BPPARAM = BiocParallel::bpparam()
+#BPPARAM = BiocParallel::bpparam()
+BPPARAM = BiocParallel::MulticoreParam(workers = 2)
 
 # Calculate CpG methylation-transcription correlations for all TSS on chromosome 11
 system.time({transcript_cpg_meth_cors_mcrpc_samples_5kb <- calculateMethSiteTranscriptCors(
