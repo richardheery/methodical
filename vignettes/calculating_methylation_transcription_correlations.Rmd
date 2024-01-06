@@ -150,7 +150,7 @@ system.time({transcript_cpg_meth_cors_mcrpc_samples_5kb <- calculateMethSiteTran
   transcript_expression_table = mcrpc_transcript_counts_normalized, 
   samples_subset = common_mcprc_samples, 
   tss_gr = transcript_tss_chr11,
-  cor_method = "pearson", max_sites_per_chunk = 300000,
+  cor_method = "pearson", max_sites_per_chunk = NULL,
   expand_upstream = 5000, expand_downstream = 5000, BPPARAM = BPPARAM)})
 ```
 
