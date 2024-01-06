@@ -7,7 +7,7 @@
 #' @param na.rm TRUE or FALSE indicating whether to remove NA values when calculating summaries.
 #' @param ... Additional arguments to be passed to summary_function. 
 #' @return A function which returns a list with the 
-.summarize_chunk_methylation = function(chunk_regions, meth_rse, assay_number, summary_function, na.rm, ...){
+.summarize_chunk_methylation <- function(chunk_regions, meth_rse, assay_number, summary_function, na.rm, ...){
   
   # Subset meth_rse_for_chunk for regions overlapping chunk_regions
   meth_rse_for_chunk <- subsetByOverlaps(meth_rse, chunk_regions)
@@ -87,12 +87,12 @@ summarizeRegionMethylation <- function(meth_rse, assay_number = 1, genomic_regio
     is(BPPARAM, "BiocParallelParam"))
   
   # If genomic_region_names is NULL, attempt to use names of genomic_regions
-  if(is.null(genomic_region_names)){genomic_region_names = names(genomic_regions)}
+  if(is.null(genomic_region_names)){genomic_region_names <- names(genomic_regions)}
     
   # Add names to genomic_regions if they are not already present and also check that no names are duplicated. 
   if(is.null(genomic_region_names)){
     message("No names for provided regions so naming them region_1, region_2, etc.")
-    genomic_region_names <- paste0("region_", 1:length(genomic_regions))
+    genomic_region_names <- paste0("region_", seq_along(genomic_regions))
     names(genomic_regions) <- genomic_region_names
   } else {
     if(length(genomic_region_names) != length(genomic_regions)){

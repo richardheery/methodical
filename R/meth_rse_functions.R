@@ -76,13 +76,13 @@ extractGRangesMethSiteValues <- function(meth_rse, genomic_regions = NULL, sampl
 #' mask_ranges <- GRanges("chr18:12305000-12310000")
 #' 
 #' # Get 20 random CpG sites outside mask_ranges
-#' random_cpgs <- methodical::SampleMethSites(tubb6_meth_rse, n_sites = 20, genomic_ranges_filter = mask_ranges, 
+#' random_cpgs <- methodical::sampleMethSites(tubb6_meth_rse, n_sites = 20, genomic_ranges_filter = mask_ranges, 
 #'   invert_filter = TRUE)
 #' 
 #' # Check that no CpGs overlap repeats
 #' intersect(rowRanges(random_cpgs), mask_ranges)
 #' 
-SampleMethSites <- function(meth_rse, n_sites = 1000, genomic_ranges_filter = NULL, 
+sampleMethSites <- function(meth_rse, n_sites = 1000, genomic_ranges_filter = NULL, 
   invert_filter = FALSE, samples_subset = NULL, assay_number = 1){
   
   # Check that inputs have the correct data type

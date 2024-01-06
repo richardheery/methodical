@@ -281,7 +281,7 @@ createRandomRegions <- function(genome, n_regions = 1000, region_widths = 1000, 
     random_gr_df <- data.frame(seqnames = random_sequences, seqlengths = seqlengths(genome)[random_sequences], row.names = NULL)
     
     # Select a random start site on each sequence
-    random_gr_df$start <- sapply(random_gr_df$seqlengths, function(x) sample(1:x, 1))
+    random_gr_df$start <- sapply(random_gr_df$seqlengths, function(x) sample(seq_len(x), 1))
     
     # Add the widths to each start site
     random_gr_df$end <- random_gr_df$start + region_widths - 1

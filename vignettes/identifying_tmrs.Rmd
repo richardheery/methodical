@@ -162,7 +162,7 @@ We can see two regions where the Methodical scores breach the thresholds: one re
 negative threshold is breached. Thus, we should find one negative and one positive TMR for TUBB6.
 
 The calculation of Methodical scores, their smoothing and identification of TMRs is all 
-done using the `find_TMRs` function which takes the correlation results from `calculateMethSiteTranscriptCors`
+done using the `findTMRs` function which takes the correlation results from `calculateMethSiteTranscriptCors`
 as input. We can set the p-value threshold as well as the parameters for the smoothing,
 `offset_length` and `smoothing_factor`, which behave the same as they do in `plotMethodicalScores`.
 
@@ -172,13 +172,13 @@ with the same direction for TUBB6 so this argument has no effect, but it can pro
 generally be desirable to have one large TMR rather than several shorter TMRs occurring in the same region 
 since the intervening CpGs will likely also display strong correlations.
 
-`find_TMRs` returns a GRanges with metadata columns giving the TMR direction, the name of the TMRs,
+`findTMRs` returns a GRanges with metadata columns giving the TMR direction, the name of the TMRs,
 the number of CpG sites they overlap (meth_site_count), their distance to the TSS and the location of 
 the TSS as a character which can be converted to a GRanges by calling `GRanges` on it.  
 
 ```{r, eval=TRUE, fig.show='hide'}
 # Identify TMRs for TUBB6
-tubb6_tmrs <- find_TMRs(correlation_df = tubb6_cpg_meth_transcript_cors, offset_length = 10, 
+tubb6_tmrs <- findTMRs(correlation_df = tubb6_cpg_meth_transcript_cors, offset_length = 10, 
   smoothing_factor = 0.75, min_meth_sites = 5, min_gapwidth = 150)
 print(tubb6_tmrs)
 ```

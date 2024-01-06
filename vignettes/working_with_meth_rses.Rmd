@@ -94,10 +94,13 @@ cpg_island_annotation = cpg_island_annotation[seqnames(cpg_island_annotation) ==
 # Convert into a GRangesList with separate GRanges for islands, shores, shelves and inter island regions
 cpg_island_annotation <- GRangesList(split(cpg_island_annotation, cpg_island_annotation$type))
 
+# Create a BPPARAM class
+BPPARAM = BiocParallel::bpparam()
+
 # Summarize methylation levels for CpG islands
 cpg_island_methylation <- summarizeRegionMethylation(
   meth_rse = mcrpc_wgbs_hg38_chr11, genomic_regions = cpg_island_annotation$hg38_cpg_islands, 
-  BPPARAM = BiocParallel::MulticoreParam(workers = 4), summary_function = colMeans)
+  BPPARAM = BPPARAM, summary_function = colMeans)
 
 # Print a few rows for the first few samples of the result
 cpg_island_methylation[1000:1006, 1:6]

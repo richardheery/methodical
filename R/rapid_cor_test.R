@@ -47,7 +47,7 @@ rapidCorTest <- function(table1, table2, cor_method = "pearson", table1_name = "
   cors <- cor(table1, table2, use = "p", method = cor_method)
   
   # Get degrees of freedom
-  df = n - 2 - n_covariates
+  df <- n - 2 - n_covariates
   
   # Calculate t-statistics from correlations
   t_stat <- cors * sqrt(df)/sqrt((1-cors^2))
