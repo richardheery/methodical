@@ -479,7 +479,7 @@ plotMethodicalScores <- function(meth_site_values, reference_tss = NULL, p_value
 #' @param meth_site_plot A plot of methylation site values (generally methylation level or correlation of methylation with transcription) around a TSS
 #' @param annotation_grl A GRangesList object (or list coercible to a GRangesList) where each component GRanges gives 
 #' the locations of different classes of regions to display. Each class of region will 
-#' be given a seprate colour in the plot, with regions ordered by the order of `names(annotation_grl)`. 
+#' be given a separate colour in the plot, with regions ordered by the order of `names(annotation_grl)`. 
 #' @param grl_colours An optional vector of colours used to display each of the 
 #' GRanges making up annotation_grl. Must have same length as annotation_grl. 
 #' @param reference_tss TRUE or FALSE indicating whether to show distances on the X-axis

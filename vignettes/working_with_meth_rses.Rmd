@@ -27,13 +27,13 @@ library(BSgenome.Hsapiens.UCSC.hg19)
 
 ## Introduction
 
-Most functions from `methodical` take as input RangedSumamrizedExperiment objects 
+Most functions from `methodical` take as input RangedSummarizedExperiment objects 
 with methylation data. If there are many samples, there can be many millions
 or, in the case of WGBS data, even billions of data points within a DNA methylation 
 dataset. It can be unfeasible to load all this data into memory at once. This problem 
 can be overcome by using DelayedArrays backed by HDF5 files, enabling data to be 
 read into memory only as needed. Methodical provides a suite of functions 
-for working with such DNA methylation RangedSumamrizedExperiments, including 
+for working with such DNA methylation RangedSummarizedExperiments, including 
 functions to extract methylation values for sites overlapping genomic regions of 
 interest `GRanges`, to liftover the methylation sites from one genome build to 
 another and to mask methylation sites overlapping certain genomic regions, e.g. 
@@ -111,11 +111,11 @@ cpg_island_methylation[1000:1006, 1:6]
 We can plot methylation values extracted from a genomic region for a single 
 sample using the `plotMethylationValues()` function. We'll demonstrate this 
 using the values we extracted in the region surrounding the 5' end of GSTP1 for 
-the DTB_003 prostate metastastis sample. We indicate the sample we want to plot
+the DTB_003 prostate metastasis sample. We indicate the sample we want to plot
 with the `sample_name` parameter. 
 
 ```{r, eval=TRUE}
-# Plot the methylation values along the GSTP1 gene body for one prostate metastastis sample.
+# Plot the methylation values along the GSTP1 gene body for one prostate metastasis sample.
 gstp1_methylation_plot = plotMethylationValues(gstp1_cpg_methylation, sample_name = "DTB_003")
 print(gstp1_methylation_plot)
 ```
@@ -131,7 +131,7 @@ default colours.
 
 If we provide a GRanges object with the location of a transcription start site 
 to the `reference_tss`, parameter, we can show the distance of methylation sites 
-upstream and donwstream of this. 
+upstream and downstream of this. 
 
 By default, the main plot and annotation plot are combined into a single plot
 and returned. The `annotation_plot_proportion` parameter sets the proportion of 

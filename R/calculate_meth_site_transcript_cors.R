@@ -86,7 +86,7 @@
 #'
 #' @param meth_rse A RangedSummarizedExperiment for methylation sites. 
 #' @param assay_number The assay from meth_rse to extract values from. Default is the first assay. 
-#' @param transcript_expression_table A matrix or deata.frame with the expression values for transcripts, where row names are transcript names and columns sample names. 
+#' @param transcript_expression_table A matrix or data.frame with the expression values for transcripts, where row names are transcript names and columns sample names. 
 #' There should be a row corresponding to each transcript associated with each range in tss_gr. 
 #' Names of samples must match those in meth_rse unless samples_subset provided.
 #' @param samples_subset Sample names used to subset meth_rse and transcript_expression_table. Provided samples must be found in both meth_rse and transcript_expression_table.

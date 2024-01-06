@@ -20,7 +20,7 @@ annotatePlot(
 
 \item{annotation_grl}{A GRangesList object (or list coercible to a GRangesList) where each component GRanges gives
 the locations of different classes of regions to display. Each class of region will
-be given a seprate colour in the plot, with regions ordered by the order of \code{names(annotation_grl)}.}
+be given a separate colour in the plot, with regions ordered by the order of \code{names(annotation_grl)}.}
 
 \item{reference_tss}{TRUE or FALSE indicating whether to show distances on the X-axis
 relative to the TSS stored as an attribute \code{tss_range} of meth_site_plot.
