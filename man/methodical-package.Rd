@@ -20,7 +20,8 @@ plots of the association between DNA methylation and transcriptional activity at
 \seealso{
 Useful links:
 \itemize{
-  \item Report bugs at \url{https://support.bioconductor.org/tag/methodical}
+  \item \url{https://github.com/richardheery/methodical}
+  \item Report bugs at \url{https://github.com/richardheery/methodical/issues}
 }
 
 }
