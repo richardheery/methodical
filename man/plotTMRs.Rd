@@ -43,7 +43,7 @@ data("tubb6_cpg_meth_transcript_cors", package = "methodical")
 tubb6_correlation_plot <- methodical::plotMethSiteCorCoefs(tubb6_cpg_meth_transcript_cors, ylabel = "Spearman Correlation")
   
 # Find TMRs for TUBB6
-tubb6_tmrs <- find_TMRs(correlation_df = tubb6_cpg_meth_transcript_cors)
+tubb6_tmrs <- findTMRs(correlation_df = tubb6_cpg_meth_transcript_cors)
 
 # Plot TMRs on top of tubb6_correlation_plot
 methodical::plotTMRs(tubb6_correlation_plot, tmrs_gr = tubb6_tmrs)

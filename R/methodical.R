@@ -17,4 +17,6 @@
 #' @import GenomicRanges
 #' @import ggplot2
 #' @import SummarizedExperiment
+#' @import ExperimentHub
+#' @import R.utils
 "_PACKAGE"

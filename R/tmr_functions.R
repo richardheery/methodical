@@ -118,10 +118,10 @@ calculateSmoothedMethodicalScores <- function(correlation_df, offset_length = 10
 #' data("tubb6_cpg_meth_transcript_cors", package = "methodical")
 #' 
 #' # Find TMRs for 
-#' tubb6_tmrs <- find_TMRs(correlation_df = tubb6_cpg_meth_transcript_cors)
+#' tubb6_tmrs <- findTMRs(correlation_df = tubb6_cpg_meth_transcript_cors)
 #' print(tubb6_tmrs)
 #' 
-find_TMRs <- function(correlation_df, offset_length = 10, smoothing_factor = 0.75, p_value_threshold = 0.005, min_gapwidth = 150, min_meth_sites = 5){
+findTMRs <- function(correlation_df, offset_length = 10, smoothing_factor = 0.75, p_value_threshold = 0.005, min_gapwidth = 150, min_meth_sites = 5){
   
   # Check that inputs have the correct data type
   stopifnot(is(correlation_df, "data.frame") | is.character(correlation_df), is(offset_length, "numeric"), 
@@ -194,7 +194,7 @@ find_TMRs <- function(correlation_df, offset_length = 10, smoothing_factor = 0.7
   tmr_gr <- sort(tmr_gr, ignore.strand = TRUE, decreasing = as.character(strand(tss_gr)) == "-")
   
   # Number TMRs starting from most upstream to most downstream
-  tmr_gr$tmr_name <- trimws(paste(transcript_id, "tmr", 1:length(tmr_gr), sep = "_"), whitespace = "_")
+  tmr_gr$tmr_name <- trimws(paste(transcript_id, "tmr", seq_along(tmr_gr), sep = "_"), whitespace = "_")
   
   # Change direction to a factor
   tmr_gr$direction <- factor(tmr_gr$direction, levels = c("Negative", "Positive"))

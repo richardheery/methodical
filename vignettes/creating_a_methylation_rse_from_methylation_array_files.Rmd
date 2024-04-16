@@ -18,26 +18,26 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup, message = F}
+```{r setup, message = FALSE}
 library(methodical)
 library(TCGAbiolinks)
 ```
 
 ## Introduction
 
-Most functions from `methodical` take as input RangedSumamrizedExperiment objects 
+Most functions from `methodical` take as input RangedSummarizedExperiment objects 
 with methylation data. If there are many samples, there can be many millions
 or, in the case of WGBS data, even billions of data points within a DNA methylation 
 dataset. It can be unfeasible to load all this data into memory at once. This problem 
 can be overcome by using DelayedArrays backed by HDF5 files, enabling data to be 
 read into memory only as needed. `methodical` enables these HDF5-backed
-RangedSumamrizedExperiments objects to be created flexibly from bedGraph-like 
+RangedSummarizedExperiments objects to be created flexibly from bedGraph-like 
 files, such as those produced by WGBS and RRBS experiments, using the 
 `makeMethRSEFromBedgraphs` function or from methylation
 array files, such as those for the Illumina methylation arrays, using the 
 `makeMethRSEFromArrayFiles` function. 
 
-Here we demonstrate how a methylation RangedSumamrizedExperiment
+Here we demonstrate how a methylation RangedSummarizedExperiment
 (meth RSEs) can be constructed easily using `makeMethRSEFromArrayFiles` from  
 Illumina HumanMethylation450 array files downloaded from TCGA. 
 .

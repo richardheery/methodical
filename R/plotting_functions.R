@@ -96,7 +96,7 @@ plotMethylationValues <- function(meth_site_values, sample_name = NULL, referenc
   
   # Check that sample_name has length 1 if provided
   if(is.null(sample_name)){
-    sample_name = names(meth_site_values)[1]
+    sample_name <- names(meth_site_values)[1]
   } else if(length(sample_name) > 1){
     stop("sample_name should just be a character of length 1 if provided")
   }
@@ -151,7 +151,7 @@ plotMethylationValues <- function(meth_site_values, sample_name = NULL, referenc
   
   # Reverse x-axis if specified 
   if(reverse_x_axis){
-    meth_site_plot = meth_site_plot + scale_x_reverse(expand = c(0.005, 0.005), labels = scales::comma)
+    meth_site_plot <- meth_site_plot + scale_x_reverse(expand = c(0.005, 0.005), labels = scales::comma)
   }
   
   return(meth_site_plot)
@@ -228,7 +228,7 @@ plotMethSiteCorCoefs <- function(meth_site_cor_values, reference_tss = FALSE,
   } 
   tryCatch(GRanges(meth_site_cor_values[["meth_site"]]),
     error = function(e) stop("meth_site_cor_values[[\"meth_site\"]] does not seem to be genomic coordinates coercible to GRanges"))
-  if(!is(meth_site_cor_values[["cor"]], "numeric") | max(abs(meth_site_cor_values[["cor"]]), na.rm = T) > 1){
+  if(!is(meth_site_cor_values[["cor"]], "numeric") | max(abs(meth_site_cor_values[["cor"]]), na.rm = TRUE) > 1){
     stop("meth_site_cor_values[[\"cor\"]] should be a numeric value with a maximum absolute value of 1")
   }
   
@@ -300,7 +300,7 @@ plotMethSiteCorCoefs <- function(meth_site_cor_values, reference_tss = FALSE,
   
   # Reverse x-axis if specified 
   if(reverse_x_axis){
-    meth_cor_plot = meth_cor_plot + scale_x_reverse(expand = c(0.005, 0.005), labels = scales::comma)
+    meth_cor_plot <- meth_cor_plot + scale_x_reverse(expand = c(0.005, 0.005), labels = scales::comma)
   }
   
   return(meth_cor_plot)
@@ -327,7 +327,7 @@ plotMethSiteCorCoefs <- function(meth_site_cor_values, reference_tss = FALSE,
 #' tubb6_correlation_plot <- methodical::plotMethSiteCorCoefs(tubb6_cpg_meth_transcript_cors, ylabel = "Spearman Correlation")
 #'   
 #' # Find TMRs for TUBB6
-#' tubb6_tmrs <- find_TMRs(correlation_df = tubb6_cpg_meth_transcript_cors)
+#' tubb6_tmrs <- findTMRs(correlation_df = tubb6_cpg_meth_transcript_cors)
 #' 
 #' # Plot TMRs on top of tubb6_correlation_plot
 #' methodical::plotTMRs(tubb6_correlation_plot, tmrs_gr = tubb6_tmrs)
@@ -359,7 +359,7 @@ plotTMRs <- function(meth_site_plot, tmrs_gr, reference_tss = NULL, transcript_i
   }
   
   # Make direction a factor with both Negative and Positive
-  tmrs_df$direction = factor(tmrs_df$direction, levels = c("Negative", "Positive"))
+  tmrs_df$direction <- factor(tmrs_df$direction, levels = c("Negative", "Positive"))
   
   # Add TMRs to meth_site_plot
   meth_site_plot_with_tmrs <- meth_site_plot +
@@ -479,7 +479,7 @@ plotMethodicalScores <- function(meth_site_values, reference_tss = NULL, p_value
 #' @param meth_site_plot A plot of methylation site values (generally methylation level or correlation of methylation with transcription) around a TSS
 #' @param annotation_grl A GRangesList object (or list coercible to a GRangesList) where each component GRanges gives 
 #' the locations of different classes of regions to display. Each class of region will 
-#' be given a seprate colour in the plot, with regions ordered by the order of `names(annotation_grl)`. 
+#' be given a separate colour in the plot, with regions ordered by the order of `names(annotation_grl)`. 
 #' @param grl_colours An optional vector of colours used to display each of the 
 #' GRanges making up annotation_grl. Must have same length as annotation_grl. 
 #' @param reference_tss TRUE or FALSE indicating whether to show distances on the X-axis
@@ -553,12 +553,12 @@ annotatePlot <- function(meth_site_plot, annotation_grl, reference_tss = FALSE, 
   # Gives GRanges generic names if names are missing
   if(is.null(names(annotation_grl))){
     message("names(annotation_grl) is NULL. Setting to genomic_regions_1, genomic_regions_2, etc.")
-    names(annotation_grl) = paste0("genomic_regions_", seq_along(annotation_grl))
+    names(annotation_grl) <- paste0("genomic_regions_", seq_along(annotation_grl))
   }
   
   # Flatten annotation_grl
-  annotation_grl = unlist(GRangesList(lapply(annotation_grl, unname)))
-  annotation_grl$region_type = factor(names(annotation_grl), unique(names(annotation_grl)))
+  annotation_grl <- unlist(GRangesList(lapply(annotation_grl, unname)))
+  annotation_grl$region_type <- factor(names(annotation_grl), unique(names(annotation_grl)))
   
   # Check that annotation_plot_proportion is between 0 and 1
   if(annotation_plot_proportion < 0 | annotation_plot_proportion > 1){

@@ -73,8 +73,8 @@
   
   # Get the grid row number associated with each meth site and then split meth_sites into groups
   # Each chunk will consist of the values for the methylation sites from one methylation site group for the meth_files in one file group
-  meth_site_grid_rows <- ceiling(1:length(meth_sites)/chunk_rows)
-  meth_site_groups <- split(1:length(meth_sites), meth_site_grid_rows)
+  meth_site_grid_rows <- ceiling(seq_along(meth_sites)/chunk_rows)
+  meth_site_groups <- split(seq_along(meth_sites), meth_site_grid_rows)
   
   # Get the grid column number associated with each methylation file and then split meth_files into groups
   file_grid_columns <- ceiling(seq_along(meth_files)/chunk_cols)
@@ -102,7 +102,7 @@
 #' @param file_count The number of the current file being processed.
 #' @param parameters A list of parameters for processing the bedgraph.
 #' @return Invisibly returns NULL. 
-.split_bedgraph = function(bg_file, column, file_count, parameters){
+.split_bedgraph <- function(bg_file, column, file_count, parameters){
   
   # Attach the parameters
   attach(parameters)
@@ -199,13 +199,13 @@
   }
   
   # Convert meth_sites into a data.table
-  meth_sites_df <- data.table::data.table(data.frame(meth_sites)[1:3])
+  meth_sites_df <- data.table::data.table(data.frame(meth_sites)[seq_len(3)])
   
   # Set seqnames and start as keys for meth_sites_df
   data.table::setkey(meth_sites_df, seqnames, start)
   
   # Create a list with parameters to pass to .split_bedgraph
-  parameters_list = list(total_files = length(bedgraphs), meth_site_groups = meth_site_groups,
+  parameters_list <- list(total_files = length(bedgraphs), meth_site_groups = meth_site_groups,
     meth_sites_df = meth_sites_df, seqnames_column = seqnames_column, start_column = start_column, 
     end_column = end_column, value_column = value_column, dt_threads = dt_threads, 
     zero_based = zero_based, normalization_factor = normalization_factor, 
@@ -305,7 +305,7 @@
 #' @param file_count The number of the file being processed
 #' @param parameters A list of parameters for processing the bedgraph.
 #' @return Invisibly returns NULL.
-.split_meth_array_file = function(file, column, file_count, parameters){
+.split_meth_array_file <- function(file, column, file_count, parameters){
   
   # Attach the parameters
   attach(parameters)
@@ -401,7 +401,7 @@
   data.table::setkey(probe_sites_df, seqnames, start, name)
   
   # Create a list with parameters to pass to .split_meth_array_file
-  parameters_list = list(total_files = length(array_files), probe_groups = probe_groups, 
+  parameters_list <- list(total_files = length(array_files), probe_groups = probe_groups, 
     probe_sites_df = probe_sites_df, probe_name_column = probe_name_column, 
     beta_value_column = beta_value_column, dt_threads = dt_threads,
     normalization_factor = normalization_factor, decimal_places = decimal_places,

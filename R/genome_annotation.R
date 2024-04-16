@@ -31,7 +31,7 @@ annotateGRanges <- function(genomic_regions, annotation_ranges, ignore.strand = 
   # If annotation_ranges are missing names, print a warning and say that regions are being named 
   if(is.null(names(annotation_ranges))){
     message("annotation_ranges are missing names. They will be named granges_1, granges_2, etc. in the output")
-    names(annotation_ranges) = paste0("granges_", seq_along(annotation_ranges))
+    names(annotation_ranges) <- paste0("granges_", seq_along(annotation_ranges))
   }
   
   # Calculate the intersection between genomic_regions and different groups of regions defined by annotation_ranges. 

@@ -87,7 +87,7 @@ calculateRegionMethylationTranscriptCors <- function(meth_rse, assay_number = 1,
   # Add names to genomic_regions if they are not already present and also check that no names are duplicated. 
   if(is.null(genomic_region_names)){
     message("No names for provided regions so naming them region_1, region_2, etc.")
-    genomic_region_names <- paste0("region_", 1:length(genomic_regions))
+    genomic_region_names <- paste0("region_", seq_along(genomic_regions))
     names(genomic_regions) <- genomic_region_names
   } else {
     if(length(genomic_region_names) != length(genomic_regions)){
@@ -114,7 +114,7 @@ calculateRegionMethylationTranscriptCors <- function(meth_rse, assay_number = 1,
   
   # Identify transcripts in common between tss_gr and transcript_expression_table.
   # Throw an error if there are no common transcripts and subset tss_gr and transcript_expression_table
-  common_transcripts = intersect(genomic_regions$transcript_id, row.names(transcript_expression_table))
+  common_transcripts <- intersect(genomic_regions$transcript_id, row.names(transcript_expression_table))
   if(length(common_transcripts) == 0){
     stop("There are no common transcripts/genes between genomic_region_transcripts and row.names(transcript_expression_table)")
   } else {

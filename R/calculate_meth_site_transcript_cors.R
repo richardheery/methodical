@@ -8,7 +8,7 @@
 #' @param add_distance_to_region TRUE or FALSE indicating whether to add distance to TSS.
 #' @param results_dir Location of results directory. 
 #' @return An iterator function which returns a list with the parameters necessary for .tss_correlations. 
-.tss_iterator = function(meth_values_chunk, tss_region_indices_list, transcript_values, tss_for_chunk, 
+.tss_iterator <- function(meth_values_chunk, tss_region_indices_list, transcript_values, tss_for_chunk, 
   cor_method, add_distance_to_region, results_dir){
   
   n <- length(tss_for_chunk)
@@ -34,7 +34,7 @@
 #' @param correlation_objects A list with a table of methylation values, 
 #' expression values for transcripts, a GRanges for the TSS and the name of the transcript. 
 #' @return A data.frame with the correlation values
-.tss_correlations = function(correlation_objects){
+.tss_correlations <- function(correlation_objects){
       
   meth_table <- correlation_objects[["meth_table"]]
   transcript_table <- correlation_objects[["transcript_table"]]
@@ -86,7 +86,7 @@
 #'
 #' @param meth_rse A RangedSummarizedExperiment for methylation sites. 
 #' @param assay_number The assay from meth_rse to extract values from. Default is the first assay. 
-#' @param transcript_expression_table A matrix or deata.frame with the expression values for transcripts, where row names are transcript names and columns sample names. 
+#' @param transcript_expression_table A matrix or data.frame with the expression values for transcripts, where row names are transcript names and columns sample names. 
 #' There should be a row corresponding to each transcript associated with each range in tss_gr. 
 #' Names of samples must match those in meth_rse unless samples_subset provided.
 #' @param samples_subset Sample names used to subset meth_rse and transcript_expression_table. Provided samples must be found in both meth_rse and transcript_expression_table.
@@ -155,7 +155,7 @@ calculateMethSiteTranscriptCors <- function(meth_rse, assay_number = 1, transcri
   
   # Identify transcripts in common between tss_gr and transcript_expression_table.
   # Throw an error if there are no common transcripts and subset tss_gr and transcript_expression_table
-  common_transcripts = intersect(names(tss_gr), row.names(transcript_expression_table))
+  common_transcripts <- intersect(names(tss_gr), row.names(transcript_expression_table))
   if(length(common_transcripts) == 0){
     stop("There are no common transcripts/genes between names(tss_gr) and row.names(transcript_expression_table)")
   } else {
@@ -248,7 +248,7 @@ calculateMethSiteTranscriptCors <- function(meth_rse, assay_number = 1, transcri
     tss_for_chunk <- split(tss_for_chunk, names(tss_for_chunk))[names(tss_region_indices_list)] 
     
     # Create an iterator function for TSS sites
-    tss_iter = methodical:::.tss_iterator(meth_values_chunk, tss_region_indices_list, transcript_values, tss_for_chunk, 
+    tss_iter <- methodical:::.tss_iterator(meth_values_chunk, tss_region_indices_list, transcript_values, tss_for_chunk, 
       cor_method, add_distance_to_region, results_dir)
     
     # Calculate correlations for all TSS in chunk. 
