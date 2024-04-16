@@ -61,7 +61,7 @@ coad_query = GDCquery(project = "TCGA-COAD", data.category = "DNA Methylation",
 GDCdownload(query = coad_query, directory = tempdir())
 
 # Get paths to the methylation array files
-meth_array_files = list.files(paste(tempdir(), "TCGA-COAD", sep = "/"), recursive = T, full.names = T)
+meth_array_files = list.files(paste(tempdir(), "TCGA-COAD", sep = "/"), recursive = TRUE, full.names = TRUE)
 
 # Match the file names to sample submitter ID using the query result 
 coad_query_metadata = getResults(coad_query)
