@@ -1,6 +1,6 @@
 Package: methodical
 Title: Discovering genomic regions where methylation is strongly associated with transcriptional activity
-Version: 0.99.21
+Version: 0.99.22
 Authors@R: 
     person("Richard", "Heery", , "richardheery@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-8067-3114"))
@@ -19,7 +19,7 @@ RoxygenNote: 7.2.3
 Depends: 
     GenomicRanges,
     ggplot2,
-    R (>= 4.3.0),
+    R (>= 4.2.0),
     SummarizedExperiment
 LazyData: false
 Imports: 
