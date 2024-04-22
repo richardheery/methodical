@@ -16,7 +16,7 @@ cpgea_rse = HDF5Array::loadHDF5SummarizedExperiment("~/wgbs/cpgea/wgbs/cpgea_wgb
 
 # Subset cpgea_rse for tubb6 CpGs and common samples
 tubb6_meth_rse = subsetByOverlaps(cpgea_rse, tubb6_gr)[, common_normal_samples]
-HDF5Array::saveHDF5SummarizedExperiment(x = tubb6_meth_rse, dir = "inst/extdata/tubb6_meth_rse")
+HDF5Array::saveHDF5SummarizedExperiment(x = tubb6_meth_rse, dir = "inst/extdata/tubb6_meth_rse", replace = T)
 
 # Get methylation values for TUBB6 in CPGEA normal samples
 tubb6_tss_proximal_cpg_methylation = extractGRangesMethSiteValues(meth_rse = tubb6_meth_rse, genomic_regions = tubb6_gr,
@@ -34,21 +34,20 @@ tubb6_cpg_meth_transcript_cors = methodical::calculateMethSiteTranscriptCors(met
 tubb6_cpg_meth_transcript_cors = tubb6_cpg_meth_transcript_cors$ENST00000591909
   
 # Plot transcript cors for tubb6_cpg_meth_transcript_cors
-tubb6_correlation_plot = methodical::plotMethSiteValues(tubb6_cpg_meth_transcript_cors, 
-  column_name = "cor", ylabel = "Spearman Correlation", value_colours = "set2")
+tubb6_correlation_plot = methodical::plotMethSiteCorCoefs(tubb6_cpg_meth_transcript_cors)
 
 # Plot Methdodical scores for TUBB6
-tubb6_methodical_plot = methodical::plotMethodicalScores(methSiteValues = tubb6_cpg_meth_transcript_cors, smoothScores = F)
+tubb6_methodical_plot = methodical::plotMethodicalScores(meth_site_values = tubb6_cpg_meth_transcript_cors, smooth_scores = F)
 
 # Add smoothed scores to plot
-tubb6_smoothed_methodical_plot = methodical::plotMethodicalScores(methSiteValues = tubb6_cpg_meth_transcript_cors, 
-  smoothScores = T, smoothedCurveColour = "hotpink2", curveAlpha = 1)
+tubb6_smoothed_methodical_plot = methodical::plotMethodicalScores(meth_site_values = tubb6_cpg_meth_transcript_cors, 
+  smooth_scores = T, smoothed_curve_colour = "hotpink2", curve_alpha = 1)
 
 # Find TUBB6 TMRs
 tubb6_tmrs = methodical::findTMRs(tubb6_cpg_meth_transcript_cors)
 
 # Add TMRs to TUBB6 plot
-tubb6_correlation_plot_with_tmrs = methodical::plotTMRs(tubb6_smoothed_methodical_plot, tmrsGR = tubb6_tmrs)
+tubb6_correlation_plot_with_tmrs = methodical::plotTMRs(tubb6_smoothed_methodical_plot, tmrs_gr = tubb6_tmrs)
 
 # Change tubb6_meth_rse to a call to the tubb6_meth_rse directory located in the package extdata
 tubb6_meth_rse = quote(HDF5Array::loadHDF5SummarizedExperiment(system.file('extdata/tubb6_meth_rse', package = 'methodical')))
@@ -60,10 +59,10 @@ hg38_cpgs = methodical::extractMethSitesFromGenome("BSgenome.Hsapiens.UCSC.hg38"
 hg38_cpgs_subset = subsetByOverlaps(hg38_cpgs, GRanges("chr1:1-1000000"))
 
 # Add objects to package
-useData(tubb6_tss, overwrite = T, compress = "xz")
-useData(tubb6_meth_rse, overwrite = T, compress = "xz")
-useData(tubb6TranscriptCounts, overwrite = T, compress = "xz")
-useData(tubb6_cpg_meth_transcript_cors, overwrite = T, compress = "xz")
-useData(tubb6_tmrs, overwrite = T, compress = "xz")
-useData(tubb6_correlation_plot, overwrite = T, compress = "xz")
-useData(hg38_cpgs_subset, overwrite = T, compress = "xz")
+usethis::use_data(tubb6_tss, overwrite = T, compress = "xz")
+usethis::use_data(tubb6_meth_rse, overwrite = T, compress = "xz")
+usethis::use_data(tubb6TranscriptCounts, overwrite = T, compress = "xz")
+usethis::use_data(tubb6_cpg_meth_transcript_cors, overwrite = T, compress = "xz")
+usethis::use_data(tubb6_tmrs, overwrite = T, compress = "xz")
+usethis::use_data(tubb6_correlation_plot, overwrite = T, compress = "xz")
+usethis::use_data(hg38_cpgs_subset, overwrite = T, compress = "xz")

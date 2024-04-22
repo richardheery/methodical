@@ -1,6 +1,6 @@
 Package: methodical
 Title: Discovering genomic regions where methylation is strongly associated with transcriptional activity
-Version: 0.99.23
+Version: 0.99.24
 Authors@R: 
     person("Richard", "Heery", , "richardheery@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-8067-3114"))
@@ -15,7 +15,7 @@ BugReports: https://github.com/richardheery/methodical/issues
 biocViews: DNAMethylation, MethylationArray, Transcription, GenomeWideAssociation, Software
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Depends: 
     GenomicRanges,
     ggplot2,
