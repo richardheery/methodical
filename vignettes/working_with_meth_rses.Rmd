@@ -60,7 +60,7 @@ gstp1_start_site_region <- GRanges("chr11:67581742-67586656:+")
 
 # Extract methylation values for CpG sites overlapping GSTP1 gene body
 gstp1_cpg_methylation <- extractGRangesMethSiteValues(
-  meth_rse = mcrpc_wgbs_hg38_chr11, genomic_regions = gstp1_start_site_region )
+  meth_rse = mcrpc_wgbs_hg38_chr11, genomic_regions = gstp1_start_site_region)
 
 # View the first few rows and columns of the result. 
 # extractGRangesMethSiteValues returns a row for each methylation site and a 

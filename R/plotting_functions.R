@@ -595,8 +595,8 @@ annotatePlot <- function(meth_site_plot, annotation_grl, reference_tss = FALSE, 
   annotation_df$region_type <- factor(annotation_df$region_type, levels = rev(levels(annotation_df$region_type)))
   
   # Extract axis text size, axis title size and x-axis title from meth_site_plot
-  axis_text_size <- theme(meth_site_plot)[[1]]$theme$axis.text$size
-  axis_title_size <- theme(meth_site_plot)[[1]]$theme$axis.title$size
+  axis_text_size <- meth_site_plot$theme$axis.text$size
+  axis_title_size <- meth_site_plot$theme$axis.title$size
   x_axis_title <- meth_site_plot$labels$x
   
   # Create a linerange plot showing the positions of different genomic elements
@@ -605,7 +605,7 @@ annotatePlot <- function(meth_site_plot, annotation_grl, reference_tss = FALSE, 
     theme_bw() + 
     theme(plot.title = element_text(hjust = 0.5, size = 24),
       axis.title = element_text(size = axis_title_size), 
-      axis.text = element_text(size = axis_text_size ), legend.position = "None")  +
+      axis.text = element_text(size = axis_text_size), legend.position = "None")  +
     labs(x = x_axis_title, y = "Genome Annotation") +
     scale_x_continuous(expand = expansion(mult = c(0, 0)), labels = scales::comma, limits = ggplot_build(meth_site_plot)$layout$panel_params[[1]]$x.range) + 
     scale_color_manual(values = grl_colours, guide = guide_legend(override.aes = list(color = "white"))) +
