@@ -54,7 +54,6 @@ Suggests:
     knitr,
     methrix,
     rmarkdown,
-    TCGAbiolinks,
     TumourMethData
 VignetteBuilder: knitr
 SystemRequirements: kallisto
