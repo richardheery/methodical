@@ -461,7 +461,8 @@ plotMethodicalScores <- function(meth_site_values, reference_tss = NULL, p_value
   
   # Add smoothed Methodical scores if specified
   if(smooth_scores){
-    smoothed_methodical_scores <- calculateSmoothedMethodicalScores(correlation_df = meth_site_values)
+    smoothed_methodical_scores <- calculateSmoothedMethodicalScores(correlation_df = meth_site_values, 
+      offset_length = offset_length, smoothing_factor = smoothing_factor)
     meth_site_plot <- meth_site_plot +
     geom_line(mapping = aes(y = smoothed_methodical_scores), 
       color = smoothed_curve_colour, alpha = curve_alpha, linewidth = linewidth)
