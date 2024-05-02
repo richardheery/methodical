@@ -36,7 +36,7 @@ calculateSmoothedMethodicalScores <- function(correlation_df, offset_length = 10
   correlation_df$score <- sign(correlation_df$cor) * -log10(correlation_df$p_val)
   
   # Calculate exponentially decreasing weights
-  wts <- sapply(c(offset_length:0, 1:offset_length), function(x) smoothing_factor^x)
+  wts <- sapply(abs(seq(-offset_length, offset_length)), function(x) smoothing_factor^x)
   
   # Calculate smoothed Methodical score with a weighted rolling mean
   smoothed_score <- RcppRoll::roll_mean(x = correlation_df$score, n = (offset_length*2)+1, 
