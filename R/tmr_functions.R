@@ -154,11 +154,12 @@ findTMRs <- function(correlation_df, offset_length = 10, smoothing_factor = 0.75
   
   # Extract TSS range from correlation_df
   tss_gr <- attributes(correlation_df)$tss_range
-  transcript_id <- tss_gr$transcript_id
+  transcript_id <- names(tss_gr)
+  #transcript_id <- tss_gr$transcript_id
   
   # Find TMRs where smoothed methodical scores exceed thresholds
   tmr_gr_list <- .test_tmrs(meth_sites_gr = meth_sites_gr, smoothed_methodical_scores = smoothed_methodical_scores, 
-    p_value_threshold = 0.005, tss_gr = tss_gr, transcript_id = transcript_id)
+    p_value_threshold = p_value_threshold, tss_gr = tss_gr, transcript_id = transcript_id)
   
   # If there are no TMRs, return an empty GRanges
   if(sum(lengths(tmr_gr_list)) == 0){return(GenomicRanges::GRanges())}

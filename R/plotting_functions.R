@@ -381,8 +381,8 @@ plotTMRs <- function(meth_site_plot, tmrs_gr, reference_tss = NULL, transcript_i
 #' relative to the reference_tss shown first. If not, the x-axis will show the start site coordinate of the methylation site. 
 #' @param p_value_threshold The p-value threshold used to identify TMRs. Default value is 0.005. Set to NULL to turn off significance thresholds.
 #' @param smooth_scores TRUE or FALSE indicating whether to display a curve of smoothed Methodical scores on top of the plot. Default is TRUE.
-#' @param offset_length Offset length to be supplied to calculateSmoothedMethodicalScores.
-#' @param smoothing_factor Smoothing factor to be provided to calculateSmoothedMethodicalScores.
+#' @param offset_length Offset length to be supplied to calculateSmoothedMethodicalScores. Default is 10. 
+#' @param smoothing_factor Smoothing factor to be provided to calculateSmoothedMethodicalScores. Default is 0.75. 
 #' @param smoothed_curve_colour Colour of the smoothed curve. Default is "black".
 #' @param linewidth Line width of the smoothed curve. Default value is 1.
 #' @param curve_alpha Alpha value for the curve. Default value is 0.75. 
