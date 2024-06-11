@@ -333,3 +333,69 @@ createRandomRegions <- function(genome, n_regions = 1000, region_widths = 1000, 
   
 }
 
+#' Expand GRanges
+#'
+#' Expand ranges in a GRanges object upstream and downstream by specified numbers of bases, taking account of strand.
+#' Unstranded ranges are treated like they on the "+" strand. 
+#' If any of the resulting ranges are out-of-bounds given the seqinfo of genomic_regions, they will be trimmed using trim().
+#'
+#' @param genomic_regions A GRanges object
+#' @param upstream Number of bases to add upstream of each region in genomic_regions. 
+#' Must be numeric vector of length 1 or else equal to the length of genomic_regions. Default value is 0. 
+#' Negative values result in upstream end of regions being shortened, however the width of the resulting regions cannot be less than zero. 
+#' @param downstream Number of bases to add downstream of each region in genomic_regions. Negative values result in downstream end of regions being shortened. 
+#' Must be numeric vector of length 1 or else equal to the length of genomic_regions. Default value is 0.
+#' Negative values result in upstream end of regions being shortened, however the width of the resulting regions cannot be less than zero. 
+#' @return A GRanges object
+#' @export
+#' 
+expand_granges = function(genomic_regions, upstream = 0, downstream = 0) {
+  
+  # Check that genomic_regions is a GRanges object
+  if(!is(genomic_regions, "GRanges")){stop("genomic_regions must be a GRanges object")}
+  
+  # Check that upstream and downstream are vectors of either length 1 or with the same length as genomic_regions
+  if(!length(upstream) %in% c(1, length(genomic_regions))){
+    stop("upstream should be a vector of length 1 or the length of genomic_regions")}
+  if(!length(downstream) %in% c(1, length(genomic_regions))){
+    stop("downstream should be a vector of length 1 or the length of genomic_regions")}
+  
+  # Check if any regions would have negative widths after adjustment
+  if(any(width(genomic_regions) + upstream + downstream < 0)){
+    stop("Some regions would have a negative width after adjustment. This is not permitted.")
+  }
+  
+  ## Save names of genomic_regions
+  genomic_regions_names = names(genomic_regions)
+  
+  # Check for each range if it's on the negative or positive strand
+  strand_is_minus = as.character(GenomicRanges::strand(genomic_regions)) == "-"
+  on_plus = which(!strand_is_minus)
+  on_minus = which(strand_is_minus)
+  
+  # Create vectors with the start and end sites of genomic_regions
+  genomic_regions_starts = start(genomic_regions)
+  genomic_regions_ends = end(genomic_regions)
+  
+  # Adjust ranges based on whether they are on the positive or negative strand
+  genomic_regions_starts[on_plus] = genomic_regions_starts[on_plus] - upstream
+  genomic_regions_starts[on_minus] = genomic_regions_starts[on_minus] - downstream
+  genomic_regions_ends[on_plus] = genomic_regions_ends[on_plus] + downstream
+  genomic_regions_ends[on_minus] = genomic_regions_ends[on_minus] + upstream
+  
+  # Store metadata from genomic_regions
+  genomic_regions_mcols = mcols(genomic_regions)
+  
+  # Recreate genomic_regions with new starts and ends
+  genomic_regions = GRanges(seqnames = seqnames(genomic_regions), 
+    ranges = IRanges(genomic_regions_starts, genomic_regions_ends))
+  
+  # Restore metadata
+  mcols(genomic_regions) = genomic_regions_mcols
+  
+  # Remove any out-of-bounds regions and return genomic_regions
+  genomic_regions = GenomicRanges::trim(genomic_regions)
+  names(genomic_regions) = genomic_regions_names
+  return(genomic_regions)
+} 
+
