@@ -2,12 +2,12 @@
 #'
 #' @param chunk_regions Chunk with genomic regions of interest. 
 #' @param meth_rse A RangedSummarizedExperiment with methylation values.
-#' @param assay_number The assay from meth_rse to extract values from.
+#' @param assay The assay from meth_rse to extract values from. Should be either an index or the name of an assay.
 #' @param summary_function summary_function A function that summarizes column values.
 #' @param na.rm TRUE or FALSE indicating whether to remove NA values when calculating summaries.
 #' @param ... Additional arguments to be passed to summary_function. 
 #' @return A function which returns a list with the 
-.summarize_chunk_methylation <- function(chunk_regions, meth_rse, assay_number, summary_function, na.rm, ...){
+.summarize_chunk_methylation <- function(chunk_regions, meth_rse, assay, summary_function, na.rm, ...){
   
   # Subset meth_rse_for_chunk for regions overlapping chunk_regions
   meth_rse_for_chunk <- subsetByOverlaps(meth_rse, chunk_regions)
@@ -23,7 +23,7 @@
   region_names_to_rows_list <- split(overlaps_df$subjectHits, overlaps_df$genomic_region_name)
   
   # Read all values from specified assay of meth_rse_for_chunk into memory and run the garbage collection
-  meth_values <- as.matrix(SummarizedExperiment::assay(meth_rse_for_chunk, i = assay_number))
+  meth_values <- as.matrix(SummarizedExperiment::assay(meth_rse_for_chunk, i = assay))
   gc()
   
   # Summarize methylation values 
@@ -44,7 +44,7 @@
 #' Summarize methylation of genomic regions
 #' 
 #' @param meth_rse A RangedSummarizedExperiment with methylation values.
-#' @param assay_number The assay from meth_rse to extract values from. Default is the first assay. 
+#' @param assay The assay from meth_rse to extract values from. Should be either an index or the name of an assay. Default is the first assay. 
 #' @param genomic_regions GRanges object with regions to summarize methylation values for. 
 #' @param keep_metadata_cols TRUE or FALSE indicating whether to add the metadata columns of genomic_regions to the output. Default is FALSE.
 #' @param genomic_region_names A vector of names to give genomic_regions in the output table. There cannot be any duplicated names. 
@@ -75,11 +75,11 @@
 #' test_gr_methylation <- methodical::summarizeRegionMethylation(tubb6_meth_rse, genomic_regions = test_gr,
 #'   genomic_region_names = names(test_gr))
 #' 
-summarizeRegionMethylation <- function(meth_rse, assay_number = 1, genomic_regions, genomic_region_names = NULL, 
+summarizeRegionMethylation <- function(meth_rse, assay = 1, genomic_regions, genomic_region_names = NULL, 
   keep_metadata_cols = FALSE, max_sites_per_chunk = NULL, summary_function = base::colMeans, na.rm = TRUE, BPPARAM = BiocParallel::bpparam(), ...){
   
   # Check that inputs have the correct data type
-  stopifnot(is(meth_rse, "RangedSummarizedExperiment"), is(assay_number, "numeric"),
+  stopifnot(is(meth_rse, "RangedSummarizedExperiment"), is(assay, "numeric") | is(assay, "character"),
     is(genomic_regions, "GRanges"), is(genomic_region_names, "character") | is.null(genomic_region_names),
     S4Vectors::isTRUEorFALSE(keep_metadata_cols), 
     (is(max_sites_per_chunk, "numeric") & max_sites_per_chunk >= 1) | is.null(max_sites_per_chunk),
@@ -122,7 +122,7 @@ summarizeRegionMethylation <- function(meth_rse, assay_number = 1, genomic_regio
   message("Summarizing genomic region methylation")
   region_methylation <- BiocParallel::bpmapply(FUN = .summarize_chunk_methylation, 
     chunk_regions = genomic_region_bins, MoreArgs = list(meth_rse = meth_rse, 
-      assay_number = assay_number, summary_function = summary_function, na.rm = na.rm, ...), 
+      assay = assay, summary_function = summary_function, na.rm = na.rm, ...), 
     BPPARAM = BPPARAM, SIMPLIFY = FALSE)
 
   # Combine data.frames for each chunk

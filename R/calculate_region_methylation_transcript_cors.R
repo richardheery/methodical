@@ -2,7 +2,7 @@
 #'
 #' @param meth_rse A RangedSummarizedExperiment with methylation values for CpG sites which will be used to calculate methylation values for genomic_regions. 
 #' There must be at least 3 samples in common between meth_rse and transcript_expression_table.
-#' @param assay_number The assay from meth_rse to extract values from. Default is the first assay. 
+#' @param assay The assay from meth_rse to extract values from. Should be either an index or the name of an assay. Default is the first assay. 
 #' @param transcript_expression_table A table with the expression values for different transcripts in different samples. 
 #' Row names should give be the transcript name and column names should be the name of samples. 
 #' @param samples_subset Optional sample names used to subset meth_rse and transcript_expression_table. 
@@ -37,12 +37,12 @@
 #'   genomic_regions = tubb6_tmrs, genomic_region_names = tubb6_tmrs$tmr_name)
 #' tubb6_tmrs_transcript_cors
 #'  
-calculateRegionMethylationTranscriptCors <- function(meth_rse, assay_number = 1, transcript_expression_table, samples_subset = NULL, 
+calculateRegionMethylationTranscriptCors <- function(meth_rse, assay = 1, transcript_expression_table, samples_subset = NULL, 
   genomic_regions, genomic_region_names = NULL, genomic_region_transcripts = NULL, genomic_region_methylation = NULL,
   cor_method = "pearson", p_adjust_method = "BH", region_methylation_summary_function = colMeans, BPPARAM = BiocParallel::bpparam(), ...){
   
   # Check that inputs have the correct data type
-  stopifnot(is(meth_rse, "RangedSummarizedExperiment"), is(assay_number, "numeric"),
+  stopifnot(is(meth_rse, "RangedSummarizedExperiment"), is(assay, "numeric") | is(assay, "character"),
     is(transcript_expression_table, "data.frame") | is(transcript_expression_table, "matrix"),
     is(samples_subset, "character") | is.null(samples_subset), 
     is(genomic_regions, "GRanges"), is(genomic_region_names, "character") | is.null(genomic_region_names),
@@ -51,11 +51,6 @@ calculateRegionMethylationTranscriptCors <- function(meth_rse, assay_number = 1,
     is(p_adjust_method, "character") & p_adjust_method %in% p.adjust.methods,
     is(region_methylation_summary_function, "function"), is(BPPARAM, "BiocParallelParam"))
     match.arg(cor_method, choices = c("pearson", "spearman"))
-  
-  # Check that assay_number is not greater than the number of assays in meth_rse
-  if(assay_number > length(SummarizedExperiment::assays(meth_rse))){
-    stop(paste0("Provided value for assay_number (", assay_number, ") is greater than the number of assays in meth_rse"))
-  }
   
   # Check that samples_subset are in meth_rse and transcript_expression_table
   if(!is.null(samples_subset)){
@@ -149,7 +144,7 @@ calculateRegionMethylationTranscriptCors <- function(meth_rse, assay_number = 1,
   
     # Summarize methylation values for genomic_regions
     genomic_region_methylation <- summarizeRegionMethylation(
-      meth_rse = meth_rse, assay_number = assay_number, genomic_regions = genomic_regions, 
+      meth_rse = meth_rse, assay = assay, genomic_regions = genomic_regions, 
       genomic_region_names = names(genomic_regions), 
       summary_function = region_methylation_summary_function, BPPARAM = BPPARAM, ...
     )
