@@ -28,7 +28,7 @@
   
   # Summarize methylation values 
   meth_summary <- lapply(region_names_to_rows_list, function(x) 
-    col_summary_function(meth_values[x, , drop = FALSE], na.rm = na.rm, ...))
+    col_summary_function(meth_values[x, , drop = FALSE], useNames = TRUE, na.rm = na.rm, ...))
   rm(meth_values); gc()
   
   # Combine meth_summary into a single table
