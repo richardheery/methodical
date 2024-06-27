@@ -91,7 +91,7 @@ summarizeRegionMethylation <- function(meth_rse, assay = 1, genomic_regions, gen
   if(!col_summary_function %in% ls("package:MatrixGenerics")){
     stop("col_summary_function should be the name of one of the column summary functions from MatrixGenerics e.g. \"colSums2\"")
   }
-  col_summary_function = get(col_summary_function, envir = asNamespace("matrixGenerics"))
+  col_summary_function = get(col_summary_function, envir = asNamespace("MatrixGenerics"))
   
   # If genomic_region_names is NULL, attempt to use names of genomic_regions
   if(is.null(genomic_region_names)){genomic_region_names <- names(genomic_regions)}

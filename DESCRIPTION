@@ -35,6 +35,7 @@ Imports:
     GenomeInfoDb,
     HDF5Array,
     IRanges,
+    MatrixGenerics,
     R.utils,
     RcppRoll,
     rhdf5,
