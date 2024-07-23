@@ -7,8 +7,8 @@
 .summarize_chunk_methylation(
   chunk_regions,
   meth_rse,
-  assay_number,
-  summary_function,
+  assay,
+  col_summary_function,
   na.rm,
   ...
 )
@@ -18,16 +18,16 @@
 
 \item{meth_rse}{A RangedSummarizedExperiment with methylation values.}
 
-\item{assay_number}{The assay from meth_rse to extract values from.}
+\item{assay}{The assay from meth_rse to extract values from. Should be either an index or the name of an assay.}
 
-\item{summary_function}{summary_function A function that summarizes column values.}
+\item{col_summary_function}{A function that summarizes column values.}
 
 \item{na.rm}{TRUE or FALSE indicating whether to remove NA values when calculating summaries.}
 
-\item{...}{Additional arguments to be passed to summary_function.}
+\item{...}{Additional arguments to be passed to col_summary_function.}
 }
 \value{
-A function which returns a list with the
+A function which returns a list with the summarized methylation values for regions in each sample.
 }
 \description{
 Summarize methylation values for regions in a chunk

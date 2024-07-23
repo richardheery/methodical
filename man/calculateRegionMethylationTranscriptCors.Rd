@@ -6,7 +6,7 @@
 \usage{
 calculateRegionMethylationTranscriptCors(
   meth_rse,
-  assay_number = 1,
+  assay = 1,
   transcript_expression_table,
   samples_subset = NULL,
   genomic_regions,
@@ -24,7 +24,7 @@ calculateRegionMethylationTranscriptCors(
 \item{meth_rse}{A RangedSummarizedExperiment with methylation values for CpG sites which will be used to calculate methylation values for genomic_regions.
 There must be at least 3 samples in common between meth_rse and transcript_expression_table.}
 
-\item{assay_number}{The assay from meth_rse to extract values from. Default is the first assay.}
+\item{assay}{The assay from meth_rse to extract values from. Should be either an index or the name of an assay. Default is the first assay.}
 
 \item{transcript_expression_table}{A table with the expression values for different transcripts in different samples.
 Row names should give be the transcript name and column names should be the name of samples.}

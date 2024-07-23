@@ -7,7 +7,7 @@
 kallistoIndex(
   path_to_kallisto,
   transcripts_fasta,
-  index_name = "kallistoIndex.idx"
+  index_name = "kallisto_index.idx"
 )
 }
 \arguments{
@@ -15,7 +15,7 @@ kallistoIndex(
 
 \item{transcripts_fasta}{Path to a fasta file for the transcripts to be quantified.}
 
-\item{index_name}{Name to give the created index file. Default is "kallistoIndex.idx".}
+\item{index_name}{Name to give the created index file. Default is "kallisto_index.idx".}
 }
 \value{
 Invisibly returns TRUE.

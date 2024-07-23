@@ -23,39 +23,46 @@ Depends:
     SummarizedExperiment
 LazyData: false
 Imports: 
+    AnnotationHub,
+    annotatr,
+    BiocCheck,
+    BiocManager,
     BiocParallel,
+    BiocStyle,
     Biostrings,
     BSgenome,
+    BSgenome.Hsapiens.UCSC.hg19,
+    BSgenome.Hsapiens.UCSC.hg38,
     cowplot,
     data.table,
     DelayedArray,
+    devtools,
     dplyr,
     ExperimentHub,
     foreach,
     GenomeInfoDb,
     HDF5Array,
     IRanges,
+    knitr,
     MatrixGenerics,
     R.utils,
+    rcmdcheck,
     RcppRoll,
+    remotes,
     rhdf5,
     rtracklayer,
     S4Vectors,
     scales,
     tibble,
-    tidyr
+    tidyr,
+    tools,
+    TumourMethData,
+    usethis
 Suggests: 
-    AnnotationHub,
-    annotatr,
-    BiocStyle,
     BSgenome.Athaliana.TAIR.TAIR9,
-    BSgenome.Hsapiens.UCSC.hg19,
-    BSgenome.Hsapiens.UCSC.hg38,
     DESeq2,
-    knitr,
     methrix,
-    rmarkdown,
-    TumourMethData
+    rmarkdown
 VignetteBuilder: knitr
 SystemRequirements: kallisto
 URL: https://github.com/richardheery/methodical

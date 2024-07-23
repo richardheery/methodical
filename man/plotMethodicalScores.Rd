@@ -31,9 +31,9 @@ relative to the reference_tss shown first. If not, the x-axis will show the star
 
 \item{smooth_scores}{TRUE or FALSE indicating whether to display a curve of smoothed Methodical scores on top of the plot. Default is TRUE.}
 
-\item{offset_length}{Offset length to be supplied to calculateSmoothedMethodicalScores.}
+\item{offset_length}{Offset length to be supplied to calculateSmoothedMethodicalScores. Default is 10.}
 
-\item{smoothing_factor}{Smoothing factor to be provided to calculateSmoothedMethodicalScores.}
+\item{smoothing_factor}{Smoothing factor to be provided to calculateSmoothedMethodicalScores. Default is 0.75.}
 
 \item{smoothed_curve_colour}{Colour of the smoothed curve. Default is "black".}
 

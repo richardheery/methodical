@@ -6,7 +6,7 @@
 \usage{
 kallistoQuantify(
   path_to_kallisto,
-  kallistoIndex,
+  kallisto_index,
   forward_fastq_files,
   reverse_fastq_files,
   sample_names,
@@ -20,7 +20,7 @@ kallistoQuantify(
 \arguments{
 \item{path_to_kallisto}{Path to kallisto executable}
 
-\item{kallistoIndex}{Path to a kallisto index}
+\item{kallisto_index}{Path to a kallisto index}
 
 \item{forward_fastq_files}{A vector with the paths to forward FASTQ files. Each file should correspond to the file at the same position in reverse_fastq_files.}
 

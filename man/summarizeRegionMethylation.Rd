@@ -2,16 +2,16 @@
 % Please edit documentation in R/summarize_region_methylation.R
 \name{summarizeRegionMethylation}
 \alias{summarizeRegionMethylation}
-\title{Summarize methylation of genomic regions}
+\title{Summarize methylation of genomic regions within samples}
 \usage{
 summarizeRegionMethylation(
   meth_rse,
-  assay_number = 1,
+  assay = 1,
   genomic_regions,
   genomic_region_names = NULL,
+  col_summary_function = "colMeans2",
   keep_metadata_cols = FALSE,
-  max_sites_per_chunk = NULL,
-  summary_function = base::colMeans,
+  max_sites_per_chunk = floor(62500000/ncol(meth_rse)),
   na.rm = TRUE,
   BPPARAM = BiocParallel::bpparam(),
   ...
@@ -20,12 +20,15 @@ summarizeRegionMethylation(
 \arguments{
 \item{meth_rse}{A RangedSummarizedExperiment with methylation values.}
 
-\item{assay_number}{The assay from meth_rse to extract values from. Default is the first assay.}
+\item{assay}{The assay from meth_rse to extract values from. Should be either an index or the name of an assay. Default is the first assay.}
 
 \item{genomic_regions}{GRanges object with regions to summarize methylation values for.}
 
 \item{genomic_region_names}{A vector of names to give genomic_regions in the output table. There cannot be any duplicated names.
 Default is to attempt to use \code{names(genomic_regions)} if they are present or to name them region_1, region_2, etc otherwise.}
+
+\item{col_summary_function}{A function that summarizes column values.
+Should be the name of one of the column summary functions from MatrixGenerics. Default is "rowMeans2".}
 
 \item{keep_metadata_cols}{TRUE or FALSE indicating whether to add the metadata columns of genomic_regions to the output. Default is FALSE.}
 
@@ -36,19 +39,17 @@ Some experimentation may be needed to choose an optimal value as low values will
 while high values will result in a large memory footprint without much improvement in running time.
 Default is floor(62500000/ncol(meth_rse)), resulting in each chunk requiring approximately 500 MB of RAM.}
 
-\item{summary_function}{A function that summarizes column values. Default is base::colMeans.}
-
 \item{na.rm}{TRUE or FALSE indicating whether to remove NA values when calculating summaries. Default value is TRUE.}
 
 \item{BPPARAM}{A BiocParallelParam object. Defaults to \code{BiocParallel::bpparam()}.}
 
-\item{...}{Additional arguments to be passed to summary_function.}
+\item{...}{Additional arguments to be passed to col_summary_function.}
 }
 \value{
 A data.table with the summary of methylation of each region in genomic_regions for each sample.
 }
 \description{
-Summarize methylation of genomic regions
+Summarize methylation of genomic regions within samples
 }
 \examples{
 
