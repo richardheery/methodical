@@ -192,3 +192,4 @@ sumTranscriptValuesForGenes <- function(transcript_expression_table, gene_to_tra
   # Set gene names as row.names and return
   return(tibble::column_to_rownames(results_table, "gene_name"))
 }
+
