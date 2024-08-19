@@ -1,3 +1,39 @@
+#' Correct p-values for a list of methylation-transcription correlations results
+#' 
+#' @param correlation_list A list of data.frames with correlation values between methylation sites 
+#' and a transcript as returned by calculateMethSiteTranscriptCors.
+#' @param p_adjust_method The method to use for p-value adjustment. Should be one of the methods in p.adjust.methods. 
+#' Default is "fdr".
+#' @return A list identical to correlation_list except with p-values corrected using the indicated method.
+#' @export
+correct_correlation_pvalues <- function(correlation_list, p_adjust_method = "fdr"){
+  
+  # Check that p_adjust_method is in p.adjust.methods
+  if(!p_adjust_method %in% p.adjust.methods){stop("Provided p_adjust_method is not one of the options in p.adjust.methods")}
+  
+  # Extract tss_gr attribute from all data.frames in correlation_list
+  tss_gr_attributes <- lapply(correlation_list, function(x) attributes(x)$tss_range)
+  
+  # Combine results into a single data.frame
+  correlation_list <- dplyr::bind_rows(correlation_list)
+  
+  # Replace p-value with corrected p-values
+  correlation_list$p_val <- p.adjust(correlation_list$p_val, method = p_adjust_method)
+  
+  # Convert results back into a list
+  correlation_list <- split(correlation_list, correlation_list$transcript_name)
+  
+  # Restore tss_range attribute to data.frames
+  correlation_list <- correlation_list[names(tss_gr_attributes)]
+  for(i in 1:length(correlation_list)){
+    attributes(correlation_list[[i]])$tss_range <- tss_gr_attributes[[i]]
+  }
+  
+  # Return the correlation_list with the corrected p-values
+  return(correlation_list)
+  
+}
+
 #' Calculate methodical score and smooth it using a exponential weighted moving average
 #' 
 #' @param correlation_df A data.frame with correlation values between methylation sites and a transcript as returned by calculateMethSiteTranscriptCors. 
@@ -106,13 +142,12 @@ calculateSmoothedMethodicalScores <- function(correlation_df, offset_length = 10
 #' or a path to an RDS file containing such a data.frame as returned by calculateMethSiteTranscriptCors. 
 #' @param offset_length Number of methylation sites added upstream and downstream of a central methylation site to form a window, resulting in a window size of 2*offset_length + 1.
 #' Default value is 10.
+#' @param p_value_threshold The p_value cutoff to use. Default value is 0.005.
 #' @param smoothing_factor Smoothing factor for exponential moving average. Should be a value between 0 and 1 with higher 
 #' values resulting in a greater degree of smoothing. Default is 0.75. 
-#' @param p_value_threshold The p_value cutoff to use. Default value is 0.005
 #' @param min_gapwidth Merge TMRs with the same direction separated by less than this number of base pairs. Default value is 150. 
 #' @param min_meth_sites Minimum number of methylation sites that TMRs can contain. Default value is 5. 
 #' @return A GRanges object with the location of TMRs.
-#' @export
 #' @examples
 #' # Load methylation-transcript correlation results for TUBB6 gene
 #' data("tubb6_cpg_meth_transcript_cors", package = "methodical")
@@ -121,7 +156,8 @@ calculateSmoothedMethodicalScores <- function(correlation_df, offset_length = 10
 #' tubb6_tmrs <- findTMRs(correlation_df = tubb6_cpg_meth_transcript_cors)
 #' print(tubb6_tmrs)
 #' 
-findTMRs <- function(correlation_df, offset_length = 10, smoothing_factor = 0.75, p_value_threshold = 0.005, min_gapwidth = 150, min_meth_sites = 5){
+.find_tmrs_single <- function(correlation_df, offset_length = 10, p_value_threshold = 0.005, 
+  smoothing_factor = 0.75, min_gapwidth = 150, min_meth_sites = 5){
   
   # Check that inputs have the correct data type
   stopifnot(is(correlation_df, "data.frame") | is.character(correlation_df), is(offset_length, "numeric"), 
@@ -218,6 +254,40 @@ findTMRs <- function(correlation_df, offset_length = 10, smoothing_factor = 0.75
   # If tmr_gr is now empty, return an empty GRanges without metadata or else return tmr_gr
   if(length(tmr_gr) == 0){return(GenomicRanges::GRanges())}
   return(tmr_gr)
+  
+}
+
+#' Find TSS-Proximal Methylation-Controlled Regulatory Sites (TMRs)
+#' 
+#' @param correlation_list A list of data.frames with correlation values between methylation sites 
+#' and a transcript as returned by calculateMethSiteTranscriptCors.
+#' @param offset_length Number of methylation sites added upstream and downstream of a central methylation site to form a window, resulting in a window size of 2*offset_length + 1.
+#' Default value is 10.
+#' @param p_adjust_method The method to use for p-value adjustment. Should be one of the methods in p.adjust.methods. Default is "fdr".
+#' @param p_value_threshold The p_value cutoff to use (after correcting p-values with p_adjust_method). Default value is 0.005.
+#' @param smoothing_factor Smoothing factor for exponential moving average. Should be a value between 0 and 1 with higher 
+#' values resulting in a greater degree of smoothing. Default is 0.75. 
+#' @param min_gapwidth Merge TMRs with the same direction separated by less than this number of base pairs. Default value is 150. 
+#' @param min_meth_sites Minimum number of methylation sites that TMRs can contain. Default value is 5. 
+#' @param BPPARAM A BiocParallelParam object for parallel processing. Defaults to `BiocParallel::bpparam()`.
+#' @return A GRanges object with the location of TMRs.
+#' @export
+findTMRs <- function(correlation_list, offset_length = 10, p_adjust_method = "fdr", p_value_threshold = 0.005, 
+  smoothing_factor = 0.75, min_gapwidth = 150, min_meth_sites = 5, BPPARAM = BiocParallel::bpparam()){
+  
+  # Correct p-values from correlation_list
+  correlation_list = correct_correlation_pvalues(correlation_list, p_adjust_method)
+  
+  # Find TMRs for each data.frame in correlation_list
+  tmr_list <- BiocParallel::bplapply(X = correlation_list, function(X)
+    {.find_tmrs_single(correlation_df = X, 
+      offset_length = offset_length, p_value_threshold = p_value_threshold, 
+      smoothing_factor = smoothing_factor, min_gapwidth = min_gapwidth, 
+      min_meth_sites = min_meth_sites
+      )}, BPPARAM = BPPARAM)
+  
+  # Convert tmr_list to a GRanges and return
+  return(unlist(GenomicRanges::GRangesList(tmr_list)))
   
 }
 
