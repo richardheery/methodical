@@ -490,6 +490,7 @@ plotMethodicalScores <- function(meth_site_values, reference_tss = NULL, p_value
 #' relative to the reference_tss shown first. 
 #' If FALSE (the default), the x-axis will instead show the start site coordinate of the methylation site. 
 #' relative to the reference_tss shown first. If not, the x-axis will show the start site coordinate of the methylation site.
+#' @param ylab The title to give the Y axis in the annotation plot. Default is "Genome Annotation".
 #' @param annotation_line_size Linewidth for annotation plot. Default is 5. 
 #' @param annotation_plot_proportion A value giving the proportion of the height of the plot devoted to the annotation. Default is 0.5. 
 #' @param keep_meth_site_plot_legend TRUE or FALSE indicating whether to retain the legend of meth_site_plot, if it has one. Default value is FALSE. 
@@ -508,7 +509,7 @@ plotMethodicalScores <- function(meth_site_values, reference_tss = NULL, p_value
 #' methodical::annotatePlot(tubb6_correlation_plot, annotation_grl = cpg_island_annotation, annotation_plot_proportion = 0.3)
 #' 
 annotatePlot <- function(meth_site_plot, annotation_grl, reference_tss = FALSE, grl_colours = NULL, 
-  annotation_line_size = 5, annotation_plot_proportion = 0.5, keep_meth_site_plot_legend = FALSE, annotation_plot_only = FALSE){
+  annotation_line_size = 5, ylab = "Genome Annotation", annotation_plot_proportion = 0.5, keep_meth_site_plot_legend = FALSE, annotation_plot_only = FALSE){
   
   # If annotation_grl is a list, attempt to coerce it to a GRangesList
   if(is(annotation_grl, "list")){
@@ -607,7 +608,7 @@ annotatePlot <- function(meth_site_plot, annotation_grl, reference_tss = FALSE, 
     theme(plot.title = element_text(hjust = 0.5, size = 24),
       axis.title = element_text(size = axis_title_size), 
       axis.text = element_text(size = axis_text_size), legend.position = "None")  +
-    labs(x = x_axis_title, y = "Genome Annotation") +
+    labs(x = x_axis_title, y = ylab) +
     scale_x_continuous(expand = expansion(mult = c(0, 0)), labels = scales::comma, limits = ggplot_build(meth_site_plot)$layout$panel_params[[1]]$x.range) + 
     scale_color_manual(values = grl_colours, guide = guide_legend(override.aes = list(color = "white"))) +
     # The following code makes the legend invisible

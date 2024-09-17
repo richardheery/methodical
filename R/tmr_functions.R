@@ -276,7 +276,7 @@ findTMRs <- function(correlation_list, offset_length = 10, p_adjust_method = "fd
   smoothing_factor = 0.75, min_gapwidth = 150, min_meth_sites = 5, BPPARAM = BiocParallel::bpparam()){
   
   # Correct p-values from correlation_list
-  correlation_list = correct_correlation_pvalues(correlation_list, p_adjust_method)
+  correlation_list <- correct_correlation_pvalues(correlation_list, p_adjust_method)
   
   # Find TMRs for each data.frame in correlation_list
   tmr_list <- BiocParallel::bplapply(X = correlation_list, function(X)

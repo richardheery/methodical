@@ -10,6 +10,7 @@ annotatePlot(
   reference_tss = FALSE,
   grl_colours = NULL,
   annotation_line_size = 5,
+  ylab = "Genome Annotation",
   annotation_plot_proportion = 0.5,
   keep_meth_site_plot_legend = FALSE,
   annotation_plot_only = FALSE
@@ -34,6 +35,8 @@ relative to the reference_tss shown first. If not, the x-axis will show the star
 GRanges making up annotation_grl. Must have same length as annotation_grl.}
 
 \item{annotation_line_size}{Linewidth for annotation plot. Default is 5.}
+
+\item{ylab}{The title to give the Y axis in the annotation plot. Default is "Genome Annotation".}
 
 \item{annotation_plot_proportion}{A value giving the proportion of the height of the plot devoted to the annotation. Default is 0.5.}
 
