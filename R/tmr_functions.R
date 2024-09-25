@@ -87,11 +87,11 @@ calculateSmoothedMethodicalScores <- function(correlation_df, offset_length = 10
 #' 
 #' @param meth_sites_gr A GRanges object with the location of methylation sites. 
 #' @param smoothed_methodical_scores A numeric vector with the smoothed methodical scores associated with each methylation site. 
-#' @param p_value_threshold The p_value cutoff to use. Default value is 0.005.
+#' @param p_value_threshold The p_value cutoff to use. Default value is 0.05.
 #' @param tss_gr An optional GRanges object giving the location of the TSS meth_sites_gr is associated with. 
 #' @param transcript_id Name of the transcript associated with the TSS. 
 #' @return A GRanges object with the location of TMRs. 
-.test_tmrs <- function(meth_sites_gr, smoothed_methodical_scores, p_value_threshold = 0.005, 
+.test_tmrs <- function(meth_sites_gr, smoothed_methodical_scores, p_value_threshold = 0.05, 
   tss_gr = NULL, transcript_id = NULL){
   
   # Create upper and lower bounds using the log of p_value_threshold
@@ -142,7 +142,7 @@ calculateSmoothedMethodicalScores <- function(correlation_df, offset_length = 10
 #' or a path to an RDS file containing such a data.frame as returned by calculateMethSiteTranscriptCors. 
 #' @param offset_length Number of methylation sites added upstream and downstream of a central methylation site to form a window, resulting in a window size of 2*offset_length + 1.
 #' Default value is 10.
-#' @param p_value_threshold The p_value cutoff to use. Default value is 0.005.
+#' @param p_value_threshold The p_value cutoff to use. Default value is 0.05.
 #' @param smoothing_factor Smoothing factor for exponential moving average. Should be a value between 0 and 1 with higher 
 #' values resulting in a greater degree of smoothing. Default is 0.75. 
 #' @param min_gapwidth Merge TMRs with the same direction separated by less than this number of base pairs. Default value is 150. 
@@ -156,7 +156,7 @@ calculateSmoothedMethodicalScores <- function(correlation_df, offset_length = 10
 #' tubb6_tmrs <- findTMRs(correlation_df = tubb6_cpg_meth_transcript_cors)
 #' print(tubb6_tmrs)
 #' 
-.find_tmrs_single <- function(correlation_df, offset_length = 10, p_value_threshold = 0.005, 
+.find_tmrs_single <- function(correlation_df, offset_length = 10, p_value_threshold = 0.05, 
   smoothing_factor = 0.75, min_gapwidth = 150, min_meth_sites = 5){
   
   # Check that inputs have the correct data type
@@ -264,7 +264,7 @@ calculateSmoothedMethodicalScores <- function(correlation_df, offset_length = 10
 #' @param offset_length Number of methylation sites added upstream and downstream of a central methylation site to form a window, resulting in a window size of 2*offset_length + 1.
 #' Default value is 10.
 #' @param p_adjust_method The method to use for p-value adjustment. Should be one of the methods in p.adjust.methods. Default is "fdr".
-#' @param p_value_threshold The p_value cutoff to use (after correcting p-values with p_adjust_method). Default value is 0.005.
+#' @param p_value_threshold The p_value cutoff to use (after correcting p-values with p_adjust_method). Default value is 0.05.
 #' @param smoothing_factor Smoothing factor for exponential moving average. Should be a value between 0 and 1 with higher 
 #' values resulting in a greater degree of smoothing. Default is 0.75. 
 #' @param min_gapwidth Merge TMRs with the same direction separated by less than this number of base pairs. Default value is 150. 
@@ -272,7 +272,7 @@ calculateSmoothedMethodicalScores <- function(correlation_df, offset_length = 10
 #' @param BPPARAM A BiocParallelParam object for parallel processing. Defaults to `BiocParallel::bpparam()`.
 #' @return A GRanges object with the location of TMRs.
 #' @export
-findTMRs <- function(correlation_list, offset_length = 10, p_adjust_method = "fdr", p_value_threshold = 0.005, 
+findTMRs <- function(correlation_list, offset_length = 10, p_adjust_method = "fdr", p_value_threshold = 0.05, 
   smoothing_factor = 0.75, min_gapwidth = 150, min_meth_sites = 5, BPPARAM = BiocParallel::bpparam()){
   
   # Correct p-values from correlation_list
