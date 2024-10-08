@@ -8,7 +8,7 @@ findTMRs(
   correlation_list,
   offset_length = 10,
   p_adjust_method = "fdr",
-  p_value_threshold = 0.005,
+  p_value_threshold = 0.05,
   smoothing_factor = 0.75,
   min_gapwidth = 150,
   min_meth_sites = 5,
@@ -24,7 +24,7 @@ Default value is 10.}
 
 \item{p_adjust_method}{The method to use for p-value adjustment. Should be one of the methods in p.adjust.methods. Default is "fdr".}
 
-\item{p_value_threshold}{The p_value cutoff to use (after correcting p-values with p_adjust_method). Default value is 0.005.}
+\item{p_value_threshold}{The p_value cutoff to use (after correcting p-values with p_adjust_method). Default value is 0.05.}
 
 \item{smoothing_factor}{Smoothing factor for exponential moving average. Should be a value between 0 and 1 with higher
 values resulting in a greater degree of smoothing. Default is 0.75.}

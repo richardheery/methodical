@@ -7,7 +7,7 @@
 .find_tmrs_single(
   correlation_df,
   offset_length = 10,
-  p_value_threshold = 0.005,
+  p_value_threshold = 0.05,
   smoothing_factor = 0.75,
   min_gapwidth = 150,
   min_meth_sites = 5
@@ -20,7 +20,7 @@ or a path to an RDS file containing such a data.frame as returned by calculateMe
 \item{offset_length}{Number of methylation sites added upstream and downstream of a central methylation site to form a window, resulting in a window size of 2*offset_length + 1.
 Default value is 10.}
 
-\item{p_value_threshold}{The p_value cutoff to use. Default value is 0.005.}
+\item{p_value_threshold}{The p_value cutoff to use. Default value is 0.05.}
 
 \item{smoothing_factor}{Smoothing factor for exponential moving average. Should be a value between 0 and 1 with higher
 values resulting in a greater degree of smoothing. Default is 0.75.}

@@ -7,7 +7,7 @@
 .test_tmrs(
   meth_sites_gr,
   smoothed_methodical_scores,
-  p_value_threshold = 0.005,
+  p_value_threshold = 0.05,
   tss_gr = NULL,
   transcript_id = NULL
 )
@@ -17,7 +17,7 @@
 
 \item{smoothed_methodical_scores}{A numeric vector with the smoothed methodical scores associated with each methylation site.}
 
-\item{p_value_threshold}{The p_value cutoff to use. Default value is 0.005.}
+\item{p_value_threshold}{The p_value cutoff to use. Default value is 0.05.}
 
 \item{tss_gr}{An optional GRanges object giving the location of the TSS meth_sites_gr is associated with.}
 
