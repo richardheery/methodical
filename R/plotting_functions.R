@@ -327,7 +327,7 @@ plotMethSiteCorCoefs <- function(meth_site_cor_values, reference_tss = FALSE,
 #' tubb6_correlation_plot <- methodical::plotMethSiteCorCoefs(tubb6_cpg_meth_transcript_cors, ylabel = "Spearman Correlation")
 #'   
 #' # Find TMRs for TUBB6
-#' tubb6_tmrs <- findTMRs(correlation_df = tubb6_cpg_meth_transcript_cors)
+#' tubb6_tmrs <- findTMRs(correlation_list = list(ENST00000591909 = tubb6_cpg_meth_transcript_cors))
 #' 
 #' # Plot TMRs on top of tubb6_correlation_plot
 #' methodical::plotTMRs(tubb6_correlation_plot, tmrs_gr = tubb6_tmrs)
@@ -621,7 +621,7 @@ annotatePlot <- function(meth_site_plot, annotation_grl, reference_tss = FALSE, 
   if(annotation_plot_only){return(annotation_plot)}
   
   # Get legend from meth_site_plot
-  meth_site_plot_legend <- cowplot::get_legend(meth_site_plot)
+  meth_site_plot_legend <- suppressWarnings(cowplot::get_legend(meth_site_plot))
   legends <- cowplot::plot_grid(meth_site_plot_legend, NULL, nrow = 2, rel_heights = c(1 - annotation_plot_proportion, annotation_plot_proportion))
   
   # Combine meth_site_plot and annotation_plot

@@ -14,9 +14,11 @@
 #' @examples 
 #' # Get human CpG sites for hg38 genome build
 #' hg38_cpgs <- methodical::extractMethSitesFromGenome("BSgenome.Hsapiens.UCSC.hg38")
+#' head(hg38_cpgs)
 #' 
 #' # Find CHG sites in Arabidopsis thaliana
 #' arabidopsis_cphpgs <- methodical::extractMethSitesFromGenome("BSgenome.Athaliana.TAIR.TAIR9", pattern = "CHG")
+#' head(arabidopsis_cphpgs)
 extractMethSitesFromGenome <- function(genome, pattern = "CG", plus_strand_only = TRUE, 
   meth_site_position = 1, standard_sequences_only = TRUE){
   
@@ -231,6 +233,7 @@ rangesRelativeToTSS <- function(genomic_regions, tss_gr){
 #' 
 #' # Create 10,000 random non-overlapping regions with width 1,000 for hg38
 #' random_regions <- methodical::createRandomRegions(genome = "BSgenome.Hsapiens.UCSC.hg38", n_regions = 10000)
+#' head(random_regions)
 createRandomRegions <- function(genome, n_regions = 1000, region_widths = 1000, sequences = NULL, all_sequences_equally_likely = FALSE,
    stranded = FALSE, masked_regions = NULL, allow_overlapping_regions = FALSE, ignore.strand = TRUE, max_tries = 100){
   
@@ -348,7 +351,10 @@ createRandomRegions <- function(genome, n_regions = 1000, region_widths = 1000, 
 #' Negative values result in upstream end of regions being shortened, however the width of the resulting regions cannot be less than zero. 
 #' @return A GRanges object
 #' @export
-#' 
+#' @examples 
+#' data(tubb6_tss, package = "methodical")
+#' tubb6_tss
+#' methodical::expand_granges(tubb6_tss, upstream = 5000, downstream = 5000)
 expand_granges = function(genomic_regions, upstream = 0, downstream = 0) {
   
   # Check that genomic_regions is a GRanges object

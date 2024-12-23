@@ -249,7 +249,7 @@ makeMethRSEFromArrayFiles <- function(array_files, probe_name_column = 1, beta_v
 #'   
 #' # Convert methrix to a RangedSummarizedExperiment with one assay for the methylation beta values
 #' meth_rse <- methodical::methrixToRSE(methrix_data, assays = "beta")
-#' 
+#' print(meth_rse)
 methrixToRSE <- function(methrix, assays = c("beta", "cov")){
   
   # Check that inputs have the correct data type

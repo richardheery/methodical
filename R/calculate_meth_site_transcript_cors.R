@@ -140,11 +140,8 @@
 #' Names of regions cannot contain any duplicates and should and match those of tss_associated_gr and be present in transcript_expression table.
 #' @param tss_associated_gr A GRanges object with the locations of regions associated with each transcription start site. 
 #' Names of regions cannot contain any duplicates and should and match those of tss_gr and be present in transcript_expression table.
-##' @param tss_grl A GRangesList object with the locations of regions associated with transcription start sites (TSS).
-##' The most upstream position of each region resize(gr, 1, fix = "start") is assumed to be the transcription start site.
-##' names(tss_gr) should give the name of the transcript associated with the TSS, which must be present in transcript_expression_table.
 ##' @param expand_upstream Number of bases to add upstream of TSS each transcript. Must be numeric vector of length 1 or equal to the length of tss_gr. Default is 5000.
-##' @param expand_downstream Number of bases to add downstream of TES of each transcript. Must be numeric vector of length 1 or equal to the length of tss_gr. Default is 500.
+##' @param expand_downstream Number of bases to add downstream of TES of each transcript. Must be numeric vector of length 1 or equal to the length of tss_gr. Default is 5000.
 #' @param cor_method A character string indicating which correlation coefficient is to be computed. 
 #' One of either "pearson" or "spearman" or their abbreviations. 
 #' @param add_distance_to_region TRUE or FALSE indicating whether to add the distance of methylation sites to the TSS. Default value is TRUE.
@@ -172,9 +169,11 @@
 #' data(tubb6_transcript_counts, package = "methodical")
 #' 
 #' # Calculate correlation values between methylation values and transcript values for TUBB6
-#' tubb6_cpg_meth_transcript_cors <- methodical::calculateMethSiteTranscriptCors(meth_rse = tubb6_meth_rse, 
-#'   transcript_expression_table = tubb6_transcript_counts, tss_gr = tubb6_tss, expand_upstream = 5000, expand_downstream = 5000)
-#'   
+#' tubb6_cpg_meth_transcript_cors <- methodical::calculateMethSiteTranscriptCors(meth_rse = tubb6_meth_rse,
+#'   transcript_expression_table = tubb6_transcript_counts, tss_gr = tubb6_tss, 
+#'   tss_associated_gr = methodical::expand_granges(tubb6_tss, upstream = 5000, downstream = 5000))
+#' head(tubb6_cpg_meth_transcript_cors$ENST00000591909)
+#' 
 calculateMethSiteTranscriptCors <- function(meth_rse, assay_number = 1, transcript_expression_table, 
   samples_subset = NULL, tss_gr, tss_associated_gr, cor_method = "pearson", 
   add_distance_to_region = TRUE, max_sites_per_chunk = NULL, BPPARAM = BiocParallel::bpparam(), results_dir = NULL){
