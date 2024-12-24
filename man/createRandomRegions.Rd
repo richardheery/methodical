@@ -58,4 +58,5 @@ set.seed(123)
 
 # Create 10,000 random non-overlapping regions with width 1,000 for hg38
 random_regions <- methodical::createRandomRegions(genome = "BSgenome.Hsapiens.UCSC.hg38", n_regions = 10000)
+head(random_regions)
 }

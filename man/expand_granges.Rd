@@ -25,3 +25,8 @@ Expand ranges in a GRanges object upstream and downstream by specified numbers o
 Unstranded ranges are treated like they on the "+" strand.
 If any of the resulting ranges are out-of-bounds given the seqinfo of genomic_regions, they will be trimmed using trim().
 }
+\examples{
+data(tubb6_tss, package = "methodical")
+tubb6_tss
+methodical::expand_granges(tubb6_tss, upstream = 5000, downstream = 5000)
+}

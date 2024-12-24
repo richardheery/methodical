@@ -40,7 +40,7 @@ Find TSS-Proximal Methylation-Controlled Regulatory Sites (TMRs)
 data("tubb6_cpg_meth_transcript_cors", package = "methodical")
 
 # Find TMRs for 
-tubb6_tmrs <- findTMRs(correlation_df = tubb6_cpg_meth_transcript_cors)
+tubb6_tmrs <- methodical:::.find_tmrs_single(correlation_df = tubb6_cpg_meth_transcript_cors)
 print(tubb6_tmrs)
 
 }

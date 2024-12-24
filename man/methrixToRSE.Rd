@@ -24,5 +24,5 @@ data("methrix_data", package = "methrix")
   
 # Convert methrix to a RangedSummarizedExperiment with one assay for the methylation beta values
 meth_rse <- methodical::methrixToRSE(methrix_data, assays = "beta")
-
+print(meth_rse)
 }

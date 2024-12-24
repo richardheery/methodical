@@ -54,13 +54,9 @@ Default is floor(62500000/ncol(meth_rse)), resulting in each chunk requiring app
 \item{results_dir}{An optional path to a directory to save results as RDS files. There will be one RDS file for each transcript.
 If not provided, returns the results as a list.}
 
-\item{tss_grl}{A GRangesList object with the locations of regions associated with transcription start sites (TSS).
-The most upstream position of each region resize(gr, 1, fix = "start") is assumed to be the transcription start site.
-names(tss_gr) should give the name of the transcript associated with the TSS, which must be present in transcript_expression_table.}
-
 \item{expand_upstream}{Number of bases to add upstream of TSS each transcript. Must be numeric vector of length 1 or equal to the length of tss_gr. Default is 5000.}
 
-\item{expand_downstream}{Number of bases to add downstream of TES of each transcript. Must be numeric vector of length 1 or equal to the length of tss_gr. Default is 500.}
+\item{expand_downstream}{Number of bases to add downstream of TES of each transcript. Must be numeric vector of length 1 or equal to the length of tss_gr. Default is 5000.}
 }
 \value{
 If results_dir is NULL, a list of data.frames with the correlation of methylation sites surrounding a specified
@@ -80,7 +76,9 @@ tubb6_meth_rse <- eval(tubb6_meth_rse)
 data(tubb6_transcript_counts, package = "methodical")
 
 # Calculate correlation values between methylation values and transcript values for TUBB6
-tubb6_cpg_meth_transcript_cors <- methodical::calculateMethSiteTranscriptCors(meth_rse = tubb6_meth_rse, 
-  transcript_expression_table = tubb6_transcript_counts, tss_gr = tubb6_tss, expand_upstream = 5000, expand_downstream = 5000)
-  
+tubb6_cpg_meth_transcript_cors <- methodical::calculateMethSiteTranscriptCors(meth_rse = tubb6_meth_rse,
+  transcript_expression_table = tubb6_transcript_counts, tss_gr = tubb6_tss, 
+  tss_associated_gr = methodical::expand_granges(tubb6_tss, upstream = 5000, downstream = 5000))
+head(tubb6_cpg_meth_transcript_cors$ENST00000591909)
+
 }
