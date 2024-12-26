@@ -52,7 +52,8 @@ tumour metastases and associated transcript counts from TumourMethData.
 mcrpc_wgbs_hg38_chr11 <- TumourMethData::download_meth_dataset(dataset = "mcrpc_wgbs_hg38_chr11")
 
 # Download transcript counts
-mcrpc_transcript_counts <- TumourMethData::download_rnaseq_dataset(dataset = "mcrpc_wgbs_hg38_chr11")
+mcrpc_transcript_counts_file <- TumourMethData::download_rnaseq_dataset(dataset = "mcrpc_wgbs_hg38_chr11")
+mcrpc_transcript_counts = data.frame(data.table::fread(mcrpc_transcript_counts_file), row.names = 1)
 ```
 
 ## Preparation of TSS annotation
