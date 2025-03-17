@@ -603,7 +603,7 @@ annotatePlot <- function(meth_site_plot, annotation_grl, reference_tss = FALSE, 
   
   # Create a linerange plot showing the positions of different genomic elements
   annotation_plot <- ggplot(annotation_df, aes(xmin = start, xmax = end, x = NULL, y = region_type,  group = region_type, color = region_type)) + 
-    geom_linerange(linewidth = annotation_line_size, linetype = "dashed", position = position_dodge(0.06)) +
+    geom_linerange(linewidth = annotation_line_size, position = position_dodge(0.06)) +
     theme_bw() + 
     theme(plot.title = element_text(hjust = 0.5, size = 24),
       axis.title = element_text(size = axis_title_size), 
