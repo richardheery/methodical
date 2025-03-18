@@ -601,6 +601,16 @@ annotatePlot <- function(meth_site_plot, annotation_grl, reference_tss = FALSE, 
   axis_title_size <- meth_site_plot$theme$axis.title$size
   x_axis_title <- meth_site_plot$labels$x
   
+  # Check if reverse_x_axis was set when creating meth_site_plot and then 
+  # set the limits and scale function for the x-axis accordingly
+  if(meth_site_plot$scales$get_scales("x")$trans$name == "reverse"){
+    limits = -ggplot_build(meth_site_plot)$layout$panel_params[[1]]$x.range
+    scale_x_function = scale_x_reverse
+  } else {
+    limits = ggplot_build(meth_site_plot)$layout$panel_params[[1]]$x.range
+    scale_x_function = scale_x_continuous
+  }
+  
   # Create a linerange plot showing the positions of different genomic elements
   annotation_plot <- ggplot(annotation_df, aes(xmin = start, xmax = end, x = NULL, y = region_type,  group = region_type, color = region_type)) + 
     geom_linerange(linewidth = annotation_line_size, position = position_dodge(0.06)) +
@@ -609,7 +619,7 @@ annotatePlot <- function(meth_site_plot, annotation_grl, reference_tss = FALSE, 
       axis.title = element_text(size = axis_title_size), 
       axis.text = element_text(size = axis_text_size), legend.position = "None")  +
     labs(x = x_axis_title, y = ylab) +
-    scale_x_continuous(expand = expansion(mult = c(0, 0)), labels = scales::comma, limits = ggplot_build(meth_site_plot)$layout$panel_params[[1]]$x.range) + 
+    scale_x_function(expand = expansion(mult = c(0, 0)), labels = scales::comma, limits = limits) + 
     scale_color_manual(values = grl_colours, guide = guide_legend(override.aes = list(color = "white"))) +
     # The following code makes the legend invisible
     theme(
