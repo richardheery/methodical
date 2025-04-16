@@ -1,7 +1,7 @@
 #' Create a GRanges with methylation sites of interest from a BSgenome. 
 #'
-#' @param genome A BSgenome object (or the name of one) or a DNAStringSet with names indicating the sequences.  
-#' @param pattern A pattern to match in bsgenome. Default is "CG".
+#' @param genome A BSgenome object (or the name of an installed one) or a DNAStringSet with names indicating the sequences.  
+#' @param pattern A pattern to match in genome. Default is "CG".
 #' @param plus_strand_only TRUE or FALSE indicating whether to only return matches on "+" strand, 
 #' avoiding returning duplicate hits for palindromic sequences e.g. CG. 
 #' Not relevant if genome is a DNAStringSet. Default is TRUE.
