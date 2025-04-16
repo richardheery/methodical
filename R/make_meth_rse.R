@@ -49,8 +49,8 @@
 #'   hdf5_dir = paste0(tempdir(), "/bedgraph_hdf5_1"))
 #'   
 makeMethRSEFrominput_files <- function(input_files, 
-  seqnames_column = 1, start_column = 2, end_column = 3, methylation_column = 5, methylation_column_is_counts = "counts";
-  coverage_column = 6; zero_based = TRUE, normalization_factor = NULL, decimal_places = NA, 
+  seqnames_column = 1, start_column = 2, end_column = 3, methylation_column = 5, methylation_column_is_counts = "counts",
+  coverage_column = 6, zero_based = TRUE, normalization_factor = NULL, decimal_places = NA, 
   meth_sites, sample_metadata = NULL, hdf5_dir, dataset_name = "beta", overwrite = FALSE, chunkdim = NULL, 
   temporary_dir = NULL, BPPARAM = BiocParallel::bpparam(), ...){
   

@@ -88,7 +88,7 @@ sampleMethSites <- function(meth_rse, n_sites = 1000, seqnames_filter = NULL,
   
   # Check that inputs have the correct data type
   stopifnot(is(meth_rse, "RangedSummarizedExperiment"), is(n_sites, "numeric") & n_sites >= 1,
-    is(seqnames_filter, "character") | is.null(seqnames_filter)
+    is(seqnames_filter, "character") | is.null(seqnames_filter),
     is(genomic_ranges_filter, "GRanges") | is.null(genomic_ranges_filter), 
     S4Vectors::isTRUEorFALSE(invert_granges_filter), is(samples_subset, "character") | is.null(samples_subset))
   

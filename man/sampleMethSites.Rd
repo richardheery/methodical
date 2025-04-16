@@ -2,38 +2,39 @@
 % Please edit documentation in R/meth_rse_functions.R
 \name{sampleMethSites}
 \alias{sampleMethSites}
-\title{Randomly sample methylation sites from a methylation RSE.}
+\title{Randomly sample sites from a methylation RSE.}
 \usage{
 sampleMethSites(
   meth_rse,
   n_sites = 1000,
+  seqnames_filter = NULL,
   genomic_ranges_filter = NULL,
-  invert_filter = FALSE,
-  samples_subset = NULL,
-  assay_number = 1
+  invert_granges_filter = FALSE,
+  samples_subset = NULL
 )
 }
 \arguments{
 \item{meth_rse}{A RangedSummarizedExperiment for methylation data.}
 
-\item{n_sites}{Number of sites to randomly sample. Default is 1000.}
+\item{n_sites}{Number of sites to randomly sample. Default is 1000. Will give an error if there are less than this
+number of sites available to sample after applying any of the optional filters.}
+
+\item{seqnames_filter}{An optional character vector giving the names of sequences to filter meth_rse for.}
 
 \item{genomic_ranges_filter}{An optional GRanges object used to first subset meth_rse.
 Sites will then be chosen randomly from those overlapping these ranges.}
 
-\item{invert_filter}{TRUE or FALSE indicating whether to invert the genomic_ranges_filter so
+\item{invert_granges_filter}{TRUE or FALSE indicating whether to invert the genomic_ranges_filter so
 as to exclude sites overlapping these regions. Default value is FALSE.}
 
 \item{samples_subset}{Optional sample names used to subset meth_rse.}
-
-\item{assay_number}{The assay from meth_rse to extract values from. Default is the first assay.}
 }
 \value{
-A data.frame with the methylation site values for all sites in meth_rse which overlap genomic_ranges.
-Row names are the coordinates of the sites as a character vector.
+A RangedSummarizedExperiment with the specified number of randomly sampled sites
+after applying the different filters.
 }
 \description{
-Randomly sample methylation sites from a methylation RSE.
+Randomly sample sites from a methylation RSE.
 }
 \examples{
 # Load sample RangedSummarizedExperiment with CpG methylation data
@@ -45,7 +46,7 @@ mask_ranges <- GRanges("chr18:12305000-12310000")
 
 # Get 20 random CpG sites outside mask_ranges
 random_cpgs <- methodical::sampleMethSites(tubb6_meth_rse, n_sites = 20, genomic_ranges_filter = mask_ranges, 
-  invert_filter = TRUE)
+  invert_granges_filter = TRUE)
 
 # Check that no CpGs overlap repeats
 intersect(rowRanges(random_cpgs), mask_ranges)
