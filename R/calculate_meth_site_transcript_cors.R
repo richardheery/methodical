@@ -6,10 +6,11 @@
 #' @param tss_gr_chunk_list A list of GRanges with the TSS for the current chunk.
 #' @param cor_method Correlation method to use. 
 #' @param add_distance_to_region TRUE or FALSE indicating whether to add distance to TSS.
+#' @param min_number_complete_pairs The minimum number of complete pairs required to return a p-value for a correlation.
 #' @param results_dir Location of results directory. 
 #' @return An iterator function which returns a list with the parameters necessary for .tss_correlations. 
 .tss_iterator <- function(meth_values_chunk, tss_region_indices_list, transcript_values_list, tss_gr_chunk_list, 
-  cor_method, add_distance_to_region, results_dir){
+  cor_method, add_distance_to_region, min_number_complete_pairs, results_dir){
   
   n <- length(tss_gr_chunk_list)
   i <- 0L
@@ -23,7 +24,8 @@
         transcript_table = transcript_values_list[[i]],
         transcript_tss = tss_gr_chunk_list[[i]], 
         transcript_name = names(tss_gr_chunk_list)[i],
-        cor_method = cor_method, add_distance_to_region = add_distance_to_region, results_dir = results_dir
+        cor_method = cor_method, add_distance_to_region = add_distance_to_region, 
+        min_number_complete_pairs = min_number_complete_pairs, results_dir = results_dir
         )
     }
   }
@@ -54,7 +56,7 @@
       transcript_meth_site_cors <- methodical::rapidCorTest(
         table1 = meth_table, table2 = transcript_table, 
         table1_name = "meth_site", table2_name = "transcript_name", 
-        cor_method = cor_method, p_adjust_method = "none")
+        cor_method = cor_method, p_adjust_method = "none", min_number_complete_pairs = min_number_complete_pairs)
   
         # Add meth site distance to region if specified
         if(add_distance_to_region){
@@ -144,6 +146,8 @@
 ##' @param expand_downstream Number of bases to add downstream of TES of each transcript. Must be numeric vector of length 1 or equal to the length of tss_gr. Default is 5000.
 #' @param cor_method A character string indicating which correlation coefficient is to be computed. 
 #' One of either "pearson" or "spearman" or their abbreviations. 
+#' @param min_number_complete_pairs The minimum number of complete pairs required to return a p-value for a correlation.
+#' Correlations with less than this number are given a p-value of NaN. Default value is 30.
 #' @param add_distance_to_region TRUE or FALSE indicating whether to add the distance of methylation sites to the TSS. Default value is TRUE.
 #' Setting to FALSE will roughly half the total running time.
 #' @param max_sites_per_chunk The approximate maximum number of methylation sites to try to load into memory at once. 
@@ -175,7 +179,7 @@
 #' head(tubb6_cpg_meth_transcript_cors$ENST00000591909)
 #' 
 calculateMethSiteTranscriptCors <- function(meth_rse, assay_number = 1, transcript_expression_table, 
-  samples_subset = NULL, tss_gr, tss_associated_gr, cor_method = "pearson", 
+  samples_subset = NULL, tss_gr, tss_associated_gr, cor_method = "pearson", min_number_complete_pairs = 30, 
   add_distance_to_region = TRUE, max_sites_per_chunk = NULL, BPPARAM = BiocParallel::bpparam(), results_dir = NULL){
   
   # Check that inputs have the correct data type
@@ -305,8 +309,9 @@ calculateMethSiteTranscriptCors <- function(meth_rse, assay_number = 1, transcri
     tss_gr_chunk_list <- split(tss_gr_chunk, names(tss_gr_chunk))[names(tss_region_indices_list)] 
     
     # Create an iterator function for TSS sites
-    tss_iter <- .tss_iterator(meth_values_chunk, tss_region_indices_list, transcript_values_list, 
-      tss_gr_chunk_list, cor_method, add_distance_to_region, results_dir)
+    tss_iter <- .tss_iterator(meth_values_chunk = meth_values_chunk, tss_region_indices_list = tss_region_indices_list, 
+      transcript_values_list = transcript_values_list, tss_gr_chunk_list = tss_gr_chunk_list, cor_method = cor_method, 
+      add_distance_to_region = add_distance_to_region, min_number_complete_pairs = min_number_complete_pairs, results_dir = results_dir)
     
     # Calculate correlations for all TSS in chunk. 
     suppressWarnings(chunk_correlations <- BiocParallel::bpiterate(ITER = tss_iter, FUN = .tss_correlations, BPPARAM = BPPARAM))
