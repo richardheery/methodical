@@ -12,6 +12,7 @@ calculateMethSiteTranscriptCors(
   tss_gr,
   tss_associated_gr,
   cor_method = "pearson",
+  min_number_complete_pairs = 30,
   add_distance_to_region = TRUE,
   max_sites_per_chunk = NULL,
   BPPARAM = BiocParallel::bpparam(),
@@ -38,6 +39,9 @@ Names of regions cannot contain any duplicates and should and match those of tss
 
 \item{cor_method}{A character string indicating which correlation coefficient is to be computed.
 One of either "pearson" or "spearman" or their abbreviations.}
+
+\item{min_number_complete_pairs}{The minimum number of complete pairs required to return a p-value for a correlation.
+Correlations with less than this number are given a p-value of NaN. Default value is 30.}
 
 \item{add_distance_to_region}{TRUE or FALSE indicating whether to add the distance of methylation sites to the TSS. Default value is TRUE.
 Setting to FALSE will roughly half the total running time.}

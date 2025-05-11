@@ -11,6 +11,7 @@
   tss_gr_chunk_list,
   cor_method,
   add_distance_to_region,
+  min_number_complete_pairs,
   results_dir
 )
 }
@@ -26,6 +27,8 @@
 \item{cor_method}{Correlation method to use.}
 
 \item{add_distance_to_region}{TRUE or FALSE indicating whether to add distance to TSS.}
+
+\item{min_number_complete_pairs}{The minimum number of complete pairs required to return a p-value for a correlation.}
 
 \item{results_dir}{Location of results directory.}
 }
