@@ -45,6 +45,7 @@
   cor_method <- correlation_objects[["cor_method"]]
   add_distance_to_region <- correlation_objects[["add_distance_to_region"]]
   results_dir <- correlation_objects[["results_dir"]]
+  min_number_complete_pairs <- correlation_objects[["min_number_complete_pairs"]]
       
     # Transpose meth_table
     meth_table <- t(meth_table)
@@ -246,8 +247,8 @@ calculateMethSiteTranscriptCors <- function(meth_rse, assay_number = 1, transcri
   # Check that there are at least three samples and give a warning if there are less than 20 samples
   n_samples <- ncol(meth_rse) 
   if(n_samples < 3){stop("There are not enough samples to calculate correlations")}
-  if(n_samples < 20){
-    message(paste("There are only", n_samples, "samples. It is recommended to have at least 20 samples to calculate correlations"))
+  if(n_samples < 30){
+    message(paste("There are only", n_samples, "samples. It is recommended to have at least 30 samples to calculate correlations"))
   }
   
   # Create results_dir is it doesn't exist
