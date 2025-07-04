@@ -389,14 +389,16 @@ expand_granges = function(genomic_regions, upstream = 0, downstream = 0) {
   genomic_regions_ends[on_plus] = genomic_regions_ends[on_plus] + downstream
   genomic_regions_ends[on_minus] = genomic_regions_ends[on_minus] + upstream
   
-  # Store metadata from genomic_regions
+  # Store strand and metadata from genomic_regions
+  genomic_regions_strand = strand(genomic_regions)
   genomic_regions_mcols = mcols(genomic_regions)
   
   # Recreate genomic_regions with new starts and ends
   genomic_regions = GRanges(seqnames = seqnames(genomic_regions), 
     ranges = IRanges(genomic_regions_starts, genomic_regions_ends))
   
-  # Restore metadata
+  # Restore strand and metadata
+  strand(genomic_regions) = genomic_regions_strand
   mcols(genomic_regions) = genomic_regions_mcols
   
   # Remove any out-of-bounds regions and return genomic_regions
