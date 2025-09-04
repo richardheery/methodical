@@ -50,7 +50,7 @@
 #' @param genomic_region_names A vector of names to give genomic_regions in the output table. There cannot be any duplicated names. 
 #' Default is to attempt to use `names(genomic_regions)` if they are present or to name them region_1, region_2, etc otherwise.
 #' @param col_summary_function A function that summarizes column values. 
-#' Should be the name of one of the column summary functions from MatrixGenerics. Default is "rowMeans2". 
+#' Should be the name of one of the column summary functions from MatrixGenerics. Default is "colMeans2". 
 #' @param max_sites_per_chunk The approximate maximum number of methylation sites to try to load into memory at once. 
 #' The actual number loaded may vary depending on the number of methylation sites overlapping each region, 
 #' but so long as the size of any individual regions is not enormous (>= several MB), it should vary only very slightly. 

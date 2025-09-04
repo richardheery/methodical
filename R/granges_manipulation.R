@@ -215,7 +215,7 @@ rangesRelativeToTSS <- function(genomic_regions, tss_gr){
 #' @param n_regions Number of random regions to create. Default is 1000. 
 #' @param region_widths The widths of the random regions. Widths cannot be negative. 
 #' Can be just a single value if all regions are to have the same widths. Default is 1000.
-#' @param sequences The names of sequences to create random regions on. Default is to use all standard sequences (those without "_" in their name)
+#' @param sequences The names of sequences to create random regions on. Default is to use all sequences in the genome.
 #' @param all_sequences_equally_likely TRUE or FALSE indicating if the probability of creating random regions on a sequence should be the same for each sequence.
 #' Default is FALSE, indicating to make the probability proportional to a sequences length.
 #' @param stranded TRUE or FALSE indicating if created regions should have a strand randomly assigned. Default is FALSE, indicating to make unstranded regions. 
@@ -234,13 +234,13 @@ rangesRelativeToTSS <- function(genomic_regions, tss_gr){
 #' # Create 10,000 random non-overlapping regions with width 1,000 for hg38
 #' random_regions <- methodical::createRandomRegions(genome = "BSgenome.Hsapiens.UCSC.hg38", n_regions = 10000)
 #' head(random_regions)
-createRandomRegions <- function(genome, n_regions = 1000, region_widths = 1000, sequences = NULL, all_sequences_equally_likely = FALSE,
+createRandomRegions <- function(genome, n_regions = 1000, region_widths = 1000, sequence_names = NULL, all_sequence_names_equally_likely = FALSE,
    stranded = FALSE, masked_regions = NULL, allow_overlapping_regions = FALSE, ignore.strand = TRUE, max_tries = 100){
   
   # Check that inputs have the correct data type
   stopifnot(is(genome, "character") | is(genome, "BSgenome"), 
     is(n_regions, "numeric") & n_regions >= 1, is(region_widths, "numeric") & region_widths >= 1,
-    is(sequences, "character") | is.null(sequences), S4Vectors::isTRUEorFALSE(all_sequences_equally_likely),
+    is(sequence_names, "character") | is.null(sequence_names), S4Vectors::isTRUEorFALSE(all_sequence_names_equally_likely),
     S4Vectors::isTRUEorFALSE(stranded), is(masked_regions, "GRanges") | is.null(masked_regions),
     S4Vectors::isTRUEorFALSE(allow_overlapping_regions), S4Vectors::isTRUEorFALSE(ignore.strand), 
     is(max_tries, "numeric") & n_regions >= 1)
@@ -251,16 +251,20 @@ createRandomRegions <- function(genome, n_regions = 1000, region_widths = 1000, 
   # If genome is a character, try to load genome with that name
   if(is.character(genome)){genome <- BSgenome::getBSgenome(genome)}
   
-  # If no sequences provided, use the standard sequences for the species from the provider
-  if(is.null(sequences)){
-    sequences <- grep("_", seqnames(genome), invert = TRUE, value = TRUE)
+  # If no sequence_names provided, use the standard sequence_names for the species from the provider
+  if(is.null(sequence_names)){
+    sequence_names <- seqnames(genome)
+  } else {
+    if(any(!sequence_names %in% seqlevels(genome))){
+      stop("One or more provided sequence names are not in the genome")
+    }
   }
   
-  # If all_sequences_equally_likely is false, make likelihood of sequences proportional to their lengths
-  if(!all_sequences_equally_likely){
-    sequence_probabilities <- seqlengths(genome)[sequences]
+  # If all_sequence_names_equally_likely is false, make likelihood of sequence_names proportional to their lengths
+  if(!all_sequence_names_equally_likely){
+    sequence_probabilities <- seqlengths(genome)[sequence_names]
   } else {
-    sequence_probabilities <- rep(1, length(sequences))
+    sequence_probabilities <- rep(1, length(sequence_names))
   }
   
   # Initialize an empty vector of GRanges and try_number to 1
@@ -277,11 +281,11 @@ createRandomRegions <- function(genome, n_regions = 1000, region_widths = 1000, 
       message(paste("Attempt", try_number, "to find", original_n_regions, "random regions:"))
     }
     
-    # Select random sequences
-    random_sequences <- sample(sequences, size = n_regions, prob = sequence_probabilities, replace = TRUE)
+    # Select random sequence_names
+    random_sequence_names <- sample(sequence_names, size = n_regions, prob = sequence_probabilities, replace = TRUE)
     
     # Create a data.frame
-    random_gr_df <- data.frame(seqnames = random_sequences, seqlengths = seqlengths(genome)[random_sequences], row.names = NULL)
+    random_gr_df <- data.frame(seqnames = random_sequence_names, seqlengths = seqlengths(genome)[random_sequence_names], row.names = NULL)
     
     # Select a random start site on each sequence
     random_gr_df$start <- sapply(random_gr_df$seqlengths, function(x) sample(seq_len(x), 1))
@@ -327,7 +331,8 @@ createRandomRegions <- function(genome, n_regions = 1000, region_widths = 1000, 
   }
   
   # Add seqinfo to final_random_gr
-  suppressWarnings({seqinfo(final_random_gr) <- seqinfo(genome)[sequences]})
+  seqlevels(final_random_gr) <- seqlevels(genome)
+  suppressWarnings({seqinfo(final_random_gr) <- seqinfo(genome)})
   
   # Trim out of bound regions, remove pass column and return final_random_gr
   final_random_gr <- trim(final_random_gr)
