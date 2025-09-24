@@ -311,6 +311,11 @@ createRandomRegions <- function(genome, n_regions = 1000, region_widths = 1000, 
         countOverlaps(temp_random_gr, c(temp_random_gr, final_random_gr), ignore.strand = ignore.strand) == 1 & temp_random_gr$pass
     }
     
+    # Add seqinfo to temp_random_gr and identify out-of-bounds regions
+    seqlevels(temp_random_gr) <- seqlevels(genome)
+    suppressWarnings(seqinfo(temp_random_gr) <- seqinfo(genome))
+    temp_random_gr$pass[width(temp_random_gr) != width(trim(temp_random_gr))] = FALSE
+    
     # Identify the passing_regions and add to final_random_gr
     passing_regions <- temp_random_gr[temp_random_gr$pass]
     final_random_gr <- c(final_random_gr, passing_regions)
@@ -330,12 +335,7 @@ createRandomRegions <- function(genome, n_regions = 1000, region_widths = 1000, 
     
   }
   
-  # Add seqinfo to final_random_gr
-  seqlevels(final_random_gr) <- seqlevels(genome)
-  suppressWarnings({seqinfo(final_random_gr) <- seqinfo(genome)})
-  
-  # Trim out of bound regions, remove pass column and return final_random_gr
-  final_random_gr <- trim(final_random_gr)
+  # Remove pass column and return final_random_gr
   final_random_gr$pass <- NULL
   return(final_random_gr)
   

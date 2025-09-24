@@ -130,6 +130,8 @@ sampleMethSites <- function(meth_rse, n_sites = 1000, seqnames_filter = NULL,
 #' @param permitted_target_regions An optional GRanges object used to filter the rowRanges by overlaps after liftover, 
 #' for example CpG sites from the target genome. Any regions which do not overlap permitted_target_regions will be removed.  
 #' GRangesList to GRanges if all remaining source regions can be uniquely mapped to the target genome. 
+#' @param seqlevels An optional character vector giving the order to use for 
+#' seqlevels of the rowRanges of the returned RangedSummarizedExperiment.
 #' @return A RangedSummarizedExperiment with rowRanges lifted over to the genome build indicated by chain. 
 #' @examples
 #' # Load sample RangedSummarizedExperiment with CpG methylation data
@@ -148,18 +150,22 @@ sampleMethSites <- function(meth_rse, n_sites = 1000, seqnames_filter = NULL,
 #' tubb6_meth_rse_hg19 <- methodical::liftoverMethRSE(tubb6_meth_rse, chain = chain, 
 #'   permitted_target_regions = hg19_cpgs)
 #' @export
-liftoverMethRSE <- function(meth_rse, chain, remove_one_to_many_mapping = TRUE, permitted_target_regions = NULL){
+liftoverMethRSE <- function(meth_rse, chain, remove_one_to_many_mapping = TRUE, 
+  permitted_target_regions = NULL, seqlevels = NULL){
   
   # Check that inputs have the correct data type
   stopifnot(is(meth_rse, "RangedSummarizedExperiment"), is(chain, "Chain"),
     S4Vectors::isTRUEorFALSE(remove_one_to_many_mapping), 
-    is(permitted_target_regions, "GRanges") | is.null(permitted_target_regions))
+    is(permitted_target_regions, "GRanges") | is.null(permitted_target_regions),
+    is(seqlevels, "character") | is.null(seqlevels))
   
   # Liftover rowRanges for meth_rse using specified liftover chain file
   liftover_ranges <- rtracklayer::liftOver(SummarizedExperiment::rowRanges(meth_rse), chain)
   
-  # Put seqlevels of liftover_ranges in the same order as meth_rse
-  GenomeInfoDb::seqlevels(liftover_ranges) <- GenomeInfoDb::seqlevels(meth_rse)
+  # Put seqlevels of liftover_ranges in the order specified by seqlevels
+  if(!is.null(seqlevels)){
+    GenomeInfoDb::seqlevels(liftover_ranges) <- seqlevels
+  }
   
   # Initialize selected regions to all liftover_ranges
   selected_ranges <- seq_along(liftover_ranges)
