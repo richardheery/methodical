@@ -47,8 +47,8 @@
 #' @param assay The assay from meth_rse to extract values from. Should be either an index or the name of an assay. Default is the first assay. 
 #' @param genomic_regions GRanges object with regions to summarize methylation values for. 
 #' @param keep_metadata_cols TRUE or FALSE indicating whether to add the metadata columns of genomic_regions to the output. Default is FALSE.
-#' @param genomic_region_names A vector of names to give genomic_regions in the output table. There cannot be any duplicated names. 
-#' Default is to attempt to use `names(genomic_regions)` if they are present or to name them region_1, region_2, etc otherwise.
+#' @param genomic_region_names A character vector of unique names to assign genomic_regions in the output table.
+#' Defaults to `names(genomic_regions)` if present or otherwise converts regions to character strings (e.g. "chr:1000-2000") to use as names.
 #' @param col_summary_function A function that summarizes column values. 
 #' Should be the name of one of the column summary functions from MatrixGenerics. Default is "colMeans2". 
 #' @param max_sites_per_chunk The approximate maximum number of methylation sites to try to load into memory at once. 
@@ -98,8 +98,8 @@ summarizeRegionMethylation <- function(meth_rse, assay = 1, genomic_regions, gen
     
   # Add names to genomic_regions if they are not already present and also check that no names are duplicated. 
   if(is.null(genomic_region_names)){
-    message("No names for provided regions so naming them region_1, region_2, etc.")
-    genomic_region_names <- paste0("region_", seq_along(genomic_regions))
+    message("No names for provided regions so using as.character(genomic_regions) as names")
+    genomic_region_names <- as.character(genomic_regions)
     names(genomic_regions) <- genomic_region_names
   } else {
     if(length(genomic_region_names) != length(genomic_regions)){
