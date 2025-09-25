@@ -37,10 +37,10 @@ tubb6_cpg_meth_transcript_cors = tubb6_cpg_meth_transcript_cors$ENST00000591909
 tubb6_correlation_plot = methodical::plotMethSiteCorCoefs(tubb6_cpg_meth_transcript_cors)
 
 # Plot Methdodical scores for TUBB6
-tubb6_methodical_plot = methodical::plotMethodicalScores(meth_site_values = tubb6_cpg_meth_transcript_cors, smooth_scores = F)
+tubb6_methodical_plot = methodical::plotMethodicalScores(genomic_region_values = tubb6_cpg_meth_transcript_cors, smooth_scores = F)
 
 # Add smoothed scores to plot
-tubb6_smoothed_methodical_plot = methodical::plotMethodicalScores(meth_site_values = tubb6_cpg_meth_transcript_cors, 
+tubb6_smoothed_methodical_plot = methodical::plotMethodicalScores(genomic_region_values = tubb6_cpg_meth_transcript_cors, 
   smooth_scores = T, smoothed_curve_colour = "hotpink2", curve_alpha = 1)
 
 # Find TUBB6 TMRs
