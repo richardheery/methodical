@@ -37,13 +37,13 @@
 #'   reference_tss = tubb6_tss, ylabel = "Methylation Value")
 #' 
 #' @export
-plotRegionValues <- function(genomic_region_values, sample_name = NULL, reference_tss = FALSE, geom_point_params = list(), geom_line_params = list(), 
+plotRegionValues <- function(genomic_region_values, sample_name = NULL, reference_tss = FALSE, geom_point_params = list(), geom_smooth_params = list(), 
   title = NULL, xlabel = NULL, ylabel = "Genomic Region Value", value_colours = c("#53868B", "#CD2626"), reverse_x_axis = FALSE){
   
   # Check that inputs have the correct data type
   stopifnot(is(genomic_region_values, "data.frame"), is(sample_name, "character") | is.null(sample_name),
     S4Vectors::isTRUEorFALSE(reference_tss) | is(reference_tss, "GRanges"), 
-    is(geom_point_params, "list"), is(geom_line_params, "list"),
+    is(geom_point_params, "list"), is(geom_smooth_params, "list"),
     is(title, "character") | is.null(title) | is(title, "expression"), 
     is(xlabel, "character") | is.null(xlabel) | is(xlabel, "expression"),
     is(ylabel, "character") | is.null(ylabel) | is(ylabel, "expression"),
@@ -123,16 +123,16 @@ plotRegionValues <- function(genomic_region_values, sample_name = NULL, referenc
     }
   }
   
-  # Define default parameter values for geom_point() and geom_line() and update with values input by the user
+  # Define default parameter values for geom_point() and geom_smooth() and update with values input by the user
   geom_point_param_defaults = list(shape = 21, colour = "black", size = 4, alpha = 1)
   geom_point_params = modifyList(geom_point_param_defaults, geom_point_params)
   geom_point_params = modifyList(geom_point_params, list(mapping = aes(fill = values)))
-  geom_line_param_defaults = list(color = "black", alpha = 0.75)
-  geom_line_params = modifyList(geom_line_param_defaults, geom_line_params)
+  geom_smooth_param_defaults = list(color = "black", alpha = 0.75, se = FALSE, span = 0.1)
+  geom_smooth_params = modifyList(geom_smooth_param_defaults, geom_smooth_params)
   
   # Create a scatter plot of Value and return
   meth_site_plot <- ggplot(data = plot_df, mapping = aes(x = meth_site_plot_position, y = values)) +
-    do.call(geom_line, geom_line_params) +
+    do.call(geom_smooth, geom_smooth_params) +
     do.call(geom_point, geom_point_params) +
     theme_bw() +
     theme(plot.title = element_text(hjust = 0.5, size = 24), legend.text = element_text(size = 12),
