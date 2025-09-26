@@ -269,11 +269,11 @@ calculateSmoothedMethodicalScores <- function(correlation_df, offset_length = 10
 #' values resulting in a greater degree of smoothing. Default is 0.75. 
 #' @param min_gapwidth Merge TMRs with the same direction separated by less than this number of base pairs. Default value is 150. 
 #' @param min_meth_sites Minimum number of methylation sites that TMRs can contain. Default value is 5. 
-#' @param BPPARAM A BiocParallelParam object for parallel processing. Defaults to `BiocParallel::bpparam()`.
+#' @param BPPARAM A BiocParallelParam object for parallel processing. Defaults to `BiocParallel::SerialParam()`.
 #' @return A GRanges object with the location of TMRs.
 #' @export
 findTMRs <- function(correlation_list, offset_length = 10, p_adjust_method = "fdr", p_value_threshold = 0.05, 
-  smoothing_factor = 0.75, min_gapwidth = 150, min_meth_sites = 5, BPPARAM = BiocParallel::bpparam()){
+  smoothing_factor = 0.75, min_gapwidth = 150, min_meth_sites = 5, BPPARAM = BiocParallel::SerialParam()){
   
   # Correct p-values from correlation_list
   correlation_list <- correct_correlation_pvalues(correlation_list, p_adjust_method)

@@ -8,8 +8,8 @@ createRandomRegions(
   genome,
   n_regions = 1000,
   region_widths = 1000,
-  sequences = NULL,
-  all_sequences_equally_likely = FALSE,
+  sequence_names = NULL,
+  all_sequence_names_equally_likely = FALSE,
   stranded = FALSE,
   masked_regions = NULL,
   allow_overlapping_regions = FALSE,
@@ -25,11 +25,6 @@ createRandomRegions(
 \item{region_widths}{The widths of the random regions. Widths cannot be negative.
 Can be just a single value if all regions are to have the same widths. Default is 1000.}
 
-\item{sequences}{The names of sequences to create random regions on. Default is to use all standard sequences (those without "_" in their name)}
-
-\item{all_sequences_equally_likely}{TRUE or FALSE indicating if the probability of creating random regions on a sequence should be the same for each sequence.
-Default is FALSE, indicating to make the probability proportional to a sequences length.}
-
 \item{stranded}{TRUE or FALSE indicating if created regions should have a strand randomly assigned. Default is FALSE, indicating to make unstranded regions.}
 
 \item{masked_regions}{An optional GRanges object which random regions will not be allowed to overlap.}
@@ -41,6 +36,11 @@ identifying overlaps between random regions with each other or with masked_regio
 Only relevant if stranded is TRUE and either allow_overlapping_regions is FALSE or masked_regions is provided. Default is TRUE.}
 
 \item{max_tries}{The maximum number of attempts to make to find non-overlapping regions which do not overlap masked_regions. Default value is 100.}
+
+\item{sequences}{The names of sequences to create random regions on. Default is to use all sequences in the genome.}
+
+\item{all_sequences_equally_likely}{TRUE or FALSE indicating if the probability of creating random regions on a sequence should be the same for each sequence.
+Default is FALSE, indicating to make the probability proportional to a sequences length.}
 }
 \value{
 A GRanges object

@@ -10,7 +10,7 @@ plotMethSiteCorCoefs(
   title = NULL,
   xlabel = NULL,
   ylabel = "Correlation Coefficient",
-  value_colours = "set2",
+  value_colours = c("#7B5C90", "#bfab25"),
   reverse_x_axis = FALSE
 )
 }
@@ -35,10 +35,7 @@ If FALSE (the default), the x-axis will instead show the start site coordinate o
 
 \item{ylabel}{Label for the Y axis in the plot. Default is "Correlation Coefficient".}
 
-\item{value_colours}{A vector with two colours to use, one for low values and the other for high values.
-Alternatively, can use one of two predefined colour sets by providing either "set1" or "set2":
-set1 uses "#53868B" (blue) for low values and "#CD2626" (red) for high values
-while set2 uses "#7B5C90" (purple) for low values and ""#bfab25" (gold) for high values. Default is "set2".}
+\item{value_colours}{A vector with two colours to use, the first for low values and the second for high values. Defaults are c("#7B5C90", "#bfab25").}
 
 \item{reverse_x_axis}{TRUE or FALSE indicating whether x-axis should be reversed,
 for example if plotting a region on the reverse strand so that left side of plot corresponds to upstream.}

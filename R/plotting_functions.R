@@ -127,13 +127,13 @@ plotRegionValues <- function(genomic_region_values, sample_name = NULL, referenc
   geom_point_param_defaults = list(shape = 21, colour = "black", size = 4, alpha = 1)
   geom_point_params = modifyList(geom_point_param_defaults, geom_point_params)
   geom_point_params = modifyList(geom_point_params, list(mapping = aes(fill = values)))
-  geom_smooth_param_defaults = list(color = "black", alpha = 0.75, se = FALSE, span = 0.1)
+  geom_smooth_param_defaults = list(color = "black", alpha = 0.75, se = FALSE, span = 20/nrow(plot_df))
   geom_smooth_params = modifyList(geom_smooth_param_defaults, geom_smooth_params)
   
   # Create a scatter plot of Value and return
   meth_site_plot <- ggplot(data = plot_df, mapping = aes(x = meth_site_plot_position, y = values)) +
-    do.call(geom_smooth, geom_smooth_params) +
     do.call(geom_point, geom_point_params) +
+    do.call(geom_smooth, geom_smooth_params) +
     theme_bw() +
     theme(plot.title = element_text(hjust = 0.5, size = 24), legend.text = element_text(size = 12),
       axis.title = element_text(size = 20), 

@@ -20,7 +20,7 @@
 #' One of either "pearson" or "spearman" or their abbreviations. 
 #' @param p_adjust_method Method used to adjust p-values. Same as the methods from p.adjust.methods. Default is Benjamini-Hochberg.
 #' @param region_methylation_summary_function A function that summarizes column values. Default is colMeans.
-#' @param BPPARAM A BiocParallelParam object for parallel processing. Defaults to `BiocParallel::bpparam()`. 
+#' @param BPPARAM A BiocParallelParam object for parallel processing. Defaults to `BiocParallel::SerialParam()`. 
 #' @param ... Additional arguments to be passed to summary_function. 
 #' @return A data.frame with the correlation values between the methylation of genomic regions and expression of transcripts associated with them
 #' @export
@@ -40,7 +40,7 @@
 #'  
 calculateRegionMethylationTranscriptCors <- function(meth_rse, assay = 1, transcript_expression_table, samples_subset = NULL, 
   genomic_regions, genomic_region_names = NULL, genomic_region_transcripts = NULL, genomic_region_methylation = NULL,
-  cor_method = "pearson", p_adjust_method = "BH", region_methylation_summary_function = colMeans, BPPARAM = BiocParallel::bpparam(), ...){
+  cor_method = "pearson", p_adjust_method = "BH", region_methylation_summary_function = colMeans, BPPARAM = BiocParallel::SerialParam(), ...){
   
   # Check that inputs have the correct data type
   stopifnot(is(meth_rse, "RangedSummarizedExperiment"), is(assay, "numeric") | is(assay, "character"),

@@ -58,7 +58,7 @@
 #' while high values will result in a large memory footprint without much improvement in running time. 
 #' Default is floor(62500000/ncol(meth_rse)), resulting in each chunk requiring approximately 500 MB of RAM. 
 #' @param na.rm TRUE or FALSE indicating whether to remove NA values when calculating summaries. Default value is TRUE. 
-#' @param BPPARAM A BiocParallelParam object. Defaults to `BiocParallel::bpparam()`. 
+#' @param BPPARAM A BiocParallelParam object. Defaults to `BiocParallel::SerialParam()`. 
 #' @param ... Additional arguments to be passed to col_summary_function. 
 #' @return A data.table with the summary of methylation of each region in genomic_regions for each sample.
 #' @export
@@ -77,7 +77,7 @@
 #'   genomic_region_names = names(test_gr))
 #' 
 summarizeRegionMethylation <- function(meth_rse, assay = 1, genomic_regions, genomic_region_names = NULL, col_summary_function = "colMeans2",
-  keep_metadata_cols = FALSE, max_sites_per_chunk = floor(62500000/ncol(meth_rse)), na.rm = TRUE, BPPARAM = BiocParallel::bpparam(), ...){
+  keep_metadata_cols = FALSE, max_sites_per_chunk = floor(62500000/ncol(meth_rse)), na.rm = TRUE, BPPARAM = BiocParallel::SerialParam(), ...){
   
   # Check that inputs have the correct data type
   stopifnot(is(meth_rse, "RangedSummarizedExperiment"), is(assay, "numeric") | is(assay, "character"),

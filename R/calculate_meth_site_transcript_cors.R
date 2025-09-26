@@ -157,7 +157,7 @@
 #' Some experimentation may be needed to choose an optimal value as low values will result in increased running time, 
 #' while high values will result in a large memory footprint without much improvement in running time. 
 #' Default is floor(62500000/ncol(meth_rse)), resulting in each chunk requiring approximately 500 MB of RAM. 
-#' @param BPPARAM A BiocParallelParam object for parallel processing. Defaults to `BiocParallel::bpparam()`. 
+#' @param BPPARAM A BiocParallelParam object for parallel processing. Defaults to `BiocParallel::SerialParam()`. 
 #' @param results_dir An optional path to a directory to save results as RDS files. There will be one RDS file for each transcript. 
 #' If not provided, returns the results as a list. 
 #' @return If results_dir is NULL, a list of data.frames with the correlation of methylation sites surrounding a specified 
@@ -181,7 +181,7 @@
 #' 
 calculateMethSiteTranscriptCors <- function(meth_rse, assay_number = 1, transcript_expression_table, 
   samples_subset = NULL, tss_gr, tss_associated_gr, cor_method = "pearson", min_number_complete_pairs = 30, 
-  add_distance_to_region = TRUE, max_sites_per_chunk = NULL, BPPARAM = BiocParallel::bpparam(), results_dir = NULL){
+  add_distance_to_region = TRUE, max_sites_per_chunk = NULL, BPPARAM = BiocParallel::SerialParam(), results_dir = NULL){
   
   # Check that inputs have the correct data type
   stopifnot(is(meth_rse, "RangedSummarizedExperiment"), is(assay_number, "numeric"),
