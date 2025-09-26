@@ -22,7 +22,7 @@ makeMethRSEFrominput_files(
   overwrite = FALSE,
   chunkdim = NULL,
   temporary_dir = NULL,
-  BPPARAM = BiocParallel::bpparam(),
+  BPPARAM = BiocParallel::SerialParam(),
   ...
 )
 }
@@ -66,7 +66,7 @@ Uses HDF5Array::getHDF5DumpChunkDim(length(meth_sites), length(input_files))) by
 Default is to create a name using tempfile("temporary_meth_chunks_").
 Will be deleted after completion.}
 
-\item{BPPARAM}{A BiocParallelParam object for parallel processing. Defaults to \code{BiocParallel::bpparam()}.}
+\item{BPPARAM}{A BiocParallelParam object for parallel processing. Defaults to \code{BiocParallel::SerialParam()}.}
 
 \item{...}{Additional arguments to be passed to HDF5Array::HDF5RealizationSink() for controlling the physical properties of the created HDF5 file,
 such as compression level. Uses the defaults for any properties that are not specified.}

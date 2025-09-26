@@ -13,7 +13,7 @@ summarizeRegionMethylation(
   keep_metadata_cols = FALSE,
   max_sites_per_chunk = floor(62500000/ncol(meth_rse)),
   na.rm = TRUE,
-  BPPARAM = BiocParallel::bpparam(),
+  BPPARAM = BiocParallel::SerialParam(),
   ...
 )
 }
@@ -41,7 +41,7 @@ Default is floor(62500000/ncol(meth_rse)), resulting in each chunk requiring app
 
 \item{na.rm}{TRUE or FALSE indicating whether to remove NA values when calculating summaries. Default value is TRUE.}
 
-\item{BPPARAM}{A BiocParallelParam object. Defaults to \code{BiocParallel::bpparam()}.}
+\item{BPPARAM}{A BiocParallelParam object. Defaults to \code{BiocParallel::SerialParam()}.}
 
 \item{...}{Additional arguments to be passed to col_summary_function.}
 }

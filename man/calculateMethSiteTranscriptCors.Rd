@@ -15,7 +15,7 @@ calculateMethSiteTranscriptCors(
   min_number_complete_pairs = 30,
   add_distance_to_region = TRUE,
   max_sites_per_chunk = NULL,
-  BPPARAM = BiocParallel::bpparam(),
+  BPPARAM = BiocParallel::SerialParam(),
   results_dir = NULL
 )
 }
@@ -53,7 +53,7 @@ Some experimentation may be needed to choose an optimal value as low values will
 while high values will result in a large memory footprint without much improvement in running time.
 Default is floor(62500000/ncol(meth_rse)), resulting in each chunk requiring approximately 500 MB of RAM.}
 
-\item{BPPARAM}{A BiocParallelParam object for parallel processing. Defaults to \code{BiocParallel::bpparam()}.}
+\item{BPPARAM}{A BiocParallelParam object for parallel processing. Defaults to \code{BiocParallel::SerialParam()}.}
 
 \item{results_dir}{An optional path to a directory to save results as RDS files. There will be one RDS file for each transcript.
 If not provided, returns the results as a list.}

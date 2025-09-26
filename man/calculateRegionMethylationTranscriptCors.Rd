@@ -16,7 +16,7 @@ calculateRegionMethylationTranscriptCors(
   cor_method = "pearson",
   p_adjust_method = "BH",
   region_methylation_summary_function = colMeans,
-  BPPARAM = BiocParallel::bpparam(),
+  BPPARAM = BiocParallel::SerialParam(),
   ...
 )
 }
@@ -52,7 +52,7 @@ One of either "pearson" or "spearman" or their abbreviations.}
 
 \item{region_methylation_summary_function}{A function that summarizes column values. Default is colMeans.}
 
-\item{BPPARAM}{A BiocParallelParam object for parallel processing. Defaults to \code{BiocParallel::bpparam()}.}
+\item{BPPARAM}{A BiocParallelParam object for parallel processing. Defaults to \code{BiocParallel::SerialParam()}.}
 
 \item{...}{Additional arguments to be passed to summary_function.}
 }

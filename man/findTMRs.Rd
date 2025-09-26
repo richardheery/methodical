@@ -12,7 +12,7 @@ findTMRs(
   smoothing_factor = 0.75,
   min_gapwidth = 150,
   min_meth_sites = 5,
-  BPPARAM = BiocParallel::bpparam()
+  BPPARAM = BiocParallel::SerialParam()
 )
 }
 \arguments{
@@ -33,7 +33,7 @@ values resulting in a greater degree of smoothing. Default is 0.75.}
 
 \item{min_meth_sites}{Minimum number of methylation sites that TMRs can contain. Default value is 5.}
 
-\item{BPPARAM}{A BiocParallelParam object for parallel processing. Defaults to \code{BiocParallel::bpparam()}.}
+\item{BPPARAM}{A BiocParallelParam object for parallel processing. Defaults to \code{BiocParallel::SerialParam()}.}
 }
 \value{
 A GRanges object with the location of TMRs.

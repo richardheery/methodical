@@ -17,7 +17,7 @@ makeMethRSEFromArrayFiles(
   overwrite = FALSE,
   chunkdim = NULL,
   temporary_dir = NULL,
-  BPPARAM = BiocParallel::bpparam(),
+  BPPARAM = BiocParallel::SerialParam(),
   ...
 )
 }
@@ -50,7 +50,7 @@ Any probes in array_files that are not in probe_ranges are ignored.}
 \item{temporary_dir}{Name to give a temporary directory to store intermediate files. A directory with this name cannot already exist.
 Default is to create a name using tempfile("temporary_meth_chunks_").}
 
-\item{BPPARAM}{A BiocParallelParam object for parallel processing. Defaults to \code{BiocParallel::bpparam()}.}
+\item{BPPARAM}{A BiocParallelParam object for parallel processing. Defaults to \code{BiocParallel::SerialParam()}.}
 
 \item{...}{Additional arguments to be passed to HDF5Array::HDF5RealizationSink() for controlling the physical properties of the created HDF5 file,
 such as compression level. Uses the defaults for any properties that are not specified.}
