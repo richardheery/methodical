@@ -1,0 +1,4 @@
+kallisto_quantify.R: # Remove from package
+.kallistoIndex
+.kallistoQuantify
+.sumTranscriptValuesForGenes
