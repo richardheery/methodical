@@ -1,3 +1,47 @@
+#' Find locations of genomic regions relative to transcription start sites.
+#'
+#' @param genomic_regions A GRanges object. 
+#' @param tss_gr A GRanges object with transcription start sites. Each range should have width 1. 
+#' Upstream and downstream are relative to strand of tss_gr.
+#' @return A GRanges object where all regions have "relative" as the sequence names and 
+#' ranges are the location of TMRs relative to the TSS.  
+#' @export
+#' @examples
+#' # Create query and subject GRanges 
+#' genomic_regions <- GenomicRanges::GRanges(c("chr1:100-1000:+", "chr1:2000-3000:-"))
+#' tss_gr <- GenomicRanges::GRanges(c("chr1:1500:+", "chr1:4000:-"))
+#' 
+#' # Calculate distances between query and subject
+#' methodical::rangesRelativeToTSS(genomic_regions, tss_gr)
+rangesRelativeToTSS <- function(genomic_regions, tss_gr){
+  
+  # Check that inputs have the correct data type
+  stopifnot(is(genomic_regions, "GRanges"), is(tss_gr, "GRanges"))
+  
+  # Check that all tss ranges have width 1 and resize them with a warning if not
+  if(!all(width(tss_gr) == 1)){
+    warning("All regions in tss_gr should have a width of 1. Shortening each region so that it consists of only the most upstream position")
+    tss_gr <- GenomicRanges::resize(tss_gr, 1, fix = "start")
+  }
+
+  # Get distances from start and end of ranges in gr from tss_gr
+  relative_start <- methodical::strandedDistance(query_gr = resize(genomic_regions, 1, fix = "start"), subject_gr = tss_gr)
+  relative_end <- methodical::strandedDistance(query_gr = resize(genomic_regions, 1, fix = "end"), subject_gr = tss_gr)
+  
+  # Create an IRanges with the relative distances
+  relative_iranges <- IRanges::IRanges(pmin(relative_start, relative_end), pmax(relative_start, relative_end))
+  
+  # Convert IRanges to GRanges with "relative" as seqnames
+  relative_granges <- GenomicRanges::GRanges(seqnames = "relative", ranges = relative_iranges)
+  
+  # Add metadata from gr to relative_granges
+  mcols(relative_granges) <- mcols(genomic_regions)
+  
+  # Return relative_granges
+  return(relative_granges)
+  
+}
+
 #' Create a scatter plot with smoothed curve for values along adjacent loci in a genomic region
 #'
 #' @param genomic_region_values A data.frame with values associated with genomic regions. 

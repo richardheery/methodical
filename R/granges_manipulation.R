@@ -68,6 +68,77 @@ extractMethSitesFromGenome <- function(genome, pattern = "CG", plus_strand_only 
   
 }
 
+#' Expand GRanges
+#'
+#' Expand ranges in a GRanges object upstream and downstream by specified numbers of bases, taking account of strand.
+#' Unstranded ranges are treated like they on the "+" strand. 
+#' If any of the resulting ranges are out-of-bounds given the seqinfo of genomic_regions, they will be trimmed using trim().
+#'
+#' @param genomic_regions A GRanges object
+#' @param upstream Number of bases to add upstream of each region in genomic_regions. 
+#' Must be numeric vector of length 1 or else equal to the length of genomic_regions. Default value is 0. 
+#' Negative values result in upstream end of regions being shortened, however the width of the resulting regions cannot be less than zero. 
+#' @param downstream Number of bases to add downstream of each region in genomic_regions. Negative values result in downstream end of regions being shortened. 
+#' Must be numeric vector of length 1 or else equal to the length of genomic_regions. Default value is 0.
+#' Negative values result in upstream end of regions being shortened, however the width of the resulting regions cannot be less than zero. 
+#' @return A GRanges object
+#' @export
+#' @examples 
+#' data(tubb6_tss, package = "methodical")
+#' tubb6_tss
+#' methodical::expand_granges(tubb6_tss, upstream = 5000, downstream = 5000)
+expand_granges = function(genomic_regions, upstream = 0, downstream = 0) {
+  
+  # Check that genomic_regions is a GRanges object
+  if(!is(genomic_regions, "GRanges")){stop("genomic_regions must be a GRanges object")}
+  
+  # Check that upstream and downstream are vectors of either length 1 or with the same length as genomic_regions
+  if(!length(upstream) %in% c(1, length(genomic_regions))){
+    stop("upstream should be a vector of length 1 or the length of genomic_regions")}
+  if(!length(downstream) %in% c(1, length(genomic_regions))){
+    stop("downstream should be a vector of length 1 or the length of genomic_regions")}
+  
+  # Check if any regions would have negative widths after adjustment
+  if(any(width(genomic_regions) + upstream + downstream < 0)){
+    stop("Some regions would have a negative width after adjustment. This is not permitted.")
+  }
+  
+  ## Save names of genomic_regions
+  genomic_regions_names = names(genomic_regions)
+  
+  # Check for each range if it's on the negative or positive strand
+  strand_is_minus = as.character(GenomicRanges::strand(genomic_regions)) == "-"
+  on_plus = which(!strand_is_minus)
+  on_minus = which(strand_is_minus)
+  
+  # Create vectors with the start and end sites of genomic_regions
+  genomic_regions_starts = start(genomic_regions)
+  genomic_regions_ends = end(genomic_regions)
+  
+  # Adjust ranges based on whether they are on the positive or negative strand
+  genomic_regions_starts[on_plus] = genomic_regions_starts[on_plus] - upstream
+  genomic_regions_starts[on_minus] = genomic_regions_starts[on_minus] - downstream
+  genomic_regions_ends[on_plus] = genomic_regions_ends[on_plus] + downstream
+  genomic_regions_ends[on_minus] = genomic_regions_ends[on_minus] + upstream
+  
+  # Store strand and metadata from genomic_regions
+  genomic_regions_strand = strand(genomic_regions)
+  genomic_regions_mcols = mcols(genomic_regions)
+  
+  # Recreate genomic_regions with new starts and ends
+  genomic_regions = GRanges(seqnames = seqnames(genomic_regions), 
+    ranges = IRanges(genomic_regions_starts, genomic_regions_ends))
+  
+  # Restore strand and metadata
+  strand(genomic_regions) = genomic_regions_strand
+  mcols(genomic_regions) = genomic_regions_mcols
+  
+  # Remove any out-of-bounds regions and return genomic_regions
+  genomic_regions = GenomicRanges::trim(genomic_regions)
+  names(genomic_regions) = genomic_regions_names
+  return(genomic_regions)
+} 
+
 
 #' Calculate distances of query GRanges upstream or downstream of subject GRanges
 #' 
@@ -111,50 +182,6 @@ strandedDistance <- function(query_gr, subject_gr){
   d <- d * subject_strand
   return(d)
 
-}
-
-#' Find locations of genomic regions relative to transcription start sites.
-#'
-#' @param genomic_regions A GRanges object. 
-#' @param tss_gr A GRanges object with transcription start sites. Each range should have width 1. 
-#' Upstream and downstream are relative to strand of tss_gr.
-#' @return A GRanges object where all regions have "relative" as the sequence names and 
-#' ranges are the location of TMRs relative to the TSS.  
-#' @export
-#' @examples
-#' # Create query and subject GRanges 
-#' genomic_regions <- GenomicRanges::GRanges(c("chr1:100-1000:+", "chr1:2000-3000:-"))
-#' tss_gr <- GenomicRanges::GRanges(c("chr1:1500:+", "chr1:4000:-"))
-#' 
-#' # Calculate distances between query and subject
-#' methodical::rangesRelativeToTSS(genomic_regions, tss_gr)
-rangesRelativeToTSS <- function(genomic_regions, tss_gr){
-  
-  # Check that inputs have the correct data type
-  stopifnot(is(genomic_regions, "GRanges"), is(tss_gr, "GRanges"))
-  
-  # Check that all tss ranges have width 1 and resize them with a warning if not
-  if(!all(width(tss_gr) == 1)){
-    warning("All regions in tss_gr should have a width of 1. Shortening each region so that it consists of only the most upstream position")
-    tss_gr <- GenomicRanges::resize(tss_gr, 1, fix = "start")
-  }
-
-  # Get distances from start and end of ranges in gr from tss_gr
-  relative_start <- methodical::strandedDistance(query_gr = resize(genomic_regions, 1, fix = "start"), subject_gr = tss_gr)
-  relative_end <- methodical::strandedDistance(query_gr = resize(genomic_regions, 1, fix = "end"), subject_gr = tss_gr)
-  
-  # Create an IRanges with the relative distances
-  relative_iranges <- IRanges::IRanges(pmin(relative_start, relative_end), pmax(relative_start, relative_end))
-  
-  # Convert IRanges to GRanges with "relative" as seqnames
-  relative_granges <- GenomicRanges::GRanges(seqnames = "relative", ranges = relative_iranges)
-  
-  # Add metadata from gr to relative_granges
-  mcols(relative_granges) <- mcols(genomic_regions)
-  
-  # Return relative_granges
-  return(relative_granges)
-  
 }
 
 #' Calculate the number of unique bases covered by all regions in a GRanges object
@@ -340,75 +367,3 @@ createRandomRegions <- function(genome, n_regions = 1000, region_widths = 1000, 
   return(final_random_gr)
   
 }
-
-#' Expand GRanges
-#'
-#' Expand ranges in a GRanges object upstream and downstream by specified numbers of bases, taking account of strand.
-#' Unstranded ranges are treated like they on the "+" strand. 
-#' If any of the resulting ranges are out-of-bounds given the seqinfo of genomic_regions, they will be trimmed using trim().
-#'
-#' @param genomic_regions A GRanges object
-#' @param upstream Number of bases to add upstream of each region in genomic_regions. 
-#' Must be numeric vector of length 1 or else equal to the length of genomic_regions. Default value is 0. 
-#' Negative values result in upstream end of regions being shortened, however the width of the resulting regions cannot be less than zero. 
-#' @param downstream Number of bases to add downstream of each region in genomic_regions. Negative values result in downstream end of regions being shortened. 
-#' Must be numeric vector of length 1 or else equal to the length of genomic_regions. Default value is 0.
-#' Negative values result in upstream end of regions being shortened, however the width of the resulting regions cannot be less than zero. 
-#' @return A GRanges object
-#' @export
-#' @examples 
-#' data(tubb6_tss, package = "methodical")
-#' tubb6_tss
-#' methodical::expand_granges(tubb6_tss, upstream = 5000, downstream = 5000)
-expand_granges = function(genomic_regions, upstream = 0, downstream = 0) {
-  
-  # Check that genomic_regions is a GRanges object
-  if(!is(genomic_regions, "GRanges")){stop("genomic_regions must be a GRanges object")}
-  
-  # Check that upstream and downstream are vectors of either length 1 or with the same length as genomic_regions
-  if(!length(upstream) %in% c(1, length(genomic_regions))){
-    stop("upstream should be a vector of length 1 or the length of genomic_regions")}
-  if(!length(downstream) %in% c(1, length(genomic_regions))){
-    stop("downstream should be a vector of length 1 or the length of genomic_regions")}
-  
-  # Check if any regions would have negative widths after adjustment
-  if(any(width(genomic_regions) + upstream + downstream < 0)){
-    stop("Some regions would have a negative width after adjustment. This is not permitted.")
-  }
-  
-  ## Save names of genomic_regions
-  genomic_regions_names = names(genomic_regions)
-  
-  # Check for each range if it's on the negative or positive strand
-  strand_is_minus = as.character(GenomicRanges::strand(genomic_regions)) == "-"
-  on_plus = which(!strand_is_minus)
-  on_minus = which(strand_is_minus)
-  
-  # Create vectors with the start and end sites of genomic_regions
-  genomic_regions_starts = start(genomic_regions)
-  genomic_regions_ends = end(genomic_regions)
-  
-  # Adjust ranges based on whether they are on the positive or negative strand
-  genomic_regions_starts[on_plus] = genomic_regions_starts[on_plus] - upstream
-  genomic_regions_starts[on_minus] = genomic_regions_starts[on_minus] - downstream
-  genomic_regions_ends[on_plus] = genomic_regions_ends[on_plus] + downstream
-  genomic_regions_ends[on_minus] = genomic_regions_ends[on_minus] + upstream
-  
-  # Store strand and metadata from genomic_regions
-  genomic_regions_strand = strand(genomic_regions)
-  genomic_regions_mcols = mcols(genomic_regions)
-  
-  # Recreate genomic_regions with new starts and ends
-  genomic_regions = GRanges(seqnames = seqnames(genomic_regions), 
-    ranges = IRanges(genomic_regions_starts, genomic_regions_ends))
-  
-  # Restore strand and metadata
-  strand(genomic_regions) = genomic_regions_strand
-  mcols(genomic_regions) = genomic_regions_mcols
-  
-  # Remove any out-of-bounds regions and return genomic_regions
-  genomic_regions = GenomicRanges::trim(genomic_regions)
-  names(genomic_regions) = genomic_regions_names
-  return(genomic_regions)
-} 
-
