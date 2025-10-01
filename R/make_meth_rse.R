@@ -121,7 +121,7 @@ makeMethRSEFrominput_files <- function(input_files,
 #'
 #' @param array_files A vector of paths to input files. Automatically detects if array_files contain a header if every field in the first line is a character. 
 #' @param probe_name_column The number of the column which corresponds to the name of the probes. Default is 1st column. 
-#' @param beta_methylation_column The number of the column which corresponds to the beta values . Default is 2nd column.  
+#' @param beta_value_column The number of the column which corresponds to the beta values . Default is 2nd column.  
 #' @param normalization_factor An optional numerical value to divide methylation values by to convert them to fractions e.g. 100 if they are percentages. 
 #' Default is not to leave values as they are in the input files. 
 #' @param decimal_places Integer indicating the number of decimal places to round beta values to. Default is 2. 
@@ -160,13 +160,13 @@ makeMethRSEFrominput_files <- function(input_files,
 #'  probe_ranges = infinium_450k_probe_granges_hg19, 
 #'  sample_metadata = sample_metadata, hdf5_dir =  paste0(tempdir(), "/array_file_hdf5_1"))
 #'
-makeMethRSEFromArrayFiles <- function(array_files, probe_name_column = 1, beta_methylation_column = 2, 
+makeMethRSEFromArrayFiles <- function(array_files, probe_name_column = 1, beta_value_column = 2, 
   normalization_factor = NULL, decimal_places = NA, probe_ranges, sample_metadata = NULL, hdf5_dir, dataset_name = "beta", 
   overwrite = FALSE, chunkdim = NULL, temporary_dir = NULL, BPPARAM = BiocParallel::SerialParam(), ...){
   
   # Check that inputs have the correct data type
   stopifnot(is(array_files, "character"), is(probe_name_column, "numeric") & probe_name_column >= 1,
-    is(beta_methylation_column, "numeric") & beta_methylation_column >= 1, 
+    is(beta_value_column, "numeric") & beta_value_column >= 1, 
     is(normalization_factor, "numeric") | is.null(normalization_factor),
     is(decimal_places, "numeric") | is.na(decimal_places), is(probe_ranges, "GRanges"),
     is(sample_metadata, "data.frame") | is.null(sample_metadata), is(hdf5_dir, "character"),
@@ -211,7 +211,7 @@ makeMethRSEFromArrayFiles <- function(array_files, probe_name_column = 1, beta_m
   
   # Read in array files and write data from chunks to appropriate temporary directory
   probe_sites_df <- .split_meth_array_files_into_chunks(array_files = array_files, probe_name_column = probe_name_column, 
-    beta_methylation_column = beta_methylation_column, file_grid_columns = setup$file_grid_columns, probe_ranges = probe_ranges,
+    beta_value_column = beta_value_column, file_grid_columns = setup$file_grid_columns, probe_ranges = probe_ranges,
     probe_groups = setup$meth_site_groups, temp_chunk_dirs = setup$temp_chunk_dirs, 
     normalization_factor = normalization_factor, decimal_places = decimal_places, BPPARAM = BPPARAM)
   

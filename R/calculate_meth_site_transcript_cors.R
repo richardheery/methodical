@@ -86,50 +86,6 @@
     
 }
 
-#' Add regions upstream of TSS and downstream of TES to a GRangesList for transcripts
-#'
-#' @param grl A GRangesList object with ranges for exons and introns of each transcript
-#' @param expand_upstream Number of bases to add upstream of TSS each transcript. Must be numeric vector of length 1 or equal to the length of tss_gr. 
-#' @param expand_downstream Number of bases to add downstream of TES of each transcript. Must be numeric vector of length 1 or equal to the length of tss_gr.
-#' @return A GRangesList object
-.expand_transcript_ranges = function(grl, expand_upstream = 0, expand_downstream = 0){
-  
-  # Convert grl into a GRanges with one region for each transcript
-  transcripts = unlist(reduce(grl))
-  
-  # Get promoter sequences for each transcript and set region as promoter and rank as 0
-  promoters = promoters(transcripts, upstream = expand_upstream, downstream = 0)
-  promoters$transcript_name = names(transcripts)
-  promoters$region = "upstream_TSS"
-  
-  # Find transcription end site for each transcript
-  tes = resize(transcripts, width = 1, fix = "end")
-  
-  # Get terminator regions for each transcript and set region as terminator_region and rank as 0
-  terminators = promoters(shift(tes, shift = 1 * ifelse(strand(tes) == "+", 1, -1)), 
-    upstream = 0, downstream = expand_downstream)
-  terminators$transcript_name = names(terminators)
-  terminators$region = "downstream_TES"
-  
-  # Create a data.frame from grl
-  grl_df = data.frame(unlist(grl))
-  
-  # Combine grl_df with promoters and terminators
-  complete_df = dplyr::bind_rows(grl_df, data.frame(promoters), data.frame(terminators))
-  
-  # Sort promoter_terminator_df by transcript_name and start site
-  complete_df = dplyr::arrange(complete_df, transcript_name, start)
-  
-  # Convert into a GRanges and then into a GRangesList for transcripts
-  complete_gr = makeGRangesFromDataFrame(complete_df, keep.extra.columns = TRUE, 
-    seqinfo = seqinfo(grl)) 
-  complete_grl = GRangesList(split(complete_gr, complete_gr$transcript_name))
-  
-  # Return complete_grl
-  return(complete_grl[names(grl)])
-  
-}
-
 #' Calculate correlation between expression of transcripts and methylation of sites surrounding their TSS
 #'
 #' @param meth_rse A RangedSummarizedExperiment for methylation sites. 
@@ -143,8 +99,6 @@
 #' Names of regions cannot contain any duplicates and should and match those of tss_associated_gr and be present in transcript_expression table.
 #' @param tss_associated_gr A GRanges object with the locations of regions associated with each transcription start site. 
 #' Names of regions cannot contain any duplicates and should and match those of tss_gr and be present in transcript_expression table.
-##' @param expand_upstream Number of bases to add upstream of TSS each transcript. Must be numeric vector of length 1 or equal to the length of tss_gr. Default is 5000.
-##' @param expand_downstream Number of bases to add downstream of TES of each transcript. Must be numeric vector of length 1 or equal to the length of tss_gr. Default is 5000.
 #' @param cor_method A character string indicating which correlation coefficient is to be computed. 
 #' One of either "pearson" or "spearman" or their abbreviations. 
 #' @param min_number_complete_pairs The minimum number of complete pairs required to return a p-value for a correlation.
