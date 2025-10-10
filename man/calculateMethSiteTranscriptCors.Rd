@@ -57,10 +57,6 @@ Default is floor(62500000/ncol(meth_rse)), resulting in each chunk requiring app
 
 \item{results_dir}{An optional path to a directory to save results as RDS files. There will be one RDS file for each transcript.
 If not provided, returns the results as a list.}
-
-\item{expand_upstream}{Number of bases to add upstream of TSS each transcript. Must be numeric vector of length 1 or equal to the length of tss_gr. Default is 5000.}
-
-\item{expand_downstream}{Number of bases to add downstream of TES of each transcript. Must be numeric vector of length 1 or equal to the length of tss_gr. Default is 5000.}
 }
 \value{
 If results_dir is NULL, a list of data.frames with the correlation of methylation sites surrounding a specified

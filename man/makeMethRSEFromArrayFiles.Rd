@@ -7,7 +7,7 @@
 makeMethRSEFromArrayFiles(
   array_files,
   probe_name_column = 1,
-  beta_methylation_column = 2,
+  beta_value_column = 2,
   normalization_factor = NULL,
   decimal_places = NA,
   probe_ranges,
@@ -26,7 +26,7 @@ makeMethRSEFromArrayFiles(
 
 \item{probe_name_column}{The number of the column which corresponds to the name of the probes. Default is 1st column.}
 
-\item{beta_methylation_column}{The number of the column which corresponds to the beta values . Default is 2nd column.}
+\item{beta_value_column}{The number of the column which corresponds to the beta values . Default is 2nd column.}
 
 \item{normalization_factor}{An optional numerical value to divide methylation values by to convert them to fractions e.g. 100 if they are percentages.
 Default is not to leave values as they are in the input files.}
