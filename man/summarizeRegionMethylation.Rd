@@ -13,7 +13,7 @@ summarizeRegionMethylation(
   keep_metadata_cols = FALSE,
   max_sites_per_chunk = floor(62500000/ncol(meth_rse)),
   na.rm = TRUE,
-  BPPARAM = BiocParallel::bpparam(),
+  BPPARAM = BiocParallel::SerialParam(),
   ...
 )
 }
@@ -24,11 +24,11 @@ summarizeRegionMethylation(
 
 \item{genomic_regions}{GRanges object with regions to summarize methylation values for.}
 
-\item{genomic_region_names}{A vector of names to give genomic_regions in the output table. There cannot be any duplicated names.
-Default is to attempt to use \code{names(genomic_regions)} if they are present or to name them region_1, region_2, etc otherwise.}
+\item{genomic_region_names}{A character vector of unique names to assign genomic_regions in the output table.
+Defaults to \code{names(genomic_regions)} if present or otherwise converts regions to character strings (e.g. "chr:1000-2000") to use as names.}
 
 \item{col_summary_function}{A function that summarizes column values.
-Should be the name of one of the column summary functions from MatrixGenerics. Default is "rowMeans2".}
+Should be the name of one of the column summary functions from MatrixGenerics. Default is "colMeans2".}
 
 \item{keep_metadata_cols}{TRUE or FALSE indicating whether to add the metadata columns of genomic_regions to the output. Default is FALSE.}
 
@@ -41,7 +41,7 @@ Default is floor(62500000/ncol(meth_rse)), resulting in each chunk requiring app
 
 \item{na.rm}{TRUE or FALSE indicating whether to remove NA values when calculating summaries. Default value is TRUE.}
 
-\item{BPPARAM}{A BiocParallelParam object. Defaults to \code{BiocParallel::bpparam()}.}
+\item{BPPARAM}{A BiocParallelParam object. Defaults to \code{BiocParallel::SerialParam()}.}
 
 \item{...}{Additional arguments to be passed to col_summary_function.}
 }

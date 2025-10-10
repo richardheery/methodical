@@ -48,7 +48,7 @@ GRanges making up annotation_grl. Must have same length as annotation_grl.}
 A ggplot object
 }
 \description{
-Works with plots returned by \code{plotMethylationValues()}, \code{plotMethSiteCorCoefs()} or \code{plotMethodicalScores}.
+Works with plots returned by \code{plotRegionValues()}, \code{plotMethSiteCorCoefs()} or \code{plotMethodicalScores}.
 Can combine the meth site values plot and genomic annotation together into a
 single plot or return the annotation plot separately.
 }

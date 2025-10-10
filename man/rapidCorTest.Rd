@@ -11,7 +11,8 @@ rapidCorTest(
   table1_name = "table1",
   table2_name = "table2",
   p_adjust_method = "BH",
-  n_covariates = 0
+  n_covariates = 0,
+  min_number_complete_pairs = 30
 )
 }
 \arguments{
@@ -30,6 +31,9 @@ One of either "pearson" or "spearman" or their abbreviations.}
 Setting to "none" will result in no adjusted p-values being calculated.}
 
 \item{n_covariates}{Number of covariates if calculating partial correlations. Defaults to 0.}
+
+\item{min_number_complete_pairs}{The minimum number of complete pairs required to return a p-value for a correlation.
+Correlations with less than this number are given a p-value of NaN. Default value is 30.}
 }
 \value{
 A data.frame with the correlation and its significance for all pairs consisting of a variable from table1 and a variable from table2.
@@ -44,7 +48,7 @@ table1 <- mtcars[, 1:5]
 table2 <- mtcars[, 6:11]
 
 # Calculate correlation between table1 and table2
-cor_results <- methodical::rapidCorTest(table1, table2, cor_method = "spearman", 
+cor_results <- methodical::rapidCorTest(table1, table2, cor_method = "spearman",
   table1_name = "feature1", table2_name = "feature2")
 head(cor_results)
 

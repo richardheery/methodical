@@ -1,0 +1,46 @@
+General
+.switch to using BSSeq?
+.Generalize to histone data? Show exampe with Roadmap data and RNA-seq
+. Change meth sites from single position to whole palindormes? Check BSseq
+
+methodical.R ! Revise if updating to also work with histone data
+
+chunk_regions.R # Default is one core
+.chunk_regions
+
+rapid_cor_test.R
+.rapidCorTest
+
+meth_rse_functions.R ! Show examples for all in meth_rse vignette
+.extractGRangesMethSiteValues # Check if redundant and rename get_values_overlapping_regions
+.sampleMethSites ! Show example in working_with_meth_rse vignette with e.g. mouse for CpG islands, gene bodies, repeats
+.liftoverMethRSE
+.maskRangesInRSE 
+
+plotting_functions.R
+rangesRelativeToTSS ! Make non-exported
+plotRegionValues
+plotMethSiteCorCoefs ! Simplify to use code from plotRegionValues
+plotTMRs Generalize to worj with other regions?
+plotMethodicalScores ! Simplify to use code from plotRegionValues
+annotatePlot
+
+granges_manipulation.R
+extractMethSitesFromGenome ! Check if redundant with 
+.expand_granges ! Check if redundant with promoters?
+.strandedDistance ! Make non-exported + plus check if any other function cab perform the same task?
+extractMethSitesFromGenome ! Check if redundnat with 
+rangesRelativeToTSS ! Make non-exported?
+.count_covered_bases. # Used by calculate_regions_intersections. ! Remove from package?
+calculate_regions_intersections # Used by annotateGRanges. ! Remove from package?
+createRandomRegions ! Check if redundant with RegioneR
+
+genome_annotation.R
+.annotateGRanges ! Remove from package? 
+
+object_documentation.R ! Check that all objects included
+
+kallisto_quantify.R: ! Remove from package
+.kallistoIndex
+.kallistoQuantify
+.sumTranscriptValuesForGenes

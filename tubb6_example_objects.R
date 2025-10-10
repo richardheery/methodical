@@ -3,6 +3,7 @@
 library(methodical)
 
 # Load TSS GRanges and get region +/- 5KB of the TSS
+wget("")
 tss_gr = readRDS("~/genomes/gencode/gencode_granges/pcg_transcript_tss_ranges_gencode_v38.rds")
 tubb6_tss = tss_gr[tss_gr$transcript_id == "ENST00000591909"]
 names(tubb6_tss) = tubb6_tss$transcript_id
@@ -36,18 +37,8 @@ tubb6_cpg_meth_transcript_cors = tubb6_cpg_meth_transcript_cors$ENST00000591909
 # Plot transcript cors for tubb6_cpg_meth_transcript_cors
 tubb6_correlation_plot = methodical::plotMethSiteCorCoefs(tubb6_cpg_meth_transcript_cors)
 
-# Plot Methdodical scores for TUBB6
-tubb6_methodical_plot = methodical::plotMethodicalScores(meth_site_values = tubb6_cpg_meth_transcript_cors, smooth_scores = F)
-
-# Add smoothed scores to plot
-tubb6_smoothed_methodical_plot = methodical::plotMethodicalScores(meth_site_values = tubb6_cpg_meth_transcript_cors, 
-  smooth_scores = T, smoothed_curve_colour = "hotpink2", curve_alpha = 1)
-
 # Find TUBB6 TMRs
-tubb6_tmrs = methodical::findTMRs(tubb6_cpg_meth_transcript_cors)
-
-# Add TMRs to TUBB6 plot
-tubb6_correlation_plot_with_tmrs = methodical::plotTMRs(tubb6_smoothed_methodical_plot, tmrs_gr = tubb6_tmrs)
+tubb6_tmrs = methodical::findTMRs(list(ENST00000591909 = tubb6_cpg_meth_transcript_cors))
 
 # Change tubb6_meth_rse to a call to the tubb6_meth_rse directory located in the package extdata
 tubb6_meth_rse = quote(HDF5Array::loadHDF5SummarizedExperiment(system.file('extdata/tubb6_meth_rse', package = 'methodical')))

@@ -12,9 +12,10 @@ calculateMethSiteTranscriptCors(
   tss_gr,
   tss_associated_gr,
   cor_method = "pearson",
+  min_number_complete_pairs = 30,
   add_distance_to_region = TRUE,
   max_sites_per_chunk = NULL,
-  BPPARAM = BiocParallel::bpparam(),
+  BPPARAM = BiocParallel::SerialParam(),
   results_dir = NULL
 )
 }
@@ -39,6 +40,9 @@ Names of regions cannot contain any duplicates and should and match those of tss
 \item{cor_method}{A character string indicating which correlation coefficient is to be computed.
 One of either "pearson" or "spearman" or their abbreviations.}
 
+\item{min_number_complete_pairs}{The minimum number of complete pairs required to return a p-value for a correlation.
+Correlations with less than this number are given a p-value of NaN. Default value is 30.}
+
 \item{add_distance_to_region}{TRUE or FALSE indicating whether to add the distance of methylation sites to the TSS. Default value is TRUE.
 Setting to FALSE will roughly half the total running time.}
 
@@ -49,14 +53,10 @@ Some experimentation may be needed to choose an optimal value as low values will
 while high values will result in a large memory footprint without much improvement in running time.
 Default is floor(62500000/ncol(meth_rse)), resulting in each chunk requiring approximately 500 MB of RAM.}
 
-\item{BPPARAM}{A BiocParallelParam object for parallel processing. Defaults to \code{BiocParallel::bpparam()}.}
+\item{BPPARAM}{A BiocParallelParam object for parallel processing. Defaults to \code{BiocParallel::SerialParam()}.}
 
 \item{results_dir}{An optional path to a directory to save results as RDS files. There will be one RDS file for each transcript.
 If not provided, returns the results as a list.}
-
-\item{expand_upstream}{Number of bases to add upstream of TSS each transcript. Must be numeric vector of length 1 or equal to the length of tss_gr. Default is 5000.}
-
-\item{expand_downstream}{Number of bases to add downstream of TES of each transcript. Must be numeric vector of length 1 or equal to the length of tss_gr. Default is 5000.}
 }
 \value{
 If results_dir is NULL, a list of data.frames with the correlation of methylation sites surrounding a specified

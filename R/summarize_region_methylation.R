@@ -47,10 +47,10 @@
 #' @param assay The assay from meth_rse to extract values from. Should be either an index or the name of an assay. Default is the first assay. 
 #' @param genomic_regions GRanges object with regions to summarize methylation values for. 
 #' @param keep_metadata_cols TRUE or FALSE indicating whether to add the metadata columns of genomic_regions to the output. Default is FALSE.
-#' @param genomic_region_names A vector of names to give genomic_regions in the output table. There cannot be any duplicated names. 
-#' Default is to attempt to use `names(genomic_regions)` if they are present or to name them region_1, region_2, etc otherwise.
+#' @param genomic_region_names A character vector of unique names to assign genomic_regions in the output table.
+#' Defaults to `names(genomic_regions)` if present or otherwise converts regions to character strings (e.g. "chr:1000-2000") to use as names.
 #' @param col_summary_function A function that summarizes column values. 
-#' Should be the name of one of the column summary functions from MatrixGenerics. Default is "rowMeans2". 
+#' Should be the name of one of the column summary functions from MatrixGenerics. Default is "colMeans2". 
 #' @param max_sites_per_chunk The approximate maximum number of methylation sites to try to load into memory at once. 
 #' The actual number loaded may vary depending on the number of methylation sites overlapping each region, 
 #' but so long as the size of any individual regions is not enormous (>= several MB), it should vary only very slightly. 
@@ -58,7 +58,7 @@
 #' while high values will result in a large memory footprint without much improvement in running time. 
 #' Default is floor(62500000/ncol(meth_rse)), resulting in each chunk requiring approximately 500 MB of RAM. 
 #' @param na.rm TRUE or FALSE indicating whether to remove NA values when calculating summaries. Default value is TRUE. 
-#' @param BPPARAM A BiocParallelParam object. Defaults to `BiocParallel::bpparam()`. 
+#' @param BPPARAM A BiocParallelParam object. Defaults to `BiocParallel::SerialParam()`. 
 #' @param ... Additional arguments to be passed to col_summary_function. 
 #' @return A data.table with the summary of methylation of each region in genomic_regions for each sample.
 #' @export
@@ -77,7 +77,7 @@
 #'   genomic_region_names = names(test_gr))
 #' 
 summarizeRegionMethylation <- function(meth_rse, assay = 1, genomic_regions, genomic_region_names = NULL, col_summary_function = "colMeans2",
-  keep_metadata_cols = FALSE, max_sites_per_chunk = floor(62500000/ncol(meth_rse)), na.rm = TRUE, BPPARAM = BiocParallel::bpparam(), ...){
+  keep_metadata_cols = FALSE, max_sites_per_chunk = floor(62500000/ncol(meth_rse)), na.rm = TRUE, BPPARAM = BiocParallel::SerialParam(), ...){
   
   # Check that inputs have the correct data type
   stopifnot(is(meth_rse, "RangedSummarizedExperiment"), is(assay, "numeric") | is(assay, "character"),
@@ -98,8 +98,8 @@ summarizeRegionMethylation <- function(meth_rse, assay = 1, genomic_regions, gen
     
   # Add names to genomic_regions if they are not already present and also check that no names are duplicated. 
   if(is.null(genomic_region_names)){
-    message("No names for provided regions so naming them region_1, region_2, etc.")
-    genomic_region_names <- paste0("region_", seq_along(genomic_regions))
+    message("No names for provided regions so using as.character(genomic_regions) as names")
+    genomic_region_names <- as.character(genomic_regions)
     names(genomic_regions) <- genomic_region_names
   } else {
     if(length(genomic_region_names) != length(genomic_regions)){

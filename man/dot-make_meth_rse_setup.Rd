@@ -20,9 +20,11 @@
 \item{meth_files}{A vector of paths to files with methylation values.
 Automatically detects if meth_files contain a header if every field in the first line is a character.}
 
-\item{meth_sites}{A GRanges object with the locations of the methylation sites of interest. Any regions in meth_files that are not in meth_sites are ignored.}
+\item{meth_sites}{A GRanges object with the locations of the methylation sites of interest. Should contain separate ranges
+for each stand if meth_files are stranded (i.e. separate ranges for the C and G positions of CpG sites),
+Any positions in meth_files that are not in meth_sites are ignored.}
 
-\item{sample_metadata}{Sample metadata to be used as colData for the RangedSummarizedExperiment.}
+\item{sample_metadata}{A data.frame with sample metadata to be used as colData for the RangedSummarizedExperiment.}
 
 \item{hdf5_dir}{Directory to save HDF5 file. Is created if it doesn't exist. HDF5 file is called assays.h5.}
 

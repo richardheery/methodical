@@ -1,25 +1,28 @@
-#' Create a HDF5-backed RangedSummarizedExperiment for methylation values in bedGraphs
+#' Create a HDF5-backed RangedSummarizedExperiment for methylation values in input_files
 #'
-#' @param bedgraphs A vector of paths to bedGraph files. Automatically detects if bedGraphs contain a header if every field in the first line is a character. 
-#' @param seqnames_column The column number in bedgraphs which corresponds to the sequence names. Default is 1st column.  
-#' @param start_column The column number in bedgraphs which corresponds to the start positions. Default is 2nd column. 
-#' @param end_column The column number in bedgraphs which corresponds to the end positions. Default is 3rd column. 
-#' @param value_column The column number in bedgraphs which corresponds to the methylation values. Default is 4th column. 
+#' @param input_files A vector of paths to input files. Automatically detects if input_files contain a header if every field in the first line is a character. 
+#' @param seqnames_column The column number in input_files which corresponds to the sequence names. Default is 1st column.  
+#' @param start_column The column number in input_files which corresponds to the start positions. Default is 2nd column. 
+#' @param end_column The column number in input_files which corresponds to the end positions. Default is 3rd column. 
+#' @param methylation_column The column number in input_files which corresponds to the methylation values. Default is 5th column. 
+#' @param methylation_column_is_counts A logical value indicating of methylation_column gives the number of reads supporting methylation. 
+#' If FALSE, methylation_column is assumed to be the proportion of methylated reads. Default is TRUE.
+#' @param coverage_column The column number in input_files which corresponds to the total coverage. Default is the 6th column.
 #' @param zero_based TRUE or FALSE indicating if files are zero-based. Default value is TRUE. 
 #' @param normalization_factor An optional numerical value to divide methylation values by to convert them to fractions e.g. 100 if they are percentages. 
-#' Default is not to leave values as they are in the input files. 
+#' Default is to leave values as they are in the input files. 
 #' @param decimal_places Optional integer indicating the number of decimal places to round beta values to. Default is not to round. 
-#' @param meth_sites A GRanges object with the locations of the methylation sites of interest. Any methylation sites in bedGraphs that are not in meth_sites are ignored.
+#' @param meth_sites A GRanges object with the locations of the methylation sites of interest. Any methylation sites in input_files that are not in meth_sites are ignored.
 #' @param sample_metadata Sample metadata to be used as colData for the RangedSummarizedExperiment.
 #' @param hdf5_dir Directory to save HDF5 file. Is created if it doesn't exist. HDF5 file is called assays.h5. 
 #' @param dataset_name Name to give data set in HDF5 file. Default is "beta".
 #' @param overwrite TRUE or FALSE indicating whether to allow overwriting if dataset_name already exists in assays.h5. Default is FALSE.
 #' @param chunkdim The dimensions of the chunks for the HDF5 file. Should be a vector of length 2 giving the number of rows and then the number of columns in each chunk.
-#' Uses HDF5Array::getHDF5DumpChunkDim(length(meth_sites), length(bedgraphs))) by default. 
+#' Uses HDF5Array::getHDF5DumpChunkDim(length(meth_sites), length(input_files))) by default. 
 #' @param temporary_dir Name to give temporary directory created to store intermediate files. A directory with this name cannot already exist. 
 #' Default is to create a name using tempfile("temporary_meth_chunks_"). 
 #' Will be deleted after completion. 
-#' @param BPPARAM A BiocParallelParam object for parallel processing. Defaults to `BiocParallel::bpparam()`. 
+#' @param BPPARAM A BiocParallelParam object for parallel processing. Defaults to `BiocParallel::SerialParam()`. 
 #' @param ... Additional arguments to be passed to HDF5Array::HDF5RealizationSink() for controlling the physical properties of the created HDF5 file, 
 #' such as compression level. Uses the defaults for any properties that are not specified. 
 #' @return A RangedSummarizedExperiment with methylation values for all methylation sites in meth_sites. methylation sites will be in the same order as sort(meth_sites). 
@@ -29,32 +32,33 @@
 #' # Load CpGs within first million base pairs of chromosome 1 as a GRanges object
 #' data("hg38_cpgs_subset", package = "methodical")
 #' 
-#' # Get paths to bedGraphs
-#' bedgraphs <- list.files(path = system.file('extdata', package = 'methodical'), 
+#' # Get paths to input_files
+#' input_files <- list.files(path = system.file('extdata', package = 'methodical'), 
 #'   pattern = ".bg.gz", full.names = TRUE)
 #' 
 #' # Create sample metadata
 #' sample_metadata <- data.frame(
-#'   tcga_project = gsub("_.*", "", gsub("TCGA_", "", basename(bedgraphs))),
-#'   sample_type = ifelse(grepl("N", basename(bedgraphs)), "Normal", "Tumour"),
-#'   row.names = tools::file_path_sans_ext(basename(bedgraphs))
+#'   tcga_project = gsub("_.*", "", gsub("TCGA_", "", basename(input_files))),
+#'   sample_type = ifelse(grepl("N", basename(input_files)), "Normal", "Tumour"),
+#'   row.names = tools::file_path_sans_ext(basename(input_files))
 #' )
 #' 
-#' # Create a HDF5-backed RangedSummarizedExperiment from bedGraphs
-#' meth_rse <- makeMethRSEFromBedgraphs(bedgraphs = bedgraphs, 
+#' # Create a HDF5-backed RangedSummarizedExperiment from input_files
+#' meth_rse <- makeMethRSEFrominput_files(input_files = input_files, 
 #'   meth_sites = hg38_cpgs_subset, sample_metadata = sample_metadata, 
 #'   hdf5_dir = paste0(tempdir(), "/bedgraph_hdf5_1"))
 #'   
-makeMethRSEFromBedgraphs <- function(bedgraphs, 
-  seqnames_column = 1, start_column = 2, end_column = 3, value_column = 4,
-  zero_based = TRUE, normalization_factor = NULL, decimal_places = NA, 
+makeMethRSEFrominput_files <- function(input_files, 
+  seqnames_column = 1, start_column = 2, end_column = 3, methylation_column = 5, methylation_column_is_counts = "counts",
+  coverage_column = 6, zero_based = TRUE, normalization_factor = NULL, decimal_places = NA, 
   meth_sites, sample_metadata = NULL, hdf5_dir, dataset_name = "beta", overwrite = FALSE, chunkdim = NULL, 
-  temporary_dir = NULL, BPPARAM = BiocParallel::bpparam(), ...){
+  temporary_dir = NULL, BPPARAM = BiocParallel::SerialParam(), ...){
   
   # Check that inputs have the correct data type
-  stopifnot(is(bedgraphs, "character"), is(seqnames_column, "numeric") & seqnames_column >= 1,
+  stopifnot(is(input_files, "character"), is(seqnames_column, "numeric") & seqnames_column >= 1,
     is(start_column, "numeric") & start_column >= 1, is(end_column, "numeric") & end_column >= 1,
-    is(value_column, "numeric") & value_column >= 1, S4Vectors::isTRUEorFALSE(zero_based),
+    is(methylation_column, "numeric") & methylation_column >= 1, S4Vectors::isTRUEorFALSE(methylation_column_is_counts),
+    is(coverage_column, "numeric") & methylation_column >= 1, S4Vectors::isTRUEorFALSE(zero_based),
     is(normalization_factor, "numeric") | is.null(normalization_factor),
     is(decimal_places, "numeric") | is.na(decimal_places), is(meth_sites, "GRanges"),
     is(sample_metadata, "data.frame") | is.null(sample_metadata), is(hdf5_dir, "character"),
@@ -86,13 +90,13 @@ makeMethRSEFromBedgraphs <- function(bedgraphs,
   }
   
   # Perform setup
-  setup <- .make_meth_rse_setup(meth_files = bedgraphs, meth_sites = meth_sites, sample_metadata = sample_metadata, 
+  setup <- .make_meth_rse_setup(meth_files = input_files, meth_sites = meth_sites, sample_metadata = sample_metadata, 
     hdf5_dir = hdf5_dir, dataset_name = dataset_name, overwrite = overwrite, chunkdim = chunkdim, 
     temporary_dir = temporary_dir, ...)
   
-  # Read in bedGraphs and write data from chunks to appropriate temporary directory
-  meth_sites_df <- .split_bedgraphs_into_chunks(bedgraphs = bedgraphs, 
-    seqnames_column = seqnames_column, start_column = start_column, end_column = end_column, value_column = value_column,
+  # Read in input_files and write data from chunks to appropriate temporary directory
+  meth_sites_df <- .split_input_files_into_chunks(input_files = input_files, 
+    seqnames_column = seqnames_column, start_column = start_column, end_column = end_column, methylation_column = methylation_column,
     file_grid_columns = setup$file_grid_columns, meth_sites = meth_sites, meth_site_groups = setup$meth_site_groups, temp_chunk_dirs = setup$temp_chunk_dirs, 
     zero_based = zero_based, normalization_factor = normalization_factor, decimal_places = decimal_places, BPPARAM = BPPARAM)
   
@@ -115,7 +119,7 @@ makeMethRSEFromBedgraphs <- function(bedgraphs,
 
 #' Create a HDF5-backed RangedSummarizedExperiment for methylation values in array files
 #'
-#' @param array_files A vector of paths to bedGraph files. Automatically detects if array_files contain a header if every field in the first line is a character. 
+#' @param array_files A vector of paths to input files. Automatically detects if array_files contain a header if every field in the first line is a character. 
 #' @param probe_name_column The number of the column which corresponds to the name of the probes. Default is 1st column. 
 #' @param beta_value_column The number of the column which corresponds to the beta values . Default is 2nd column.  
 #' @param normalization_factor An optional numerical value to divide methylation values by to convert them to fractions e.g. 100 if they are percentages. 
@@ -131,7 +135,7 @@ makeMethRSEFromBedgraphs <- function(bedgraphs,
 #' @param chunkdim The dimensions of the chunks for the HDF5 file. Should be a vector of length 2 giving the number of rows and then the number of columns in each chunk.
 #' @param temporary_dir Name to give a temporary directory to store intermediate files. A directory with this name cannot already exist. 
 #' Default is to create a name using tempfile("temporary_meth_chunks_"). 
-#' @param BPPARAM A BiocParallelParam object for parallel processing. Defaults to `BiocParallel::bpparam()`. 
+#' @param BPPARAM A BiocParallelParam object for parallel processing. Defaults to `BiocParallel::SerialParam()`. 
 #' @param ... Additional arguments to be passed to HDF5Array::HDF5RealizationSink() for controlling the physical properties of the created HDF5 file, 
 #' such as compression level. Uses the defaults for any properties that are not specified. 
 #' @return A RangedSummarizedExperiment with methylation values for all methylation sites in meth_sites. Methylation sites will be in the same order as sort(meth_sites). 
@@ -158,7 +162,7 @@ makeMethRSEFromBedgraphs <- function(bedgraphs,
 #'
 makeMethRSEFromArrayFiles <- function(array_files, probe_name_column = 1, beta_value_column = 2, 
   normalization_factor = NULL, decimal_places = NA, probe_ranges, sample_metadata = NULL, hdf5_dir, dataset_name = "beta", 
-  overwrite = FALSE, chunkdim = NULL, temporary_dir = NULL, BPPARAM = BiocParallel::bpparam(), ...){
+  overwrite = FALSE, chunkdim = NULL, temporary_dir = NULL, BPPARAM = BiocParallel::SerialParam(), ...){
   
   # Check that inputs have the correct data type
   stopifnot(is(array_files, "character"), is(probe_name_column, "numeric") & probe_name_column >= 1,
