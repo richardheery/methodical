@@ -5,8 +5,6 @@
 #' @param start_column The column number in input_files which corresponds to the start positions. Default is 2nd column. 
 #' @param end_column The column number in input_files which corresponds to the end positions. Default is 3rd column. 
 #' @param methylation_column The column number in input_files which corresponds to the methylation values. Default is 5th column. 
-#' @param methylation_column_is_counts A logical value indicating of methylation_column gives the number of reads supporting methylation. 
-#' If FALSE, methylation_column is assumed to be the proportion of methylated reads. Default is TRUE.
 #' @param coverage_column The column number in input_files which corresponds to the total coverage. Default is the 6th column.
 #' @param zero_based TRUE or FALSE indicating if files are zero-based. Default value is TRUE. 
 #' @param normalization_factor An optional numerical value to divide methylation values by to convert them to fractions e.g. 100 if they are percentages. 
@@ -49,7 +47,7 @@
 #'   hdf5_dir = paste0(tempdir(), "/bedgraph_hdf5_1"))
 #'   
 makeMethRSEFrominput_files <- function(input_files, 
-  seqnames_column = 1, start_column = 2, end_column = 3, methylation_column = 5, methylation_column_is_counts = "counts",
+  seqnames_column = 1, start_column = 2, end_column = 3, methylation_column = 5,
   coverage_column = 6, zero_based = TRUE, normalization_factor = NULL, decimal_places = NA, 
   meth_sites, sample_metadata = NULL, hdf5_dir, dataset_name = "beta", overwrite = FALSE, chunkdim = NULL, 
   temporary_dir = NULL, BPPARAM = BiocParallel::SerialParam(), ...){
@@ -57,7 +55,7 @@ makeMethRSEFrominput_files <- function(input_files,
   # Check that inputs have the correct data type
   stopifnot(is(input_files, "character"), is(seqnames_column, "numeric") & seqnames_column >= 1,
     is(start_column, "numeric") & start_column >= 1, is(end_column, "numeric") & end_column >= 1,
-    is(methylation_column, "numeric") & methylation_column >= 1, S4Vectors::isTRUEorFALSE(methylation_column_is_counts),
+    is(methylation_column, "numeric") & methylation_column >= 1, 
     is(coverage_column, "numeric") & methylation_column >= 1, S4Vectors::isTRUEorFALSE(zero_based),
     is(normalization_factor, "numeric") | is.null(normalization_factor),
     is(decimal_places, "numeric") | is.na(decimal_places), is(meth_sites, "GRanges"),
@@ -95,7 +93,7 @@ makeMethRSEFrominput_files <- function(input_files,
     temporary_dir = temporary_dir, ...)
   
   # Read in input_files and write data from chunks to appropriate temporary directory
-  meth_sites_df <- .split_input_files_into_chunks(input_files = input_files, 
+  meth_sites_df <- .split_bedgraphs_into_chunks(input_files = input_files, 
     seqnames_column = seqnames_column, start_column = start_column, end_column = end_column, methylation_column = methylation_column,
     file_grid_columns = setup$file_grid_columns, meth_sites = meth_sites, meth_site_groups = setup$meth_site_groups, temp_chunk_dirs = setup$temp_chunk_dirs, 
     zero_based = zero_based, normalization_factor = normalization_factor, decimal_places = decimal_places, BPPARAM = BPPARAM)
