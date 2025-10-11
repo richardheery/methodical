@@ -2,7 +2,7 @@
 % Please edit documentation in R/make_meth_rse_accessory_functions.R
 \name{.split_bedgraph}
 \alias{.split_bedgraph}
-\title{Split data from a single methylation array files into chunks}
+\title{Split data from a single bedgraph file into chunks}
 \usage{
 .split_bedgraph(bg_file, column, file_count, parameters)
 }
@@ -19,5 +19,5 @@
 Invisibly returns NULL.
 }
 \description{
-Split data from a single methylation array files into chunks
+Split data from a single bedgraph file into chunks
 }

@@ -2,8 +2,10 @@
 #'
 #' @param meth_files A vector of paths to files with methylation values. 
 #' Automatically detects if meth_files contain a header if every field in the first line is a character. 
-#' @param meth_sites A GRanges object with the locations of the methylation sites of interest. Any regions in meth_files that are not in meth_sites are ignored. 
-#' @param sample_metadata Sample metadata to be used as colData for the RangedSummarizedExperiment.
+#' @param meth_sites A GRanges object with the locations of the methylation sites of interest. Should contain separate ranges 
+#' for each stand if meth_files are stranded (i.e. separate ranges for the C and G positions of CpG sites), 
+#' Any positions in meth_files that are not in meth_sites are ignored. 
+#' @param sample_metadata A data.frame with sample metadata to be used as colData for the RangedSummarizedExperiment.
 #' @param hdf5_dir Directory to save HDF5 file. Is created if it doesn't exist. HDF5 file is called assays.h5. 
 #' @param dataset_name Name to give data set in HDF5 file. 
 #' @param overwrite TRUE or FALSE indicating whether to allow overwriting if dataset_name already exists in assays.h5. 
@@ -14,11 +16,11 @@
 .make_meth_rse_setup <- function(meth_files, meth_sites, sample_metadata, hdf5_dir, 
   dataset_name, overwrite, chunkdim, temporary_dir, ...){
   
-  # If chunkdim not provided, use default values
+  # If chunkdim not provided, use default values. Otherwise check that chunkdim is a numeric vector of length 2.
   if(is.null(chunkdim)){
     chunkdim <- HDF5Array::getHDF5DumpChunkDim(c(length(meth_sites), length(meth_files)))
   } else {
-    if(length(chunkdim) != 2){
+    if(!is.numeric(chunkdim) && length(chunkdim) != 2){
       stop("chunkdim must be a numeric vector of length 2 if provided")
     }
   }
@@ -26,9 +28,6 @@
   # Set chunk_rows and chunk_cols from chunkdim
   chunk_rows <- chunkdim[1]
   chunk_cols <- chunkdim[2]
-
-  # Define %do% from foreach
-  `%do%` <- foreach::`%do%`
 
   # If hdf5_dir doesn't exist, it is created
   if(!dir.exists(hdf5_dir)){
@@ -41,8 +40,9 @@
   # Check if dataset_name is already present in HDF5 file and allow overwriting only if it is specified
   if(file.exists(hdf5_filepath)){
     if(dataset_name %in% rhdf5::h5ls(hdf5_filepath)$name & !overwrite){
-      stop(paste("dataset named", dataset_name, "already present in HDF5 file and overwrite is set to FALSE"))
+      stop(paste("A dataset named", dataset_name, "is already present in HDF5 file and overwrite is set to FALSE"))
     } else if(dataset_name %in% rhdf5::h5ls(hdf5_filepath)$name & overwrite){
+      message(paste("Overwriting dataset named", dataset_name, "in HDF5 file"))
       rhdf5::h5delete(file = hdf5_filepath, dataset_name)
     }
   }
@@ -95,7 +95,7 @@
   
 }
 
-#' Split data from a single methylation array files into chunks
+#' Split data from a single bedgraph file into chunks
 #'
 #' @param bg_file Path to a bedgraph file.
 #' @param column The current grid column being processed. 

@@ -6,10 +6,11 @@
 #' @param tss_gr_chunk_list A list of GRanges with the TSS for the current chunk.
 #' @param cor_method Correlation method to use. 
 #' @param add_distance_to_region TRUE or FALSE indicating whether to add distance to TSS.
+#' @param min_number_complete_pairs The minimum number of complete pairs required to return a p-value for a correlation.
 #' @param results_dir Location of results directory. 
 #' @return An iterator function which returns a list with the parameters necessary for .tss_correlations. 
 .tss_iterator <- function(meth_values_chunk, tss_region_indices_list, transcript_values_list, tss_gr_chunk_list, 
-  cor_method, add_distance_to_region, results_dir){
+  cor_method, add_distance_to_region, min_number_complete_pairs, results_dir){
   
   n <- length(tss_gr_chunk_list)
   i <- 0L
@@ -23,7 +24,8 @@
         transcript_table = transcript_values_list[[i]],
         transcript_tss = tss_gr_chunk_list[[i]], 
         transcript_name = names(tss_gr_chunk_list)[i],
-        cor_method = cor_method, add_distance_to_region = add_distance_to_region, results_dir = results_dir
+        cor_method = cor_method, add_distance_to_region = add_distance_to_region, 
+        min_number_complete_pairs = min_number_complete_pairs, results_dir = results_dir
         )
     }
   }
@@ -43,6 +45,7 @@
   cor_method <- correlation_objects[["cor_method"]]
   add_distance_to_region <- correlation_objects[["add_distance_to_region"]]
   results_dir <- correlation_objects[["results_dir"]]
+  min_number_complete_pairs <- correlation_objects[["min_number_complete_pairs"]]
       
     # Transpose meth_table
     meth_table <- t(meth_table)
@@ -54,7 +57,7 @@
       transcript_meth_site_cors <- methodical::rapidCorTest(
         table1 = meth_table, table2 = transcript_table, 
         table1_name = "meth_site", table2_name = "transcript_name", 
-        cor_method = cor_method, p_adjust_method = "none")
+        cor_method = cor_method, p_adjust_method = "none", min_number_complete_pairs = min_number_complete_pairs)
   
         # Add meth site distance to region if specified
         if(add_distance_to_region){
@@ -83,50 +86,6 @@
     
 }
 
-#' Add regions upstream of TSS and downstream of TES to a GRangesList for transcripts
-#'
-#' @param grl A GRangesList object with ranges for exons and introns of each transcript
-#' @param expand_upstream Number of bases to add upstream of TSS each transcript. Must be numeric vector of length 1 or equal to the length of tss_gr. 
-#' @param expand_downstream Number of bases to add downstream of TES of each transcript. Must be numeric vector of length 1 or equal to the length of tss_gr.
-#' @return A GRangesList object
-.expand_transcript_ranges = function(grl, expand_upstream = 0, expand_downstream = 0){
-  
-  # Convert grl into a GRanges with one region for each transcript
-  transcripts = unlist(reduce(grl))
-  
-  # Get promoter sequences for each transcript and set region as promoter and rank as 0
-  promoters = promoters(transcripts, upstream = expand_upstream, downstream = 0)
-  promoters$transcript_name = names(transcripts)
-  promoters$region = "upstream_TSS"
-  
-  # Find transcription end site for each transcript
-  tes = resize(transcripts, width = 1, fix = "end")
-  
-  # Get terminator regions for each transcript and set region as terminator_region and rank as 0
-  terminators = promoters(shift(tes, shift = 1 * ifelse(strand(tes) == "+", 1, -1)), 
-    upstream = 0, downstream = expand_downstream)
-  terminators$transcript_name = names(terminators)
-  terminators$region = "downstream_TES"
-  
-  # Create a data.frame from grl
-  grl_df = data.frame(unlist(grl))
-  
-  # Combine grl_df with promoters and terminators
-  complete_df = dplyr::bind_rows(grl_df, data.frame(promoters), data.frame(terminators))
-  
-  # Sort promoter_terminator_df by transcript_name and start site
-  complete_df = dplyr::arrange(complete_df, transcript_name, start)
-  
-  # Convert into a GRanges and then into a GRangesList for transcripts
-  complete_gr = makeGRangesFromDataFrame(complete_df, keep.extra.columns = TRUE, 
-    seqinfo = seqinfo(grl)) 
-  complete_grl = GRangesList(split(complete_gr, complete_gr$transcript_name))
-  
-  # Return complete_grl
-  return(complete_grl[names(grl)])
-  
-}
-
 #' Calculate correlation between expression of transcripts and methylation of sites surrounding their TSS
 #'
 #' @param meth_rse A RangedSummarizedExperiment for methylation sites. 
@@ -140,10 +99,10 @@
 #' Names of regions cannot contain any duplicates and should and match those of tss_associated_gr and be present in transcript_expression table.
 #' @param tss_associated_gr A GRanges object with the locations of regions associated with each transcription start site. 
 #' Names of regions cannot contain any duplicates and should and match those of tss_gr and be present in transcript_expression table.
-##' @param expand_upstream Number of bases to add upstream of TSS each transcript. Must be numeric vector of length 1 or equal to the length of tss_gr. Default is 5000.
-##' @param expand_downstream Number of bases to add downstream of TES of each transcript. Must be numeric vector of length 1 or equal to the length of tss_gr. Default is 5000.
 #' @param cor_method A character string indicating which correlation coefficient is to be computed. 
 #' One of either "pearson" or "spearman" or their abbreviations. 
+#' @param min_number_complete_pairs The minimum number of complete pairs required to return a p-value for a correlation.
+#' Correlations with less than this number are given a p-value of NaN. Default value is 30.
 #' @param add_distance_to_region TRUE or FALSE indicating whether to add the distance of methylation sites to the TSS. Default value is TRUE.
 #' Setting to FALSE will roughly half the total running time.
 #' @param max_sites_per_chunk The approximate maximum number of methylation sites to try to load into memory at once. 
@@ -152,7 +111,7 @@
 #' Some experimentation may be needed to choose an optimal value as low values will result in increased running time, 
 #' while high values will result in a large memory footprint without much improvement in running time. 
 #' Default is floor(62500000/ncol(meth_rse)), resulting in each chunk requiring approximately 500 MB of RAM. 
-#' @param BPPARAM A BiocParallelParam object for parallel processing. Defaults to `BiocParallel::bpparam()`. 
+#' @param BPPARAM A BiocParallelParam object for parallel processing. Defaults to `BiocParallel::SerialParam()`. 
 #' @param results_dir An optional path to a directory to save results as RDS files. There will be one RDS file for each transcript. 
 #' If not provided, returns the results as a list. 
 #' @return If results_dir is NULL, a list of data.frames with the correlation of methylation sites surrounding a specified 
@@ -175,8 +134,8 @@
 #' head(tubb6_cpg_meth_transcript_cors$ENST00000591909)
 #' 
 calculateMethSiteTranscriptCors <- function(meth_rse, assay_number = 1, transcript_expression_table, 
-  samples_subset = NULL, tss_gr, tss_associated_gr, cor_method = "pearson", 
-  add_distance_to_region = TRUE, max_sites_per_chunk = NULL, BPPARAM = BiocParallel::bpparam(), results_dir = NULL){
+  samples_subset = NULL, tss_gr, tss_associated_gr, cor_method = "pearson", min_number_complete_pairs = 30, 
+  add_distance_to_region = TRUE, max_sites_per_chunk = NULL, BPPARAM = BiocParallel::SerialParam(), results_dir = NULL){
   
   # Check that inputs have the correct data type
   stopifnot(is(meth_rse, "RangedSummarizedExperiment"), is(assay_number, "numeric"),
@@ -242,8 +201,8 @@ calculateMethSiteTranscriptCors <- function(meth_rse, assay_number = 1, transcri
   # Check that there are at least three samples and give a warning if there are less than 20 samples
   n_samples <- ncol(meth_rse) 
   if(n_samples < 3){stop("There are not enough samples to calculate correlations")}
-  if(n_samples < 20){
-    message(paste("There are only", n_samples, "samples. It is recommended to have at least 20 samples to calculate correlations"))
+  if(n_samples < 30){
+    message(paste("There are only", n_samples, "samples. It is recommended to have at least 30 samples to calculate correlations"))
   }
   
   # Create results_dir is it doesn't exist
@@ -305,8 +264,9 @@ calculateMethSiteTranscriptCors <- function(meth_rse, assay_number = 1, transcri
     tss_gr_chunk_list <- split(tss_gr_chunk, names(tss_gr_chunk))[names(tss_region_indices_list)] 
     
     # Create an iterator function for TSS sites
-    tss_iter <- .tss_iterator(meth_values_chunk, tss_region_indices_list, transcript_values_list, 
-      tss_gr_chunk_list, cor_method, add_distance_to_region, results_dir)
+    tss_iter <- .tss_iterator(meth_values_chunk = meth_values_chunk, tss_region_indices_list = tss_region_indices_list, 
+      transcript_values_list = transcript_values_list, tss_gr_chunk_list = tss_gr_chunk_list, cor_method = cor_method, 
+      add_distance_to_region = add_distance_to_region, min_number_complete_pairs = min_number_complete_pairs, results_dir = results_dir)
     
     # Calculate correlations for all TSS in chunk. 
     suppressWarnings(chunk_correlations <- BiocParallel::bpiterate(ITER = tss_iter, FUN = .tss_correlations, BPPARAM = BPPARAM))

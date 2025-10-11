@@ -54,18 +54,19 @@ extractGRangesMethSiteValues <- function(meth_rse, genomic_regions = NULL, sampl
   
 }
 
-#' Randomly sample methylation sites from a methylation RSE. 
+#' Randomly sample sites from a methylation RSE. 
 #' 
 #' @param meth_rse A RangedSummarizedExperiment for methylation data.
-#' @param n_sites Number of sites to randomly sample. Default is 1000.
+#' @param n_sites Number of sites to randomly sample. Default is 1000. Will give an error if there are less than this 
+#' number of sites available to sample after applying any of the optional filters.
+#' @param seqnames_filter An optional character vector giving the names of sequences to filter meth_rse for.
 #' @param genomic_ranges_filter An optional GRanges object used to first subset meth_rse. 
 #' Sites will then be chosen randomly from those overlapping these ranges.
-#' @param invert_filter TRUE or FALSE indicating whether to invert the genomic_ranges_filter so 
+#' @param invert_granges_filter TRUE or FALSE indicating whether to invert the genomic_ranges_filter so 
 #' as to exclude sites overlapping these regions. Default value is FALSE.
 #' @param samples_subset Optional sample names used to subset meth_rse.
-#' @param assay_number The assay from meth_rse to extract values from. Default is the first assay.
-#' @return A data.frame with the methylation site values for all sites in meth_rse which overlap genomic_ranges. 
-#' Row names are the coordinates of the sites as a character vector. 
+#' @return A RangedSummarizedExperiment with the specified number of randomly sampled sites
+#' after applying the different filters.
 #' @export
 #' @examples 
 #' # Load sample RangedSummarizedExperiment with CpG methylation data
@@ -77,26 +78,32 @@ extractGRangesMethSiteValues <- function(meth_rse, genomic_regions = NULL, sampl
 #' 
 #' # Get 20 random CpG sites outside mask_ranges
 #' random_cpgs <- methodical::sampleMethSites(tubb6_meth_rse, n_sites = 20, genomic_ranges_filter = mask_ranges, 
-#'   invert_filter = TRUE)
+#'   invert_granges_filter = TRUE)
 #' 
 #' # Check that no CpGs overlap repeats
 #' intersect(rowRanges(random_cpgs), mask_ranges)
 #' 
-sampleMethSites <- function(meth_rse, n_sites = 1000, genomic_ranges_filter = NULL, 
-  invert_filter = FALSE, samples_subset = NULL, assay_number = 1){
+sampleMethSites <- function(meth_rse, n_sites = 1000, seqnames_filter = NULL, 
+  genomic_ranges_filter = NULL, invert_granges_filter = FALSE, samples_subset = NULL){
   
   # Check that inputs have the correct data type
   stopifnot(is(meth_rse, "RangedSummarizedExperiment"), is(n_sites, "numeric") & n_sites >= 1,
+    is(seqnames_filter, "character") | is.null(seqnames_filter),
     is(genomic_ranges_filter, "GRanges") | is.null(genomic_ranges_filter), 
-    S4Vectors::isTRUEorFALSE(invert_filter), is(samples_subset, "character") | is.null(samples_subset),
-    is(assay_number, "numeric"))
+    S4Vectors::isTRUEorFALSE(invert_granges_filter), is(samples_subset, "character") | is.null(samples_subset))
+  
+  # If seqnames_filter provided, subset meth_rse for these sequences
+  if(!is.null(seqnames_filter)){
+    meth_rse <- meth_rse[seqnames(meth_rse) %in% seqnames_filter]
+  }
   
   # If genomic_ranges_filter provided, subset meth_rse with it
   if(!is.null(genomic_ranges_filter)){
-    meth_rse <- IRanges::subsetByOverlaps(meth_rse, genomic_ranges_filter, invert = invert_filter)
+    meth_rse <- IRanges::subsetByOverlaps(meth_rse, genomic_ranges_filter, invert = invert_granges_filter)
   }
   
   # Randomly sample specified number of sites from meth_rse
+  if(nrow(meth_rse) < n_sites){stop(paste("There are less than", n_sites, "available to sample in meth_rse"))}
   sites <- sample(nrow(meth_rse), n_sites, replace = FALSE)
   
   # Subset meth_rse for random sites
@@ -123,6 +130,8 @@ sampleMethSites <- function(meth_rse, n_sites = 1000, genomic_ranges_filter = NU
 #' @param permitted_target_regions An optional GRanges object used to filter the rowRanges by overlaps after liftover, 
 #' for example CpG sites from the target genome. Any regions which do not overlap permitted_target_regions will be removed.  
 #' GRangesList to GRanges if all remaining source regions can be uniquely mapped to the target genome. 
+#' @param seqlevels An optional character vector giving the order to use for 
+#' seqlevels of the rowRanges of the returned RangedSummarizedExperiment.
 #' @return A RangedSummarizedExperiment with rowRanges lifted over to the genome build indicated by chain. 
 #' @examples
 #' # Load sample RangedSummarizedExperiment with CpG methylation data
@@ -141,18 +150,22 @@ sampleMethSites <- function(meth_rse, n_sites = 1000, genomic_ranges_filter = NU
 #' tubb6_meth_rse_hg19 <- methodical::liftoverMethRSE(tubb6_meth_rse, chain = chain, 
 #'   permitted_target_regions = hg19_cpgs)
 #' @export
-liftoverMethRSE <- function(meth_rse, chain, remove_one_to_many_mapping = TRUE, permitted_target_regions = NULL){
+liftoverMethRSE <- function(meth_rse, chain, remove_one_to_many_mapping = TRUE, 
+  permitted_target_regions = NULL, seqlevels = NULL){
   
   # Check that inputs have the correct data type
   stopifnot(is(meth_rse, "RangedSummarizedExperiment"), is(chain, "Chain"),
     S4Vectors::isTRUEorFALSE(remove_one_to_many_mapping), 
-    is(permitted_target_regions, "GRanges") | is.null(permitted_target_regions))
+    is(permitted_target_regions, "GRanges") | is.null(permitted_target_regions),
+    is(seqlevels, "character") | is.null(seqlevels))
   
   # Liftover rowRanges for meth_rse using specified liftover chain file
   liftover_ranges <- rtracklayer::liftOver(SummarizedExperiment::rowRanges(meth_rse), chain)
   
-  # Put seqlevels of liftover_ranges in the same order as meth_rse
-  GenomeInfoDb::seqlevels(liftover_ranges) <- GenomeInfoDb::seqlevels(meth_rse)
+  # Put seqlevels of liftover_ranges in the order specified by seqlevels
+  if(!is.null(seqlevels)){
+    GenomeInfoDb::seqlevels(liftover_ranges) <- seqlevels
+  }
   
   # Initialize selected regions to all liftover_ranges
   selected_ranges <- seq_along(liftover_ranges)

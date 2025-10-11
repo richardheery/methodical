@@ -5,7 +5,7 @@
 \title{Create plot of Methodical score values for methylation sites around a TSS}
 \usage{
 plotMethodicalScores(
-  meth_site_values,
+  genomic_region_values,
   reference_tss = NULL,
   p_value_threshold = 0.005,
   smooth_scores = TRUE,
@@ -21,7 +21,7 @@ plotMethodicalScores(
 )
 }
 \arguments{
-\item{meth_site_values}{A data.frame with correlation values for methylation sites. There should be one column called "cor".
+\item{genomic_region_values}{A data.frame with correlation values for methylation sites. There should be one column called "cor".
 and another called "p_val" which are used to calculate the Methodical score. row.names should be the names of methylation sites and all methylation sites must be located on the same sequence.}
 
 \item{reference_tss}{An optional GRanges object with a single range. If provided, the x-axis will show the distance of methylation sites to the start of this region with methylation sites upstream.

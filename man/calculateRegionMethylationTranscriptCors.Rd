@@ -16,7 +16,7 @@ calculateRegionMethylationTranscriptCors(
   cor_method = "pearson",
   p_adjust_method = "BH",
   region_methylation_summary_function = colMeans,
-  BPPARAM = BiocParallel::bpparam(),
+  BPPARAM = BiocParallel::SerialParam(),
   ...
 )
 }
@@ -35,7 +35,8 @@ Default is to use all samples in meth_rse and transcript_expression_table.}
 
 \item{genomic_regions}{A GRanges object.}
 
-\item{genomic_region_names}{Names for genomic_regions. If not provided, attempts to use names(genomic_regions).}
+\item{genomic_region_names}{A character vector of unique names to assign genomic_regions in the output table.
+Defaults to \code{names(genomic_regions)} if present or otherwise converts regions to character strings (e.g. "chr:1000-2000") to use as names.}
 
 \item{genomic_region_transcripts}{Names of transcripts associated with each region in genomic_regions.
 If not provided, attempts to use genomic_regions$transcript_id. All transcripts must be present in transcript_expression_table.}
@@ -51,7 +52,7 @@ One of either "pearson" or "spearman" or their abbreviations.}
 
 \item{region_methylation_summary_function}{A function that summarizes column values. Default is colMeans.}
 
-\item{BPPARAM}{A BiocParallelParam object for parallel processing. Defaults to \code{BiocParallel::bpparam()}.}
+\item{BPPARAM}{A BiocParallelParam object for parallel processing. Defaults to \code{BiocParallel::SerialParam()}.}
 
 \item{...}{Additional arguments to be passed to summary_function.}
 }

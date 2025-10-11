@@ -9,7 +9,8 @@
 #' Provided samples must be found in both meth_rse and transcript_expression_table.
 #' Default is to use all samples in meth_rse and transcript_expression_table.
 #' @param genomic_regions A GRanges object. 
-#' @param genomic_region_names Names for genomic_regions. If not provided, attempts to use names(genomic_regions). 
+#' @param genomic_region_names A character vector of unique names to assign genomic_regions in the output table.
+#' Defaults to `names(genomic_regions)` if present or otherwise converts regions to character strings (e.g. "chr:1000-2000") to use as names.
 #' @param genomic_region_transcripts Names of transcripts associated with each region in genomic_regions. 
 #' If not provided, attempts to use genomic_regions$transcript_id. All transcripts must be present in transcript_expression_table.
 #' @param genomic_region_methylation Optional preprovided table with methylation values for genomic_regions 
@@ -19,7 +20,7 @@
 #' One of either "pearson" or "spearman" or their abbreviations. 
 #' @param p_adjust_method Method used to adjust p-values. Same as the methods from p.adjust.methods. Default is Benjamini-Hochberg.
 #' @param region_methylation_summary_function A function that summarizes column values. Default is colMeans.
-#' @param BPPARAM A BiocParallelParam object for parallel processing. Defaults to `BiocParallel::bpparam()`. 
+#' @param BPPARAM A BiocParallelParam object for parallel processing. Defaults to `BiocParallel::SerialParam()`. 
 #' @param ... Additional arguments to be passed to summary_function. 
 #' @return A data.frame with the correlation values between the methylation of genomic regions and expression of transcripts associated with them
 #' @export
@@ -39,7 +40,7 @@
 #'  
 calculateRegionMethylationTranscriptCors <- function(meth_rse, assay = 1, transcript_expression_table, samples_subset = NULL, 
   genomic_regions, genomic_region_names = NULL, genomic_region_transcripts = NULL, genomic_region_methylation = NULL,
-  cor_method = "pearson", p_adjust_method = "BH", region_methylation_summary_function = colMeans, BPPARAM = BiocParallel::bpparam(), ...){
+  cor_method = "pearson", p_adjust_method = "BH", region_methylation_summary_function = colMeans, BPPARAM = BiocParallel::SerialParam(), ...){
   
   # Check that inputs have the correct data type
   stopifnot(is(meth_rse, "RangedSummarizedExperiment"), is(assay, "numeric") | is(assay, "character"),
@@ -81,9 +82,8 @@ calculateRegionMethylationTranscriptCors <- function(meth_rse, assay = 1, transc
   
   # Add names to genomic_regions if they are not already present and also check that no names are duplicated. 
   if(is.null(genomic_region_names)){
-    message("No names for provided regions so naming them region_1, region_2, etc.")
-    genomic_region_names <- paste0("region_", seq_along(genomic_regions))
-    names(genomic_regions) <- genomic_region_names
+    message("No names for provided regions so using as.character(genomic_regions) as names")
+    genomic_region_names <- as.character(genomic_regions)
   } else {
     if(length(genomic_region_names) != length(genomic_regions)){
       stop("genomic_region_names must be the same length as genomic_regions")

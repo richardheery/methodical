@@ -8,7 +8,8 @@ liftoverMethRSE(
   meth_rse,
   chain,
   remove_one_to_many_mapping = TRUE,
-  permitted_target_regions = NULL
+  permitted_target_regions = NULL,
+  seqlevels = NULL
 )
 }
 \arguments{
@@ -22,6 +23,9 @@ which map to multiple regions in the target genome. Default is TRUE.}
 \item{permitted_target_regions}{An optional GRanges object used to filter the rowRanges by overlaps after liftover,
 for example CpG sites from the target genome. Any regions which do not overlap permitted_target_regions will be removed.
 GRangesList to GRanges if all remaining source regions can be uniquely mapped to the target genome.}
+
+\item{seqlevels}{An optional character vector giving the order to use for
+seqlevels of the rowRanges of the returned RangedSummarizedExperiment.}
 }
 \value{
 A RangedSummarizedExperiment with rowRanges lifted over to the genome build indicated by chain.

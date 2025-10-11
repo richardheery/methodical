@@ -13,9 +13,9 @@ extractMethSitesFromGenome(
 )
 }
 \arguments{
-\item{genome}{A BSgenome object (or the name of one) or a DNAStringSet with names indicating the sequences.}
+\item{genome}{A BSgenome object (or the name of an installed one) or a DNAStringSet with names indicating the sequences.}
 
-\item{pattern}{A pattern to match in bsgenome. Default is "CG".}
+\item{pattern}{A pattern to match in genome. Default is "CG".}
 
 \item{plus_strand_only}{TRUE or FALSE indicating whether to only return matches on "+" strand,
 avoiding returning duplicate hits for palindromic sequences e.g. CG.
