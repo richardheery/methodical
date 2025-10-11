@@ -10,7 +10,6 @@ makeMethRSEFrominput_files(
   start_column = 2,
   end_column = 3,
   methylation_column = 5,
-  methylation_column_is_counts = "counts",
   coverage_column = 6,
   zero_based = TRUE,
   normalization_factor = NULL,
@@ -36,9 +35,6 @@ makeMethRSEFrominput_files(
 \item{end_column}{The column number in input_files which corresponds to the end positions. Default is 3rd column.}
 
 \item{methylation_column}{The column number in input_files which corresponds to the methylation values. Default is 5th column.}
-
-\item{methylation_column_is_counts}{A logical value indicating of methylation_column gives the number of reads supporting methylation.
-If FALSE, methylation_column is assumed to be the proportion of methylated reads. Default is TRUE.}
 
 \item{coverage_column}{The column number in input_files which corresponds to the total coverage. Default is the 6th column.}
 

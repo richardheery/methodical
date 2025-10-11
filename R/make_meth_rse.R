@@ -93,8 +93,8 @@ makeMethRSEFrominput_files <- function(input_files,
     temporary_dir = temporary_dir, ...)
   
   # Read in input_files and write data from chunks to appropriate temporary directory
-  meth_sites_df <- .split_bedgraphs_into_chunks(input_files = input_files, 
-    seqnames_column = seqnames_column, start_column = start_column, end_column = end_column, methylation_column = methylation_column,
+  meth_sites_df <- .split_bedgraphs_into_chunks(bedgraphs = input_files, 
+    seqnames_column = seqnames_column, start_column = start_column, end_column = end_column, value_column = methylation_column,
     file_grid_columns = setup$file_grid_columns, meth_sites = meth_sites, meth_site_groups = setup$meth_site_groups, temp_chunk_dirs = setup$temp_chunk_dirs, 
     zero_based = zero_based, normalization_factor = normalization_factor, decimal_places = decimal_places, BPPARAM = BPPARAM)
   

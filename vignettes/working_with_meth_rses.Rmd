@@ -109,14 +109,14 @@ cpg_island_methylation[1000:1006, 1:6]
 ## Plotting methylation values in genomic regions and annotating genomic regions in plots
 
 We can plot methylation values extracted from a genomic region for a single 
-sample using the `plotMethylationValues()` function. We'll demonstrate this 
+sample using the `plotRegionValues()` function. We'll demonstrate this 
 using the values we extracted in the region surrounding the 5' end of GSTP1 for 
 the DTB_003 prostate metastasis sample. We indicate the sample we want to plot
 with the `sample_name` parameter. 
 
 ```{r, eval=TRUE}
 # Plot the methylation values along the GSTP1 gene body for one prostate metastasis sample.
-gstp1_methylation_plot = plotMethylationValues(gstp1_cpg_methylation, sample_name = "DTB_003")
+gstp1_methylation_plot = plotRegionValues(gstp1_cpg_methylation, sample_name = "DTB_003")
 print(gstp1_methylation_plot)
 ```
 
