@@ -527,14 +527,14 @@ plotMethodicalScores <- function(genomic_region_values, reference_tss = NULL, p_
 #' @export
 #' @examples 
 #' # Get CpG islands from UCSC
-#' cpg_island_annotation <- annotatr::build_annotations(genome = "hg38", annotations = "hg38_cpgs")
-#' cpg_island_annotation <- GRangesList(split(cpg_island_annotation, cpg_island_annotation$type))
+#' data("hg38_cpg_islands", package = "methodical")
+#' hg38_cpg_islands <- GRangesList(split(hg38_cpg_islands, hg38_cpg_islands$type))
 #'
 #' # Load plot with CpG methylation correlation values for TUBB6
 #' data("tubb6_correlation_plot", package = "methodical")
 #' 
 #' # Add positions of CpG islands to tubb6_correlation_plot
-#' methodical::annotatePlot(tubb6_correlation_plot, annotation_grl = cpg_island_annotation, annotation_plot_proportion = 0.3)
+#' methodical::annotatePlot(tubb6_correlation_plot, annotation_grl = hg38_cpg_islands, annotation_plot_proportion = 0.3)
 #' 
 annotatePlot <- function(meth_site_plot, annotation_grl, reference_tss = FALSE, grl_colours = NULL, 
   annotation_line_size = 5, ylab = "Genome Annotation", annotation_plot_proportion = 0.5, keep_meth_site_plot_legend = FALSE, annotation_plot_only = FALSE){

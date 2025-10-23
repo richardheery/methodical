@@ -49,6 +49,9 @@ hg38_cpgs = methodical::extractMethSitesFromGenome("BSgenome.Hsapiens.UCSC.hg38"
 # Subset for CpGs within first million base pairs on chromosome 1
 hg38_cpgs_subset = subsetByOverlaps(hg38_cpgs, GRanges("chr1:1-1000000"))
 
+# Get CpG islands using annotatr
+hg38_cpg_islands = annotatr::build_annotations(genome = "hg38", annotations = "hg38_cpgs")
+
 # Add objects to package
 usethis::use_data(tubb6_tss, overwrite = T, compress = "xz")
 usethis::use_data(tubb6_meth_rse, overwrite = T, compress = "xz")
@@ -57,3 +60,4 @@ usethis::use_data(tubb6_cpg_meth_transcript_cors, overwrite = T, compress = "xz"
 usethis::use_data(tubb6_tmrs, overwrite = T, compress = "xz")
 usethis::use_data(tubb6_correlation_plot, overwrite = T, compress = "xz")
 usethis::use_data(hg38_cpgs_subset, overwrite = T, compress = "xz")
+usethis::use_data(hg38_cpg_islands, overwrite = T, compress = "xz")

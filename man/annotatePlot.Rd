@@ -54,13 +54,13 @@ single plot or return the annotation plot separately.
 }
 \examples{
 # Get CpG islands from UCSC
-cpg_island_annotation <- annotatr::build_annotations(genome = "hg38", annotations = "hg38_cpgs")
-cpg_island_annotation <- GRangesList(split(cpg_island_annotation, cpg_island_annotation$type))
+data("hg38_cpg_islands", package = "methodical")
+hg38_cpg_islands <- GRangesList(split(hg38_cpg_islands, hg38_cpg_islands$type))
 
 # Load plot with CpG methylation correlation values for TUBB6
 data("tubb6_correlation_plot", package = "methodical")
 
 # Add positions of CpG islands to tubb6_correlation_plot
-methodical::annotatePlot(tubb6_correlation_plot, annotation_grl = cpg_island_annotation, annotation_plot_proportion = 0.3)
+methodical::annotatePlot(tubb6_correlation_plot, annotation_grl = hg38_cpg_islands, annotation_plot_proportion = 0.3)
 
 }

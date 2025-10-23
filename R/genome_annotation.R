@@ -12,15 +12,15 @@
 #' @examples 
 #' 
 #' # Load annotation for CpG islands and repetitive DNA
-#' cpg_island_annotation <- annotatr::build_annotations(genome = "hg38", annotations = "hg38_cpgs")
-#' cpg_island_annotation <- cpg_island_annotation[cpg_island_annotation$type == "hg38_cpg_islands"]
+#' data(hg38_cpg_islands, package = "methodical")
+#' hg38_cpg_islands <- hg38_cpg_islands[hg38_cpg_islands$type == "hg38_cpg_islands"]
 #' repeat_annotation_hg38 <- AnnotationHub::AnnotationHub()[["AH99003"]]
 #' 
 #' # Convert repeat_annotation_hg38 into a GRangesList
 #' repeat_annotation_hg38 <- GRangesList(split(repeat_annotation_hg38, repeat_annotation_hg38$repClass))
 #'  
 #' # Calculate the proportion of base pairs in CpG islands overlapping different classes of repetitive elements
-#' annotateGRanges(genomic_regions = cpg_island_annotation, annotation_ranges = repeat_annotation_hg38, overlap_measure = "proportion")
+#' annotateGRanges(genomic_regions = hg38_cpg_islands, annotation_ranges = repeat_annotation_hg38, overlap_measure = "proportion")
 #' 
 annotateGRanges <- function(genomic_regions, annotation_ranges, ignore.strand = TRUE, overlap_measure = "absolute"){
   

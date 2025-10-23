@@ -15,7 +15,8 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.width = 12,
   fig.height = 6.75,
-  fig.show='hide'
+  fig.show='hide',
+  eval = FALSE
 )
 ```
 
@@ -42,7 +43,7 @@ repeats.
 Here we demonstrate this different functionality using a dataset downloaded
 from TumourMethData.
 
-```{r, eval=TRUE}
+```{r, eval=FALSE}
 # Download RangedSummarizedExperiment with methylation data for prostate metastases from TumourMethData
 mcrpc_wgbs_hg38_chr11 = TumourMethData::download_meth_dataset(dataset = "mcrpc_wgbs_hg38_chr11")
 ```
@@ -53,7 +54,7 @@ We'll first demonstrate how to extract methylation data for individual CpG sites
 in mcrpc_wgbs_hg38_chr11 overlapping a supplied GRanges object with 
 `extractGRangesMethSiteValues`, using the gene body as an example.
 
-```{r, eval=TRUE}
+```{r, eval=FALSE}
 # Create a GRanges with the hg38 genomic coordinates for the GSTP1, including 
 # 2 KB upstream of its designated start in Ensembl
 gstp1_start_site_region <- GRanges("chr11:67581742-67586656:+")
@@ -83,7 +84,7 @@ processed in parallel. Some experimentation may be needed to find the optimal
 choices for `max_sites_per_chunk` and the number of workers in terms of speed 
 and memory usage. 
 
-```{r, eval=TRUE}
+```{r, eval=FALSE}
 # Load CpG islands annotation for hg38 
 cpg_island_annotation <- annotatr::build_annotations(genome = "hg38", annotation = "hg38_cpgs")
 names(cpg_island_annotation) <- cpg_island_annotation$id
@@ -114,7 +115,7 @@ using the values we extracted in the region surrounding the 5' end of GSTP1 for
 the DTB_003 prostate metastasis sample. We indicate the sample we want to plot
 with the `sample_name` parameter. 
 
-```{r, eval=TRUE}
+```{r, eval=FALSE}
 # Plot the methylation values along the GSTP1 gene body for one prostate metastasis sample.
 gstp1_methylation_plot = plotRegionValues(gstp1_cpg_methylation, sample_name = "DTB_003")
 print(gstp1_methylation_plot)
@@ -143,7 +144,7 @@ We'll annotate the location of CpG islands, CpG shores, CpG shores and
 inter CpG island regions for `gstp1_methylation_plot` using the 
 `cpg_island_annotation` GRangesList we created. 
 
-```{r, eval=TRUE}
+```{r, eval=FALSE}
 # Annotate gstp1_methylation_plot with cpg_island_annotation
 annotatePlot(meth_site_plot = gstp1_methylation_plot, 
   annotation_grl = cpg_island_annotation, annotation_plot_proportion = 0.3, 
@@ -180,7 +181,7 @@ entry will be masked.
 
 We will demonstrate how to mask LINE repetitive regions across all samples.
 
-```{r, eval=TRUE}
+```{r, eval=FALSE}
 # Download repetitive sequences from AnnotationHub and filter for LINE elements
 repeat_annotation_hg38 <- AnnotationHub::AnnotationHub()[["AH99003"]]
 line_elements_hg38 <- repeat_annotation_hg38[repeat_annotation_hg38$repClass == "SINE"]
@@ -217,7 +218,7 @@ genome, for example CpG sites, by providing a GRanges object to the argument
 
 We will demonstrate how to liftover mcrpc_wgbs_hg38_chr11 to hg19. 
 
-```{r, eval=TRUE}
+```{r, eval=FALSE}
 # Create a DNAStringSet for chromosome11
 chr11_dss = setNames(DNAStringSet(BSgenome.Hsapiens.UCSC.hg19[["chr11"]]), "chr11")
 
