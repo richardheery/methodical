@@ -58,9 +58,9 @@
   if(!is.null(total_reads_col) && !is.null(meth_fraction_col)){
     df = dplyr::transmute(df, seqnames, start, total_reads, meth_fraction)
   } else if(!is.null(total_reads_col) && !is.null(meth_reads_col)){
-    df = dplyr::transmute(df, seqnames, start, total_reads, meth_fraction = total_reads/meth_reads)
+    df = dplyr::transmute(df, seqnames, start, total_reads, meth_fraction = meth_reads/total_reads)
   } else if(!is.null(total_reads_col) && !is.null(unmeth_reads_col)){
-    df = dplyr::transmute(df, seqnames, start, total_reads, meth_fraction = 1 - total_reads/unmeth_reads)
+    df = dplyr::transmute(df, seqnames, start, total_reads, meth_fraction = 1 - unmeth_reads/total_reads)
   } else if(!is.null(meth_reads_col) && !is.null(unmeth_reads_col)){
     df = dplyr::transmute(df, seqnames, start, total_reads = meth_reads + unmeth_reads, meth_fraction = meth_reads/total_reads)
   }
