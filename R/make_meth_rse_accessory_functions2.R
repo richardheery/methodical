@@ -57,20 +57,12 @@
   # Add columns with meth_fraction and total_reads to df, depending on which columns are present in df and return df
   if(!is.null(total_reads_col) && !is.null(meth_fraction_col)){
     df = dplyr::transmute(df, seqnames, start, total_reads, meth_fraction)
-    # df$meth_fraction = df[[meth_fraction_col]]
-    # df$total_reads = df[[total_reads_col]]
   } else if(!is.null(total_reads_col) && !is.null(meth_reads_col)){
     df = dplyr::transmute(df, seqnames, start, total_reads, meth_fraction = total_reads/meth_reads)
-    # df$meth_fraction = df[[meth_reads_col]]/df[[total_reads_col]]
-    # df$total_reads = df[[total_reads_col]]
   } else if(!is.null(total_reads_col) && !is.null(unmeth_reads_col)){
     df = dplyr::transmute(df, seqnames, start, total_reads, meth_fraction = 1 - total_reads/unmeth_reads)
-    # df$meth_fraction = 1-df[[unmeth_reads_col]]/df[[total_reads_col]]
-    # df$total_reads = df[[total_reads_col]]
   } else if(!is.null(meth_reads_col) && !is.null(unmeth_reads_col)){
     df = dplyr::transmute(df, seqnames, start, total_reads = meth_reads + unmeth_reads, meth_fraction = meth_reads/total_reads)
-    # df$total_reads = df[[meth_reads_col]] + df[[unmeth_reads_col]]
-    # df$meth_fraction = df[[meth_reads_col]] / df[["total_reads"]]
   }
   
   return(df)
