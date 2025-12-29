@@ -1,4 +1,4 @@
-#' Perform setup for makeMethRSEFromBedgraphs or makeMethRSEFromArrayFiles
+#' Perform setup for makeMethRSEFromInputFiles or makeMethRSEFromArrayFiles
 #'
 #' @param meth_files A vector of paths to files with methylation values. 
 #' Automatically detects if meth_files contain a header if every field in the first line is a character. 
@@ -12,7 +12,7 @@
 #' @param chunkdim The dimensions of the chunks for the HDF5 file.
 #' @param temporary_dir Name to give a temporary directory to store intermediate files. A directory with this name cannot already exist. 
 #' @param ... Additional arguments to be passed to HDF5Array::HDF5RealizationSink. 
-#' @return A list describing the setup to be used for makeMethRSEFromBedgraphs or makeMethRSEFromArrayFiles.
+#' @return A list describing the setup to be used for makeMethRSEFromInputFiles or makeMethRSEFromArrayFiles.
 .make_meth_rse_setup <- function(meth_files, meth_sites, sample_metadata, hdf5_dir, 
   dataset_name, overwrite, chunkdim, temporary_dir, ...){
   
@@ -95,14 +95,14 @@
   
 }
 
-#' Split data from a single bedgraph file into chunks
+#' Split data from a single input methylation file into chunks
 #'
-#' @param bg_file Path to a bedgraph file.
+#' @param meth_file Path to an input methylation file.
 #' @param column The current grid column being processed. 
 #' @param file_count The number of the current file being processed.
-#' @param parameters A list of parameters for processing the bedgraph.
+#' @param parameters A list of parameters for processing the meth_file.
 #' @return Invisibly returns NULL. 
-.split_bedgraph <- function(bg_file, column, file_count, parameters){
+.split_meth_file <- function(meth_file, column, file_count, parameters){
   
   # Attach the parameters
   attach(parameters)
@@ -110,45 +110,45 @@
   # Set the current chunk to the first chunk of the current grid column
   current_chunk <- 1 + (column - 1) * length(meth_site_groups)
   
-  # Print count of bedGraph being processed
-  message(paste0("Processing bedGraph ", file_count, " out of ", total_files, ": ", bg_file, "\n"))
+  # Print count of meth_file being processed
+  message(paste0("Processing file ", file_count, " out of ", total_files, ": ", meth_file, "\n"))
   
   # Initialize a data.frame for all methylation sites
   meth_site_values <- meth_sites_df
   
-  # Read in bedGraph file
-  bg <- setNames(data.table::fread(bg_file, 
+  # Read in input methylation file
+  meth_df <- setNames(data.table::fread(meth_file, 
     select = c(seqnames_column, start_column, end_column, value_column), nThread = dt_threads), 
     c("seqnames", "start", "end", "value"))
   
   # Add 1 to start of regions if zero_based is TRUE
   if(zero_based){
-    bg$start <- bg$start + 1
+    meth_df$start <- meth_df$start + 1
   }
   
   # Convert values from percentages to proportions if specified
   if(!is.null(normalization_factor)){
-    if(max(bg$value, na.rm = TRUE) > 1){
-      bg$value <- bg$value/normalization_factor
+    if(max(meth_df$value, na.rm = TRUE) > 1){
+      meth_df$value <- meth_df$value/normalization_factor
     }
   }
   
   # Round values if specified
   if(!is.na(decimal_places)){
-    bg$value <- round(bg$value, decimal_places)
+    meth_df$value <- round(meth_df$value, decimal_places)
   }
   
-  # Ensure seqlevels of bg are in the same order as meth_sites_df
-  bg$seqnames <- factor(bg$seqnames, levels = levels(meth_sites_df$seqnames))
+  # Ensure seqlevels of meth_df are in the same order as meth_sites_df
+  meth_df$seqnames <- factor(meth_df$seqnames, levels = levels(meth_sites_df$seqnames))
   
-  # Set seqnames and start as keys for bg
-  data.table::setkey(bg, seqnames, start)
+  # Set seqnames and start as keys for meth_df
+  data.table::setkey(meth_df, seqnames, start)
   
-  # Add values from bg to meth_site_values
-  meth_site_values <- merge(meth_site_values, bg, by = c("seqnames", "start"), all.x = TRUE, sort = FALSE)
+  # Add values from meth_df to meth_site_values
+  meth_site_values <- merge(meth_site_values, meth_df, by = c("seqnames", "start"), all.x = TRUE, sort = FALSE)
   
-  # Remove bg and run the garbage collection
-  rm(bg); invisible(gc())
+  # Remove meth_df and run the garbage collection
+  rm(meth_df); invisible(gc())
     
   # Loop through each chunk of methylation sites
   `%do%` <- foreach::`%do%`
@@ -159,7 +159,7 @@
     
     # Write values to appropriate file
     data.table::fwrite(x = meth_site_group_values, 
-      file = paste0(temp_chunk_dirs[current_chunk], "/", basename(bg_file)),
+      file = paste0(temp_chunk_dirs[current_chunk], "/", basename(meth_file)),
       row.names = FALSE, quote = FALSE, na = "NA", compress = "none", nThread = dt_threads)
     
     # Increase current chunk number
@@ -171,24 +171,24 @@
   }
 }
 
-#' Split data from bedGraph files into chunks
+#' Split data from input methylation files into chunks
 #'
-#' @param bedgraphs Paths to bedgraph files.
-#' @param seqnames_column The column number in bedgraphs which corresponds to the sequence names. 
-#' @param start_column The column number in bedgraphs which corresponds to the start positions. 
-#' @param end_column The column number in bedgraphs which corresponds to the end positions. 
-#' @param value_column The column number in bedgraphs which corresponds to the methylation values. 
+#' @param meth_files Paths to input methylation files.
+#' @param seqnames_column The column number in meth_files which corresponds to the sequence names. 
+#' @param start_column The column number in meth_files which corresponds to the start positions. 
+#' @param end_column The column number in meth_files which corresponds to the end positions. 
+#' @param value_column The column number in meth_files which corresponds to the methylation values. 
 #' @param file_grid_columns The grid column number for each file. 
 #' @param meth_sites A GRanges object with the locations of the methylation sites of interest.
 #' @param meth_site_groups A list with the indices of the methylation sites in each group. 
 #' @param temp_chunk_dirs A vector giving the temporary directory associated with each chunk.
 #' @param zero_based TRUE or FALSE indicating if files are zero-based. 
 #' @param normalization_factor An optional numerical value to divide methylation values by to convert them to fractions e.g. 100 if they are percentages. 
-#' Default is not to leave values as they are in the input files.  
+#' Default is not to leave values as they are in the input methylation files.  
 #' @param decimal_places Integer indicating the number of decimal places to round beta values to. 
 #' @param BPPARAM A BiocParallelParam object. 
 #' @return A data.table with the methylation sites sorted by seqnames and start.
-.split_bedgraphs_into_chunks <- function(bedgraphs, seqnames_column, start_column, end_column, value_column,
+.split_meth_files_into_chunks <- function(meth_files, seqnames_column, start_column, end_column, value_column,
   file_grid_columns, meth_sites, meth_site_groups, temp_chunk_dirs, zero_based, normalization_factor, decimal_places, BPPARAM){
   
   # Set dt_threads to 1 if more than one core being used. 
@@ -204,16 +204,16 @@
   # Set seqnames and start as keys for meth_sites_df
   data.table::setkey(meth_sites_df, seqnames, start)
   
-  # Create a list with parameters to pass to .split_bedgraph
-  parameters_list <- list(total_files = length(bedgraphs), meth_site_groups = meth_site_groups,
+  # Create a list with parameters to pass to .split_meth_file
+  parameters_list <- list(total_files = length(meth_files), meth_site_groups = meth_site_groups,
     meth_sites_df = meth_sites_df, seqnames_column = seqnames_column, start_column = start_column, 
     end_column = end_column, value_column = value_column, dt_threads = dt_threads, 
     zero_based = zero_based, normalization_factor = normalization_factor, 
     decimal_places = decimal_places, temp_chunk_dirs = temp_chunk_dirs)
 
-  # Loop through each chunk of bedgraphs
-  BiocParallel::bpmapply(.split_bedgraph, bg_file = bedgraphs, column = file_grid_columns, 
-    file_count = seq_along(bedgraphs), MoreArgs = list(parameters = parameters_list), BPPARAM = BPPARAM)
+  # Loop through each chunk of meth_files
+  BiocParallel::bpmapply(.split_meth_file, meth_file = meth_files, column = file_grid_columns, 
+    file_count = seq_along(meth_files), MoreArgs = list(parameters = parameters_list), BPPARAM = BPPARAM)
   
   # Run the garbage collection
   invisible(gc())
@@ -303,7 +303,7 @@
 #' @param file Path to a methylation array file.
 #' @param column The current grid column being processed. 
 #' @param file_count The number of the file being processed
-#' @param parameters A list of parameters for processing the bedgraph.
+#' @param parameters A list of parameters for processing the meth_file.
 #' @return Invisibly returns NULL.
 .split_meth_array_file <- function(file, column, file_count, parameters){
   
@@ -313,7 +313,7 @@
   # Set the current chunk to the first chunk of the current grid column
   current_chunk <- 1 + (column - 1) * length(probe_groups)
   
-  # Print count of bedGraph being processed
+  # Print count of meth_file being processed
   message(paste0("Processing file ", file_count, " out of ", total_files, ": ", file, "\n"))
   
   # Initialize a data.frame for all probe sites
@@ -379,7 +379,7 @@
 #' @param probe_groups A list with the indices of the probes in each group.  
 #' @param temp_chunk_dirs A vector giving the temporary directory associated with each chunk.
 #' @param normalization_factor An optional numerical value to divide methylation values by to convert them to fractions e.g. 100 if they are percentages. 
-#' Default is not to leave values as they are in the input files. 
+#' Default is not to leave values as they are in the input methylation files. 
 #' @param decimal_places Integer indicating the number of decimal places to round beta values to. 
 #' @param BPPARAM A BiocParallelParam object. 
 #' @return A data.table with the probe sites sorted by seqnames, start and probe name.
