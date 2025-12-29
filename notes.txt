@@ -44,3 +44,6 @@ kallisto_quantify.R: ! Remove from package
 .kallistoIndex
 .kallistoQuantify
 .sumTranscriptValuesForGenes
+
+### make_meth_rse
+Add meth_site_width to overall function

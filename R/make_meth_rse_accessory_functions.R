@@ -3,7 +3,7 @@
 #' @param meth_files A vector of paths to files with methylation values. 
 #' Automatically detects if meth_files contain a header if every field in the first line is a character. 
 #' @param meth_sites A GRanges object with the locations of the methylation sites of interest. Should contain separate ranges 
-#' for each stand if meth_files are stranded (i.e. separate ranges for the C and G positions of CpG sites), 
+#' for each stand if meth_files are stranded (i.e. separate ranges for the C and G positions of CpG sites). 
 #' Any positions in meth_files that are not in meth_sites are ignored. 
 #' @param sample_metadata A data.frame with sample metadata to be used as colData for the RangedSummarizedExperiment.
 #' @param hdf5_dir Directory to save HDF5 file. Is created if it doesn't exist. HDF5 file is called assays.h5. 
@@ -58,9 +58,11 @@
     }
   }
   
-  # Create a HDF5 realization sink
-  hdf5_sink <- HDF5Array::HDF5RealizationSink(dim = as.integer(c(length(meth_sites), length(meth_files))), 
-    filepath = hdf5_filepath, name = dataset_name, chunkdim = chunkdim, ...)
+  # Create HDF5 realization sinks for methylation proportion and coverage named beta and Cov 
+  beta_sink <- HDF5Array::HDF5RealizationSink(dim = as.integer(c(length(meth_sites), length(meth_files))), 
+    filepath = hdf5_filepath, name = "beta", chunkdim = chunkdim, ...)
+  Cov_sink <- HDF5Array::HDF5RealizationSink(dim = as.integer(c(length(meth_sites), length(meth_files))), 
+    filepath = hdf5_filepath, name = "Cov", chunkdim = chunkdim, ...)
   
   # Make HDF5 grid
   hdf5_grid <- DelayedArray::RegularArrayGrid(
@@ -88,7 +90,7 @@
     paste(temp_chunk_dirs[x], basename(files_in_chunks[[x]]), sep = "/"))
   
   # Create a list with all setup parameters and return
-  setup_list <- list(hdf5_filepath = hdf5_filepath, hdf5_sink = hdf5_sink, hdf5_grid = hdf5_grid, temp_chunk_dirs = temp_chunk_dirs,
+  setup_list <- list(hdf5_filepath = hdf5_filepath, beta_sink = beta_sink, Cov_sink = Cov_sink, hdf5_grid = hdf5_grid, temp_chunk_dirs = temp_chunk_dirs,
     meth_site_groups = meth_site_groups, file_grid_columns = file_grid_columns, files_in_chunks = files_in_chunks)
   
   return(setup_list)
@@ -102,7 +104,8 @@
 #' @param file_count The number of the current file being processed.
 #' @param parameters A list of parameters for processing the meth_file.
 #' @return Invisibly returns NULL. 
-.split_meth_file <- function(meth_file, column, file_count, parameters){
+.split_meth_file <- function(meth_file, column, file_count, parameters, seqnames_column, start_column, 
+  total_reads_col = NULL, meth_reads_col = NULL, unmeth_reads_col = NULL, meth_fraction_col = NULL){
   
   # Attach the parameters
   attach(parameters)
@@ -117,25 +120,26 @@
   meth_site_values <- meth_sites_df
   
   # Read in input methylation file
-  meth_df <- setNames(data.table::fread(meth_file, 
-    select = c(seqnames_column, start_column, end_column, value_column), nThread = dt_threads), 
-    c("seqnames", "start", "end", "value"))
+  meth_df <- data.table::fread(meth_file, nThread = dt_threads)
   
   # Add 1 to start of regions if zero_based is TRUE
   if(zero_based){
     meth_df$start <- meth_df$start + 1
   }
   
-  # Convert values from percentages to proportions if specified
-  if(!is.null(normalization_factor)){
-    if(max(meth_df$value, na.rm = TRUE) > 1){
-      meth_df$value <- meth_df$value/normalization_factor
-    }
+  # Adjust meth_df so that it have total_reads and meth_fraction column
+  meth_df = .calculate_meth_fraction_and_total_reads(df = meth_df, seqnames_column = seqnames_column, 
+    start_column = start_column, total_reads_col = total_reads_col, meth_reads_col = meth_reads_col, 
+    unmeth_reads_col = unmeth_reads_col, meth_fraction_col = meth_fraction_col)
+  
+  # If data is stranded, combine values for strands
+  if(stranded){
+    meth_df <- .collapse_strands(meth_df, meth_sites = makeGRangesFromDataFrame(meth_sites_df), meth_site_width = meth_site_width)
   }
   
   # Round values if specified
   if(!is.na(decimal_places)){
-    meth_df$value <- round(meth_df$value, decimal_places)
+    meth_df$meth_fraction <- round(meth_df$meth_fraction, decimal_places)
   }
   
   # Ensure seqlevels of meth_df are in the same order as meth_sites_df
@@ -155,7 +159,7 @@
   foreach::foreach(mg = meth_site_groups) %do% {
     
     # Subset meth_site_values for methylation sites in chunk
-    meth_site_group_values <- data.table::as.data.table(meth_site_values[mg, "value"])
+    meth_site_group_values <- data.table::as.data.table(meth_site_values[mg, c("meth_fraction", "total_reads")])
     
     # Write values to appropriate file
     data.table::fwrite(x = meth_site_group_values, 
@@ -176,20 +180,17 @@
 #' @param meth_files Paths to input methylation files.
 #' @param seqnames_column The column number in meth_files which corresponds to the sequence names. 
 #' @param start_column The column number in meth_files which corresponds to the start positions. 
-#' @param end_column The column number in meth_files which corresponds to the end positions. 
 #' @param value_column The column number in meth_files which corresponds to the methylation values. 
 #' @param file_grid_columns The grid column number for each file. 
 #' @param meth_sites A GRanges object with the locations of the methylation sites of interest.
 #' @param meth_site_groups A list with the indices of the methylation sites in each group. 
 #' @param temp_chunk_dirs A vector giving the temporary directory associated with each chunk.
 #' @param zero_based TRUE or FALSE indicating if files are zero-based. 
-#' @param normalization_factor An optional numerical value to divide methylation values by to convert them to fractions e.g. 100 if they are percentages. 
-#' Default is not to leave values as they are in the input methylation files.  
 #' @param decimal_places Integer indicating the number of decimal places to round beta values to. 
 #' @param BPPARAM A BiocParallelParam object. 
 #' @return A data.table with the methylation sites sorted by seqnames and start.
 .split_meth_files_into_chunks <- function(meth_files, seqnames_column, start_column, end_column, value_column,
-  file_grid_columns, meth_sites, meth_site_groups, temp_chunk_dirs, zero_based, normalization_factor, decimal_places, BPPARAM){
+  file_grid_columns, meth_sites, meth_site_groups, temp_chunk_dirs, zero_based, decimal_places, BPPARAM){
   
   # Set dt_threads to 1 if more than one core being used. 
   if(BiocParallel::bpnworkers(BPPARAM) > 1){
@@ -208,8 +209,7 @@
   parameters_list <- list(total_files = length(meth_files), meth_site_groups = meth_site_groups,
     meth_sites_df = meth_sites_df, seqnames_column = seqnames_column, start_column = start_column, 
     end_column = end_column, value_column = value_column, dt_threads = dt_threads, 
-    zero_based = zero_based, normalization_factor = normalization_factor, 
-    decimal_places = decimal_places, temp_chunk_dirs = temp_chunk_dirs)
+    zero_based = zero_based, decimal_places = decimal_places, temp_chunk_dirs = temp_chunk_dirs)
 
   # Loop through each chunk of meth_files
   BiocParallel::bpmapply(.split_meth_file, meth_file = meth_files, column = file_grid_columns, 
@@ -227,10 +227,11 @@
 #'
 #' @param temp_chunk_dirs A vector giving the temporary directory associated with each chunk.
 #' @param files_in_chunks A list of files associated with each chunk in the order they should be placed.
-#' @param hdf5_sink A HDF5RealizationSink.
+#' @param beta_sink A HDF5RealizationSink for methylation proportions.
+#' @param Cov_sink A HDF5RealizationSink for coverage.
 #' @param hdf5_grid A RegularArrayGrid.
 #' @return Invisibly returns TRUE. 
-.write_chunks_to_hdf5 <- function(temp_chunk_dirs, files_in_chunks, hdf5_sink, hdf5_grid){
+.write_chunks_to_hdf5 <- function(temp_chunk_dirs, files_in_chunks, beta_sink, Cov_sink, hdf5_grid){
   
   # Define %do% from foreach
   `%do%` <- foreach::`%do%`
@@ -248,11 +249,13 @@
     files <- files_in_chunks[[chunk]]
     
     # Read in all files in temporary directory as a data.frame of chunk data
-    chunk_data <- as.matrix(data.frame(lapply(files, data.table::fread)))
+    beta_chunk_data <- as.matrix(data.frame(lapply(files, data.table::fread, select = 1)))
+    Cov_chunk_data <- as.matrix(data.frame(lapply(files, data.table::fread, select = 2)))
     invisible(gc())
     
-    # Write values to HDF5 file
-    invisible(HDF5Array::write_block(block = chunk_data, sink = hdf5_sink, viewport = hdf5_grid[[as.integer(chunk)]]))
+    # Write M and Cov values to HDF5 file
+    invisible(HDF5Array::write_block(block = beta_chunk_data, sink = beta_sink, viewport = hdf5_grid[[as.integer(chunk)]]))
+    invisible(HDF5Array::write_block(block = Cov_chunk_data, sink = Cov_sink, viewport = hdf5_grid[[as.integer(chunk)]]))
     
     # Delete chunk temporary directory
     unlink(chunk_dir, recursive = TRUE)
@@ -274,7 +277,7 @@
 #' @param sample_metadata A data.frame with sample metadata
 #' @param hdf5_dir The path to the HDF5 directory. 
 #' @return A RangedSummarizedExperiment with methylation values
-.create_meth_rse_from_hdf5 <- function(hdf5_filepath, hdf5_dir, meth_sites_df, sample_metadata){
+.create_meth_rse_frobeta_hdf5 <- function(hdf5_filepath, hdf5_dir, meth_sites_df, sample_metadata){
   
   # Get the names of the assays in hdf5_filepath
   assay_names <- rhdf5::h5ls(hdf5_filepath)$name
@@ -378,13 +381,11 @@
 #' @param probe_ranges A GRanges object giving the genomic locations of probes where each region corresponds to a separate probe.
 #' @param probe_groups A list with the indices of the probes in each group.  
 #' @param temp_chunk_dirs A vector giving the temporary directory associated with each chunk.
-#' @param normalization_factor An optional numerical value to divide methylation values by to convert them to fractions e.g. 100 if they are percentages. 
-#' Default is not to leave values as they are in the input methylation files. 
 #' @param decimal_places Integer indicating the number of decimal places to round beta values to. 
 #' @param BPPARAM A BiocParallelParam object. 
 #' @return A data.table with the probe sites sorted by seqnames, start and probe name.
 .split_meth_array_files_into_chunks <- function(array_files, probe_name_column, beta_value_column, 
-  file_grid_columns, probe_ranges, probe_groups, temp_chunk_dirs, normalization_factor, decimal_places, BPPARAM){
+  file_grid_columns, probe_ranges, probe_groups, temp_chunk_dirs, decimal_places, BPPARAM){
   
   # Set dt_threads to 1 if more than one core being used. 
   if(BiocParallel::bpnworkers(BPPARAM) > 1){
@@ -404,8 +405,7 @@
   parameters_list <- list(total_files = length(array_files), probe_groups = probe_groups, 
     probe_sites_df = probe_sites_df, probe_name_column = probe_name_column, 
     beta_value_column = beta_value_column, dt_threads = dt_threads,
-    normalization_factor = normalization_factor, decimal_places = decimal_places,
-    temp_chunk_dirs = temp_chunk_dirs)
+    decimal_places = decimal_places, temp_chunk_dirs = temp_chunk_dirs)
   
   # Loop through each chunk of array_files
   BiocParallel::bpmapply(.split_meth_array_file, file = array_files, column = file_grid_columns, 

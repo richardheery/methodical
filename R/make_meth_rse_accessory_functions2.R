@@ -1,3 +1,12 @@
+#' Check input files have the correct number of columns specified and that columns seem to be of correct type
+#'
+#' @param input_files A vector of input filepaths.
+#' @param seqnames_column The column number in input_files which corresponds to the sequence names. 
+#' @param start_column The column number in input_files which corresponds to the genomic start coordinate. 
+#' @param total_reads_col The column number in input_files which corresponds to the total number of reads for the position. 
+#' @param meth_reads_col The column number in input_files which corresponds to the number of methylated reads for the position.
+#' @param unmeth_reads_col The column number in input_files which corresponds to the number of unmethylated reads for the position.
+#' @param meth_fraction_col The column number in input_files which corresponds to the fraction of reads that support methylation at the position.
 .check_input_files = function(input_files, seqnames_column, start_column, 
   total_reads_col = NULL, meth_reads_col = NULL, unmeth_reads_col = NULL, meth_fraction_col = NULL){
   
@@ -38,65 +47,76 @@
   
 }
 
-.calculate_meth_fraction_and_total_reads = function(df, seqnames_column, start_column, 
+#' Process a data.frame with methylation data so that it contains the total number of reads and the fraction of methylated reads as columns
+#'
+#' @param meth_df A data.frame with methylation data.
+#' @param seqnames_column The column number in input_files which corresponds to the sequence names. 
+#' @param start_column The column number in input_files which corresponds to the genomic start coordinate. 
+#' @param total_reads_col The column number in input_files which corresponds to the total number of reads for the position. 
+#' @param meth_reads_col The column number in input_files which corresponds to the number of methylated reads for the position.
+#' @param unmeth_reads_col The column number in input_files which corresponds to the number of unmethylated reads for the position.
+#' @param meth_fraction_col The column number in input_files which corresponds to the fraction of reads that support methylation at the position.
+.calculate_meth_fraction_and_total_reads = function(meth_df, seqnames_column, start_column, 
   total_reads_col = NULL, meth_reads_col = NULL, unmeth_reads_col = NULL, meth_fraction_col = NULL){
   
   # Ensure seqnames_column and start_column are named seqnames and start
-  names(df)[c(seqnames_column, start_column)] <- c("seqnames", "start")
-  names(df)[c(total_reads_col, meth_reads_col, unmeth_reads_col, meth_fraction_col)] = 
+  names(meth_df)[c(seqnames_column, start_column)] <- c("seqnames", "start")
+  names(meth_df)[c(total_reads_col, meth_reads_col, unmeth_reads_col, meth_fraction_col)] = 
     c("total_reads", "meth_reads", "unmeth_reads", "meth_fraction")[!sapply(list(total_reads_col, meth_reads_col, unmeth_reads_col, meth_fraction_col), is.null)]
   
   # Convert meth_fraction to a proportion if its appears to be a percentage
   if(!is.null(meth_fraction_col)){
-    if(max(df[[meth_fraction_col]], na.rm = TRUE) > 1){
-      message("meth_fraction appears to be percentages and so converting to fraction")
-      df[[meth_fraction_col]] <- df[[meth_fraction_col]]/100
+    if(max(meth_df[[meth_fraction_col]], na.rm = TRUE) > 1){
+      message("meth_fraction appears to be percentages and so converting to proportions")
+      meth_df[[meth_fraction_col]] <- meth_df[[meth_fraction_col]]/100
     }
   }
   
-  # Add columns with meth_fraction and total_reads to df, depending on which columns are present in df and return df
+  # Add columns with meth_fraction and total_reads to meth_df, depending on which columns are present in meth_df and return meth_df
   if(!is.null(total_reads_col) && !is.null(meth_fraction_col)){
-    df = dplyr::transmute(df, seqnames, start, total_reads, meth_fraction)
+    meth_df = dplyr::transmute(meth_df, seqnames, start, total_reads, meth_fraction)
   } else if(!is.null(total_reads_col) && !is.null(meth_reads_col)){
-    df = dplyr::transmute(df, seqnames, start, total_reads, meth_fraction = meth_reads/total_reads)
+    meth_df = dplyr::transmute(meth_df, seqnames, start, total_reads, meth_fraction = meth_reads/total_reads)
   } else if(!is.null(total_reads_col) && !is.null(unmeth_reads_col)){
-    df = dplyr::transmute(df, seqnames, start, total_reads, meth_fraction = 1 - unmeth_reads/total_reads)
+    meth_df = dplyr::transmute(meth_df, seqnames, start, total_reads, meth_fraction = 1 - unmeth_reads/total_reads)
   } else if(!is.null(meth_reads_col) && !is.null(unmeth_reads_col)){
-    df = dplyr::transmute(df, seqnames, start, total_reads = meth_reads + unmeth_reads, meth_fraction = meth_reads/total_reads)
+    meth_df = dplyr::transmute(meth_df, seqnames, start, total_reads = meth_reads + unmeth_reads, meth_fraction = meth_reads/total_reads)
   }
   
-  return(df)
+  return(meth_df)
   
 }
 
-.collapse_strands = function(df, meth_sites, starts.in.df.are.0based){
-  
-  # Set meth_site_width using the first site in meth_sites
-  meth_site_width <- width(meth_sites)[1]
+#' Combine values for stranded data
+#'
+#' @param meth_df A data.frame with methylation data.
+#' @param meth_sites A GRanges object with the locations of the methylation sites of interest. Should contain separate ranges 
+#' @param meth_site_width An integer giving the width of the methylation sites being studied e.g. 2 for CG sites. 
+#' for each stand if meth_files are stranded (i.e. separate ranges for the C and G positions of CpG sites).
+.collapse_strands = function(meth_df, meth_sites, meth_site_width){
   
   # Separate meth_sites into sites on the + and - strand
   meth_sites_plus <- meth_sites[strand(meth_sites) == "+"]
   meth_sites_minus <- meth_sites[strand(meth_sites) == "-"]
   
-  # Make a GRanges from df
-  df_gr <- GenomicRanges::makeGRangesFromDataFrame(df, end.field = "start", 
-    starts.in.df.are.0based = starts.in.df.are.0based)
+  # Make a GRanges from meth_df
+  meth_df_gr <- GenomicRanges::makeGRangesFromDataFrame(meth_df, end.field = "start")
   
-  # Add strand to df and remove rows where strand is missing
-  df$strand <- NA
-  df$strand[df_gr %over% meth_sites_plus] <- "+"
-  df$strand[df_gr %over% meth_sites_minus] <- "-"
-  df <- dplyr::filter(df, !is.na(strand))
+  # Add strand to meth_df and remove rows where strand is missing
+  meth_df$strand <- NA
+  meth_df$strand[meth_df_gr %over% meth_sites_plus] <- "+"
+  meth_df$strand[meth_df_gr %over% meth_sites_minus] <- "-"
+  meth_df <- dplyr::filter(meth_df, !is.na(strand))
   
   # Adjust start of sites on - strand so that they corresponds to start of sites on + strand
-  df[df$strand == "-", ]$start <- df[df$strand == "-", ]$start - meth_site_width
+  meth_df[meth_df$strand == "-", ]$start <- meth_df[meth_df$strand == "-", ]$start - meth_site_width
   
   # Combine counts from + and - strand and set strand as * and return
-  df_collapsed <- dplyr::summarise(dplyr::group_by(df, seqnames, start),
+  meth_df_collapsed <- dplyr::summarise(dplyr::group_by(meth_df, seqnames, start),
     meth_fraction = sum(round(total_reads * meth_fraction))/sum(total_reads),
     total_reads = sum(total_reads)
   )
-  df_collapsed$strand = "*"
-  return(df_collapsed)
+  meth_df_collapsed$strand = "*"
+  return(meth_df_collapsed)
   
 }

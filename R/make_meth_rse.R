@@ -1,6 +1,7 @@
 #' Create a HDF5-backed RangedSummarizedExperiment for methylation values in input_files
 #'
-#' @param input_files A vector of paths to input files. Automatically detects if input_files contain a header if every field in the first line is a character. 
+#' @param input_files A vector of paths to input files. 
+#' Automatically detects if input_files contain a header if every field in the first line is a character. 
 #' @param seqnames_column The column number in input_files which corresponds to the sequence names. Default is 1st column.  
 #' @param start_column The column number in input_files which corresponds to the start positions. Default is 2nd column. 
 #' @param end_column The column number in input_files which corresponds to the end positions. Default is 3rd column. 
