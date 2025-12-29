@@ -223,7 +223,7 @@ We will demonstrate how to liftover mcrpc_wgbs_hg38_chr11 to hg19.
 chr11_dss = setNames(DNAStringSet(BSgenome.Hsapiens.UCSC.hg19[["chr11"]]), "chr11")
 
 # Get CpG sites for hg19 for chromsome 11
-hg19_cpgs <- methodical::extractMethSitesFromGenome(genome = chr11_dss)
+hg19_cpgs <- methodical::extractMethSitesFromGenome(genome = chr11_dss, search_both_strands = FALSE)
 
 # Download hg38 to hg19 liftover chain from AnnotationHub
 hg38tohg19Chain <- AnnotationHub::AnnotationHub()[["AH14108"]]

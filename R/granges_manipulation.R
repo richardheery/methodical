@@ -1,13 +1,10 @@
-#' Create a GRanges with methylation sites of interest from a BSgenome. 
+#' Create a GRanges with methylation sites of interest from a BSgenome or DNAStringSet
 #'
 #' @param genome A BSgenome object (or the name of an installed one) or a DNAStringSet with names indicating the sequences.  
 #' @param pattern A pattern to match in genome. Default is "CG".
-#' @param plus_strand_only TRUE or FALSE indicating whether to only return matches on "+" strand, 
-#' avoiding returning duplicate hits for palindromic sequences e.g. CG. 
-#' Not relevant if genome is a DNAStringSet. Default is TRUE.
-#' @param meth_site_position Which position in the pattern corresponds to the methylation site of interest. 
-#' Default is the first position.
-#' @param standard_sequences_only TRUE or FALSE indicating whether to only return sites 
+#' @param search_both_strands TRUE or FALSE indicating whether to return matches on 
+#' both strands or else just the "+" strand. Strand will be set to "*" if FALSE. Default is TRUE.
+#' @param standard_sequences_only TRUE or FALSE indicating whether to only return ranges 
 #' on standard sequences (those without "-" in their names). Default is TRUE. 
 #' @return A GRanges object with genomic regions matching the pattern.
 #' @export
@@ -17,15 +14,14 @@
 #' head(hg38_cpgs)
 #' 
 #' # Find CHG sites in Arabidopsis thaliana
-#' arabidopsis_cphpgs <- methodical::extractMethSitesFromGenome("BSgenome.Athaliana.TAIR.TAIR9", pattern = "CHG")
-#' head(arabidopsis_cphpgs)
-extractMethSitesFromGenome <- function(genome, pattern = "CG", plus_strand_only = TRUE, 
-  meth_site_position = 1, standard_sequences_only = TRUE){
+#' arabidopsis_CHG_sites <- methodical::extractMethSitesFromGenome("BSgenome.Athaliana.TAIR.TAIR9", pattern = "CHG")
+#' head(arabidopsis_CHG_sites)
+extractMethSitesFromGenome <- function(genome, pattern = "CG", 
+  search_both_strands = TRUE, standard_sequences_only = TRUE){
   
   # Check that inputs have the correct data type
   stopifnot(is(genome, "character") | is(genome, "BSgenome") | is(genome, "DNAStringSet"), 
-    is(pattern, "character"), S4Vectors::isTRUEorFALSE(plus_strand_only), 
-    is(meth_site_position, "numeric") & meth_site_position >= 1,
+    is(pattern, "character"), S4Vectors::isTRUEorFALSE(search_both_strands), 
     S4Vectors::isTRUEorFALSE(standard_sequences_only))
   
   # If genome is a character, try to load genome with that name
@@ -34,37 +30,34 @@ extractMethSitesFromGenome <- function(genome, pattern = "CG", plus_strand_only 
     stop("If genome is a DNASringSet, it must have names indicating the sequence")
   }
   
-  # Check that meth_site_position is not greater than the length of the pattern
-  if(meth_site_position > nchar(pattern)){
-    stop("meth_site_position cannot be greater than the number of characters in pattern")
+  # Find sites matching pattern in genome, explicitly searching + and - strands for a DNAStringSet
+  if(is(genome, "BSgenome"){
+    meth_sites_gr <- GRanges(Biostrings::vmatchPattern(pattern, genome, fixed = "subject"))
+  } else {
+    meth_sites_gr_plus <- GRanges(Biostrings::vmatchPattern(pattern, genome, fixed = "subject"), strand = "+")
+    meth_sites_gr_minus <- GRanges(Biostrings::vmatchPattern(pattern, genome, fixed = "subject"), strand = "-")
+    meth_sites_gr = c(meth_sites_gr_plus, meth_sites_gr_minus)
   }
+    
+  # Sort and resize ranges so that they cover just the first base
+  meth_sites_gr <- sort(meth_sites_gr, ignore.strand = TRUE)
+  meth_sites_gr <- resize(meth_sites_gr, 1)
   
-  # Find sites matching pattern in genome 
-  meth_sites_gr <- GRanges(Biostrings::vmatchPattern(pattern, genome, fixed = "subject"))
-  
-  # Filter for matches on "+" strand if specified
-  if(plus_strand_only & is(genome, "BSgenome")){
+  # Filter for matches on "+" strand if search_both_strands is FALSE and set strand as "*"
+  if(!search_both_strands & is(genome, "BSgenome")){
     meth_sites_gr <- meth_sites_gr[GenomicRanges::strand(meth_sites_gr) == "+"]
+    GenomicRanges::strand(meth_sites_gr) <- "*"
   }
   
   # Add seqinfo to GRanges
   GenomeInfoDb::seqinfo(meth_sites_gr) <- GenomeInfoDb::seqinfo(genome)
   
-  # Subset for standard sequences if specified
+  # Subset for standard sequences if specified and return meth_sites_gr
   if(standard_sequences_only){
     standard_sequences <- grep("_", names(genome), invert = TRUE, value = TRUE)
     GenomeInfoDb::seqlevels(meth_sites_gr, pruning.mode = "coarse") <- standard_sequences
   }
-  
-  # Set strand as "*" if plus_strand_only is TRUE 
-  if(plus_strand_only){GenomicRanges::strand(meth_sites_gr) <- "*"}
-  
-  # Resize meth_sites_gr so that it covers just the meth site position
-  meth_sites_gr <- resize(meth_sites_gr, meth_site_position, fix = "start")
-  start(meth_sites_gr) <- end(meth_sites_gr)
-  
-  # Sort and return meth_sites_gr
-  return(sort(meth_sites_gr, ignore.strand = TRUE))
+  return(meth_sites_gr)
   
 }
 
