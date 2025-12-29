@@ -35,7 +35,8 @@ extractMethSitesFromGenome <- function(genome, pattern = "CG",
     meth_sites_gr <- GRanges(Biostrings::vmatchPattern(pattern, genome, fixed = "subject"))
   } else {
     meth_sites_gr_plus <- GRanges(Biostrings::vmatchPattern(pattern, genome, fixed = "subject"), strand = "+")
-    meth_sites_gr_minus <- GRanges(Biostrings::vmatchPattern(pattern, genome, fixed = "subject"), strand = "-")
+    reverse_complement_pattern = Biostrings::reverseComplement(Biostrings::DNAString(pattern))
+    meth_sites_gr_minus <- GRanges(Biostrings::vmatchPattern(reverse_complement_pattern, genome, fixed = "subject"), strand = "-")
     meth_sites_gr = c(meth_sites_gr_plus, meth_sites_gr_minus)
   }
     
