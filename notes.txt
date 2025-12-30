@@ -46,4 +46,17 @@ kallisto_quantify.R: ! Remove from package
 .sumTranscriptValuesForGenes
 
 ### make_meth_rse
-Add meth_site_width to overall function
+Pass meth_site_context_width to .split_meth_files_into_chunks
+Add TCGA WGBS files with coverage
+Add option for files missing coverage + use for array files
+Add preset options like CGmap, bedMethyl, etc
+
+.make_meth_rse_setup = Sets chunkdims and creates HDF5 file. Creates realization sinks for beta and cov and HDF5 grid. Creates temporary directories for each chunk. 
+Splits meth_sites and samples into groups, with each chunk being a combination of one meth_site and one sample group. Also returns a list with the samples in each chunk, with the
+grid being filled row-wise
+Returns a list with setup parameters. 
+.split_bedgraphs_into_chunks = Creates a list of parameters, including a df with meth_sites, to pass to .split_meth_file using BiocParallel::bpmapply. C
+.write_chunks_to_hdf5
+.create_meth_rse_from_hdf5
+
+use with instead of attach?

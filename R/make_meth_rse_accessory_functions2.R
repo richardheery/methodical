@@ -1,21 +1,8 @@
 #' Check input files have the correct number of columns specified and that columns seem to be of correct type
 #'
 #' @param input_files A vector of input filepaths.
-#' @param seqnames_column The column number in input_files which corresponds to the sequence names. 
-#' @param start_column The column number in input_files which corresponds to the genomic start coordinate. 
-#' @param total_reads_col The column number in input_files which corresponds to the total number of reads for the position. 
-#' @param meth_reads_col The column number in input_files which corresponds to the number of methylated reads for the position.
-#' @param unmeth_reads_col The column number in input_files which corresponds to the number of unmethylated reads for the position.
-#' @param meth_fraction_col The column number in input_files which corresponds to the fraction of reads that support methylation at the position.
-.check_input_files = function(input_files, seqnames_column, start_column, 
-  total_reads_col = NULL, meth_reads_col = NULL, unmeth_reads_col = NULL, meth_fraction_col = NULL){
-  
-  # Check that total_reads_col and at least one of meth_fraction_col, meth_reads_col or unmeth_reads_col or
-  # else both meth_reads_col and unmeth_reads_col are provided 
-  if((is.null(total_reads_col) | all(sapply(list(meth_fraction_col, meth_reads_col, unmeth_reads_col), is.null))) &&
-    (is.null(meth_reads_col) | is.null(unmeth_reads_col))){
-      stop("Either both meth_reads_col and unmeth_reads_col should be provided or else total_reads_col and one other column")
-  }
+#' @param meth_files_columns A list specifying the columns in meth_files.
+.check_input_files = function(input_files, meth_files_columns){
   
   # Loop through each input_file and check that its format is correct
   for(file in input_files){
@@ -24,20 +11,26 @@
     file_head <- data.table::fread(file, nrows = 10, data.table = F)
     
     # Check that file has at least the required number of columns
-    max_col_number = max(c(seqnames_column, start_column, total_reads_col, meth_reads_col, unmeth_reads_col, meth_fraction_col))
+    max_col_number = max(unlist(meth_files_columns))
     if(ncol(file_head) < max_col_number){
       stop(paste(file, "has only", ncol(file_head), "columns"))
     }
     
     # Check that columns are of specified type
-    if(!is(file_head[[start_column]], "numeric")) stop(paste("start_column in", file, "is not numeric"))
-    if(!is.null(total_reads_col) && !is(file_head[[total_reads_col]], "numeric")) stop(paste("total_reads_col in", file, "is not numeric"))
-    if(!is.null(meth_reads_col) && !is(file_head[[meth_reads_col]], "numeric")) stop(paste("meth_reads_col in", file, "is not numeric"))
-    if(!is.null(unmeth_reads_col) && !is(file_head[[unmeth_reads_col]], "numeric")) stop(paste("unmeth_reads_col in", file, "is not numeric"))
-    if(!is.null(meth_fraction_col) && !is(file_head[[meth_fraction_col]], "numeric")) stop(paste("meth_fraction_col in", file, "is not numeric"))
+    with(meth_files_columns, {
+      if(!is(file_head[[start_column]], "numeric")) stop(paste("start_column in", file, "is not numeric"))
+      if(!is.null(total_reads_col) && 
+          !is(file_head[[total_reads_col]], "numeric")) stop(paste("total_reads_col in", file, "is not numeric"))
+      if(!is.null(meth_reads_col) && 
+          !is(file_head[[meth_reads_col]], "numeric")) stop(paste("meth_reads_col in", file, "is not numeric"))
+      if(!is.null(unmeth_reads_col) && 
+          !is(file_head[[unmeth_reads_col]], "numeric")) stop(paste("unmeth_reads_col in", file, "is not numeric"))
+      if(!is.null(meth_fraction_col) && !is(file_head[[meth_fraction_col]], "numeric")) stop(paste("meth_fraction_col in", file, "is not numeric"))
+    })
     
     # Check that count columns all all integers
-    if(sum(file_head[, c(total_reads_col, meth_reads_col, unmeth_reads_col)] %% 1, na.rm = TRUE) > 0){
+    count_columns = c("total_reads_col", "meth_reads_col", "unmeth_reads_col")
+    if(sum(file_head[, unlist(meth_files_columns[count_columns])] %% 1, na.rm = TRUE) > 0){
       stop(paste("Columns specified by total_reads_col, meth_reads_col and unmeth_reads_col for", file, "are not all integers"))
     }
   }
@@ -50,14 +43,8 @@
 #' Process a data.frame with methylation data so that it contains the total number of reads and the fraction of methylated reads as columns
 #'
 #' @param meth_df A data.frame with methylation data.
-#' @param seqnames_column The column number in input_files which corresponds to the sequence names. 
-#' @param start_column The column number in input_files which corresponds to the genomic start coordinate. 
-#' @param total_reads_col The column number in input_files which corresponds to the total number of reads for the position. 
-#' @param meth_reads_col The column number in input_files which corresponds to the number of methylated reads for the position.
-#' @param unmeth_reads_col The column number in input_files which corresponds to the number of unmethylated reads for the position.
-#' @param meth_fraction_col The column number in input_files which corresponds to the fraction of reads that support methylation at the position.
-.calculate_meth_fraction_and_total_reads = function(meth_df, seqnames_column, start_column, 
-  total_reads_col = NULL, meth_reads_col = NULL, unmeth_reads_col = NULL, meth_fraction_col = NULL){
+#' @param meth_files_columns A list specifying the columns in meth_files.
+.calculate_meth_fraction_and_total_reads = function(meth_df, meth_files_columns){
   
   # Ensure seqnames_column and start_column are named seqnames and start
   names(meth_df)[c(seqnames_column, start_column)] <- c("seqnames", "start")
@@ -90,23 +77,9 @@
 #' Combine values for stranded data
 #'
 #' @param meth_df A data.frame with methylation data.
-#' @param meth_sites A GRanges object with the locations of the methylation sites of interest. Should contain separate ranges 
 #' @param meth_site_width An integer giving the width of the methylation sites being studied e.g. 2 for CG sites. 
 #' for each stand if meth_files are stranded (i.e. separate ranges for the C and G positions of CpG sites).
-.collapse_strands = function(meth_df, meth_sites, meth_site_width){
-  
-  # Separate meth_sites into sites on the + and - strand
-  meth_sites_plus <- meth_sites[strand(meth_sites) == "+"]
-  meth_sites_minus <- meth_sites[strand(meth_sites) == "-"]
-  
-  # Make a GRanges from meth_df
-  meth_df_gr <- GenomicRanges::makeGRangesFromDataFrame(meth_df, end.field = "start")
-  
-  # Add strand to meth_df and remove rows where strand is missing
-  meth_df$strand <- NA
-  meth_df$strand[meth_df_gr %over% meth_sites_plus] <- "+"
-  meth_df$strand[meth_df_gr %over% meth_sites_minus] <- "-"
-  meth_df <- dplyr::filter(meth_df, !is.na(strand))
+.collapse_strands = function(meth_df, meth_site_width){
   
   # Adjust start of sites on - strand so that they corresponds to start of sites on + strand
   meth_df[meth_df$strand == "-", ]$start <- meth_df[meth_df$strand == "-", ]$start - meth_site_width

@@ -2,10 +2,10 @@
 #'
 #' @param genome A BSgenome object (or the name of an installed one) or a DNAStringSet with names indicating the sequences.  
 #' @param pattern A pattern to match in genome. Default is "CG".
-#' @param search_both_strands TRUE or FALSE indicating whether to return matches on 
+#' @param stranded TRUE or FALSE indicating whether to return matches on 
 #' both strands or else just the "+" strand. Strand will be set to "*" if FALSE. Default is TRUE.
 #' @param standard_sequences_only TRUE or FALSE indicating whether to only return ranges 
-#' on standard sequences (those without "-" in their names). Default is TRUE. 
+#' on standard sequences (those without "_" in their names). Default is TRUE. 
 #' @return A GRanges object with genomic regions matching the pattern.
 #' @export
 #' @examples 
@@ -17,11 +17,11 @@
 #' arabidopsis_CHG_sites <- methodical::extractMethSitesFromGenome("BSgenome.Athaliana.TAIR.TAIR9", pattern = "CHG")
 #' head(arabidopsis_CHG_sites)
 extractMethSitesFromGenome <- function(genome, pattern = "CG", 
-  search_both_strands = TRUE, standard_sequences_only = TRUE){
+  stranded = TRUE, standard_sequences_only = TRUE){
   
   # Check that inputs have the correct data type
   stopifnot(is(genome, "character") | is(genome, "BSgenome") | is(genome, "DNAStringSet"), 
-    is(pattern, "character"), S4Vectors::isTRUEorFALSE(search_both_strands), 
+    is(pattern, "character"), S4Vectors::isTRUEorFALSE(stranded), 
     S4Vectors::isTRUEorFALSE(standard_sequences_only))
   
   # If genome is a character, try to load genome with that name
@@ -30,34 +30,34 @@ extractMethSitesFromGenome <- function(genome, pattern = "CG",
     stop("If genome is a DNASringSet, it must have names indicating the sequence")
   }
   
-  # Find sites matching pattern in genome, explicitly searching + and - strands for a DNAStringSet
-  if(is(genome, "BSgenome"){
-    meth_sites_gr <- GRanges(Biostrings::vmatchPattern(pattern, genome, fixed = "subject"))
-  } else {
+  # Extract seqinfo from genome
+  seqinfo <- GenomeInfoDb::seqinfo(genome)
+  
+  # Convert genome to a DNAStringSet and subset for standard chromosomes if specified
+  sequence_names = seqnames(genome)
+  if(standard_sequences_only){
+    message("Searching only standard sequences (those without \"_\" in their names)")
+    sequence_names <- grep("_", sequence_names, invert = T)
+    if(length(sequence_names) == 0){stop("There are no sequences which appear to be standard sequences")}
+  }
+  genome <- getSeq(genome, sequence_names)
+  
+  # Find sites matching pattern in genome, on both the + and - strands if stranded is TRUE or just the + strand otherwise
+  if(stranded){
     meth_sites_gr_plus <- GRanges(Biostrings::vmatchPattern(pattern, genome, fixed = "subject"), strand = "+")
     reverse_complement_pattern = Biostrings::reverseComplement(Biostrings::DNAString(pattern))
     meth_sites_gr_minus <- GRanges(Biostrings::vmatchPattern(reverse_complement_pattern, genome, fixed = "subject"), strand = "-")
     meth_sites_gr = c(meth_sites_gr_plus, meth_sites_gr_minus)
+  } else {
+    meth_sites_gr <- GRanges(Biostrings::vmatchPattern(pattern, genome, fixed = "subject"), strand = "*")
   }
     
   # Sort and resize ranges so that they cover just the first base
   meth_sites_gr <- sort(meth_sites_gr, ignore.strand = TRUE)
   meth_sites_gr <- resize(meth_sites_gr, 1)
   
-  # Filter for matches on "+" strand if search_both_strands is FALSE and set strand as "*"
-  if(!search_both_strands & is(genome, "BSgenome")){
-    meth_sites_gr <- meth_sites_gr[GenomicRanges::strand(meth_sites_gr) == "+"]
-    GenomicRanges::strand(meth_sites_gr) <- "*"
-  }
-  
-  # Add seqinfo to GRanges
-  GenomeInfoDb::seqinfo(meth_sites_gr) <- GenomeInfoDb::seqinfo(genome)
-  
-  # Subset for standard sequences if specified and return meth_sites_gr
-  if(standard_sequences_only){
-    standard_sequences <- grep("_", names(genome), invert = TRUE, value = TRUE)
-    GenomeInfoDb::seqlevels(meth_sites_gr, pruning.mode = "coarse") <- standard_sequences
-  }
+  # Add seqinfo to GRanges and return
+  GenomeInfoDb::seqinfo(meth_sites_gr) <- seqinfo
   return(meth_sites_gr)
   
 }

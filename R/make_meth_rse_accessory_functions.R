@@ -7,14 +7,13 @@
 #' Any positions in meth_files that are not in meth_sites are ignored. 
 #' @param sample_metadata A data.frame with sample metadata to be used as colData for the RangedSummarizedExperiment.
 #' @param hdf5_dir Directory to save HDF5 file. Is created if it doesn't exist. HDF5 file is called assays.h5. 
-#' @param dataset_name Name to give data set in HDF5 file. 
-#' @param overwrite TRUE or FALSE indicating whether to allow overwriting if dataset_name already exists in assays.h5. 
+#' @param overwrite TRUE or FALSE indicating whether to allow overwriting if hdf5_dir already exists. 
 #' @param chunkdim The dimensions of the chunks for the HDF5 file.
 #' @param temporary_dir Name to give a temporary directory to store intermediate files. A directory with this name cannot already exist. 
 #' @param ... Additional arguments to be passed to HDF5Array::HDF5RealizationSink. 
 #' @return A list describing the setup to be used for makeMethRSEFromInputFiles or makeMethRSEFromArrayFiles.
-.make_meth_rse_setup <- function(meth_files, meth_sites, sample_metadata, hdf5_dir, 
-  dataset_name, overwrite, chunkdim, temporary_dir, ...){
+.make_meth_rse_setup <- function(meth_files, meth_sites, sample_metadata, 
+  hdf5_dir, overwrite, chunkdim, temporary_dir, ...){
   
   # If chunkdim not provided, use default values. Otherwise check that chunkdim is a numeric vector of length 2.
   if(is.null(chunkdim)){
@@ -32,19 +31,12 @@
   # If hdf5_dir doesn't exist, it is created
   if(!dir.exists(hdf5_dir)){
     dir.create(hdf5_dir)
-  }
+  } 
   
-  # Set hdf5_filepath as assays.h5 in hdf5_dir
+  # Set hdf5_filepath as assays.h5 in hdf5_dir and if the file already exists remove it if overwrite is TRUE
   hdf5_filepath <- paste0(hdf5_dir, "/assays.h5")
-  
-  # Check if dataset_name is already present in HDF5 file and allow overwriting only if it is specified
-  if(file.exists(hdf5_filepath)){
-    if(dataset_name %in% rhdf5::h5ls(hdf5_filepath)$name & !overwrite){
-      stop(paste("A dataset named", dataset_name, "is already present in HDF5 file and overwrite is set to FALSE"))
-    } else if(dataset_name %in% rhdf5::h5ls(hdf5_filepath)$name & overwrite){
-      message(paste("Overwriting dataset named", dataset_name, "in HDF5 file"))
-      rhdf5::h5delete(file = hdf5_filepath, dataset_name)
-    }
+  if(file.exists(hdf5_filepath) && overwrite){
+    file.remove(hdf5_filepath)
   }
   
   # Create sample_metadata if it doesn't exist and if it does check that the number of rows equals the length of meth_files
@@ -90,8 +82,9 @@
     paste(temp_chunk_dirs[x], basename(files_in_chunks[[x]]), sep = "/"))
   
   # Create a list with all setup parameters and return
-  setup_list <- list(hdf5_filepath = hdf5_filepath, beta_sink = beta_sink, Cov_sink = Cov_sink, hdf5_grid = hdf5_grid, temp_chunk_dirs = temp_chunk_dirs,
-    meth_site_groups = meth_site_groups, file_grid_columns = file_grid_columns, files_in_chunks = files_in_chunks)
+  setup_list <- list(hdf5_filepath = hdf5_filepath, beta_sink = beta_sink, Cov_sink = Cov_sink, 
+    hdf5_grid = hdf5_grid, temp_chunk_dirs = temp_chunk_dirs, meth_site_groups = meth_site_groups, 
+    file_grid_columns = file_grid_columns, files_in_chunks = files_in_chunks)
   
   return(setup_list)
   
@@ -100,97 +93,98 @@
 #' Split data from a single input methylation file into chunks
 #'
 #' @param meth_file Path to an input methylation file.
-#' @param column The current grid column being processed. 
+#' @param meth_files_columns A list specifying the columns in meth_files.
+#' @param grid_column The current grid column being processed. 
 #' @param file_count The number of the current file being processed.
-#' @param parameters A list of parameters for processing the meth_file.
+#' @param parameters A list of parameters for processing meth_file.
 #' @return Invisibly returns NULL. 
-.split_meth_file <- function(meth_file, column, file_count, parameters, seqnames_column, start_column, 
-  total_reads_col = NULL, meth_reads_col = NULL, unmeth_reads_col = NULL, meth_fraction_col = NULL){
+.split_meth_file <- function(meth_file, meth_files_columns, grid_column, file_count, parameters){
   
-  # Attach the parameters
-  attach(parameters)
+  # Attach the parameters locally using with
+  with(parameters, {
   
-  # Set the current chunk to the first chunk of the current grid column
-  current_chunk <- 1 + (column - 1) * length(meth_site_groups)
-  
-  # Print count of meth_file being processed
-  message(paste0("Processing file ", file_count, " out of ", total_files, ": ", meth_file, "\n"))
-  
-  # Initialize a data.frame for all methylation sites
-  meth_site_values <- meth_sites_df
-  
-  # Read in input methylation file
-  meth_df <- data.table::fread(meth_file, nThread = dt_threads)
-  
-  # Add 1 to start of regions if zero_based is TRUE
-  if(zero_based){
-    meth_df$start <- meth_df$start + 1
-  }
-  
-  # Adjust meth_df so that it have total_reads and meth_fraction column
-  meth_df = .calculate_meth_fraction_and_total_reads(df = meth_df, seqnames_column = seqnames_column, 
-    start_column = start_column, total_reads_col = total_reads_col, meth_reads_col = meth_reads_col, 
-    unmeth_reads_col = unmeth_reads_col, meth_fraction_col = meth_fraction_col)
-  
-  # If data is stranded, combine values for strands
-  if(stranded){
-    meth_df <- .collapse_strands(meth_df, meth_sites = makeGRangesFromDataFrame(meth_sites_df), meth_site_width = meth_site_width)
-  }
-  
-  # Round values if specified
-  if(!is.na(decimal_places)){
-    meth_df$meth_fraction <- round(meth_df$meth_fraction, decimal_places)
-  }
-  
-  # Ensure seqlevels of meth_df are in the same order as meth_sites_df
-  meth_df$seqnames <- factor(meth_df$seqnames, levels = levels(meth_sites_df$seqnames))
-  
-  # Set seqnames and start as keys for meth_df
-  data.table::setkey(meth_df, seqnames, start)
-  
-  # Add values from meth_df to meth_site_values
-  meth_site_values <- merge(meth_site_values, meth_df, by = c("seqnames", "start"), all.x = TRUE, sort = FALSE)
-  
-  # Remove meth_df and run the garbage collection
-  rm(meth_df); invisible(gc())
+    # Set the current chunk to the first chunk of the current grid column
+    current_chunk <- 1 + (grid_column - 1) * length(meth_site_groups)
     
-  # Loop through each chunk of methylation sites
-  `%do%` <- foreach::`%do%`
-  foreach::foreach(mg = meth_site_groups) %do% {
+    # Print count of meth_file being processed
+    message(paste0("Processing file ", file_count, " out of ", total_files, ": ", meth_file, "\n"))
     
-    # Subset meth_site_values for methylation sites in chunk
-    meth_site_group_values <- data.table::as.data.table(meth_site_values[mg, c("meth_fraction", "total_reads")])
+    # Initialize a data.frame for all methylation sites
+    meth_site_values <- meth_sites_df
     
-    # Write values to appropriate file
-    data.table::fwrite(x = meth_site_group_values, 
-      file = paste0(temp_chunk_dirs[current_chunk], "/", basename(meth_file)),
-      row.names = FALSE, quote = FALSE, na = "NA", compress = "none", nThread = dt_threads)
+    # Read in input methylation file
+    meth_df <- data.table::fread(meth_file, nThread = dt_threads)
     
-    # Increase current chunk number
-    current_chunk <- current_chunk + 1
+    # Add 1 to start of regions if zero_based is TRUE
+    if(zero_based){
+      meth_df[[start_column]] <- meth_df[[start_column]] + 1
+    }
     
-    # Return NULL
-    return(invisible(NULL))
+    # Adjust meth_df so that it has total_reads and meth_fraction column
+    meth_df = .calculate_meth_fraction_and_total_reads(meth_df = meth_df, meth_files_columns = meth_files_columns)
     
-  }
+    # If data is stranded add a column with strand to meth_df and combine values for strands
+    if(stranded){
+      meth_df <- merge(meth_df, meth_sites_df, by = c("seqnames", "start"), all.x = TRUE, sort = FALSE)
+      meth_df <- .collapse_strands(meth_df, meth_site_context_width = meth_site_context_width)
+    }
+    
+    # Round values if specified
+    if(!is.na(decimal_places)){
+      meth_df$meth_fraction <- round(meth_df$meth_fraction, decimal_places)
+    }
+    
+    # Ensure seqlevels of meth_df are in the same order as meth_sites_df
+    meth_df$seqnames <- factor(meth_df$seqnames, levels = levels(meth_sites_df$seqnames))
+    
+    # Set seqnames and start as keys for meth_df
+    data.table::setkey(meth_df, seqnames, start)
+    
+    # Add values from meth_df to meth_site_values
+    meth_site_values <- merge(meth_site_values, meth_df, by = c("seqnames", "start"), all.x = TRUE, sort = FALSE)
+    
+    # Remove meth_df and run the garbage collection
+    rm(meth_df); invisible(gc())
+      
+    # Loop through each chunk of methylation sites
+    `%do%` <- foreach::`%do%`
+    foreach::foreach(mg = meth_site_groups) %do% {
+      
+      # Subset meth_site_values for methylation sites in chunk
+      meth_site_group_values <- data.table::as.data.table(meth_site_values[mg, c("meth_fraction", "total_reads")])
+      
+      # Write values to appropriate file
+      data.table::fwrite(x = meth_site_group_values, 
+        file = paste0(temp_chunk_dirs[current_chunk], "/", basename(meth_file)),
+        row.names = FALSE, quote = FALSE, na = "NA", compress = "none", nThread = dt_threads)
+      
+      # Increase current chunk number
+      current_chunk <- current_chunk + 1
+      
+      # Return NULL
+      return(invisible(NULL))
+      
+    }
+  
+  })
+  
 }
 
 #' Split data from input methylation files into chunks
 #'
 #' @param meth_files Paths to input methylation files.
-#' @param seqnames_column The column number in meth_files which corresponds to the sequence names. 
-#' @param start_column The column number in meth_files which corresponds to the start positions. 
-#' @param value_column The column number in meth_files which corresponds to the methylation values. 
+#' @param meth_files_columns A list specifying the columns in meth_files.
 #' @param file_grid_columns The grid column number for each file. 
-#' @param meth_sites A GRanges object with the locations of the methylation sites of interest.
+#' @param meth_sites_df A data.table with the positions of methylation sites.
+#' @param meth_site_context_width The width of the sequence context for the methylation sites.
 #' @param meth_site_groups A list with the indices of the methylation sites in each group. 
 #' @param temp_chunk_dirs A vector giving the temporary directory associated with each chunk.
 #' @param zero_based TRUE or FALSE indicating if files are zero-based. 
 #' @param decimal_places Integer indicating the number of decimal places to round beta values to. 
 #' @param BPPARAM A BiocParallelParam object. 
-#' @return A data.table with the methylation sites sorted by seqnames and start.
-.split_meth_files_into_chunks <- function(meth_files, seqnames_column, start_column, end_column, value_column,
-  file_grid_columns, meth_sites, meth_site_groups, temp_chunk_dirs, zero_based, decimal_places, BPPARAM){
+#' @return Invisibly returns NULL.
+.split_meth_files_into_chunks <- function(meth_files, meth_files_columns, file_grid_columns, 
+  meth_sites_df, meth_site_context_width, meth_site_groups, temp_chunk_dirs, zero_based, decimal_places, BPPARAM){
   
   # Set dt_threads to 1 if more than one core being used. 
   if(BiocParallel::bpnworkers(BPPARAM) > 1){
@@ -199,16 +193,10 @@
     dt_threads <- data.table::getDTthreads()
   }
   
-  # Convert meth_sites into a data.table
-  meth_sites_df <- data.table::data.table(data.frame(meth_sites)[seq_len(3)])
-  
-  # Set seqnames and start as keys for meth_sites_df
-  data.table::setkey(meth_sites_df, seqnames, start)
-  
   # Create a list with parameters to pass to .split_meth_file
   parameters_list <- list(total_files = length(meth_files), meth_site_groups = meth_site_groups,
-    meth_sites_df = meth_sites_df, seqnames_column = seqnames_column, start_column = start_column, 
-    end_column = end_column, value_column = value_column, dt_threads = dt_threads, 
+    meth_sites_df = meth_sites_df, meth_site_context_width = meth_site_context_width, 
+    meth_files_columns = meth_files_columns, dt_threads = dt_threads, 
     zero_based = zero_based, decimal_places = decimal_places, temp_chunk_dirs = temp_chunk_dirs)
 
   # Loop through each chunk of meth_files
@@ -218,8 +206,8 @@
   # Run the garbage collection
   invisible(gc())
   
-  # Return meth_sites_df
-  return(meth_sites_df)
+  # Return NULL
+  return(invisible(NULL))
   
 }
 
@@ -273,11 +261,11 @@
 #' Create a RangedSummarizedExperiment for methylation values already deposited in HDF5
 #'
 #' @param hdf5_filepath Path to HDF5 file
-#' @param meth_sites_df A data.frame with the positions of methylation sites
+#' @param meth_sites A sorted GRanges object with the locations of the methylation sites of interest.
 #' @param sample_metadata A data.frame with sample metadata
 #' @param hdf5_dir The path to the HDF5 directory. 
 #' @return A RangedSummarizedExperiment with methylation values
-.create_meth_rse_frobeta_hdf5 <- function(hdf5_filepath, hdf5_dir, meth_sites_df, sample_metadata){
+.create_meth_rse_from_hdf5 <- function(hdf5_filepath, hdf5_dir, meth_sites, sample_metadata){
   
   # Get the names of the assays in hdf5_filepath
   assay_names <- rhdf5::h5ls(hdf5_filepath)$name
@@ -285,10 +273,6 @@
   # Create a list of data sets present in hdf5_filepath
   assay_list <- S4Vectors::SimpleList(setNames(lapply(assay_names, function(x) 
     HDF5Array::HDF5Array(filepath = hdf5_filepath, name = x)), assay_names))
-  
-  # Update meth_sites to make sure they are in the same order as meth_sites_df
-  meth_sites <- GenomicRanges::makeGRangesFromDataFrame(meth_sites_df, 
-    keep.extra.columns = TRUE, seqinfo = levels(meth_sites_df$seqnames))
   
   # Create a RangedSummarizedExperiment using the data sets in hdf5_dir, sample_metadata and meth_sites
   rse <- SummarizedExperiment::SummarizedExperiment(assays = assay_list, colData = sample_metadata, rowRanges = meth_sites)

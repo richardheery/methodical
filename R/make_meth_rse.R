@@ -1,74 +1,116 @@
-#' Create a HDF5-backed RangedSummarizedExperiment for methylation values in input_files
+#' Create a HDF5-backed RangedSummarizedExperiment for methylation values in meth_files
 #'
-#' @param input_files A vector of paths to input files. 
-#' Automatically detects if input_files contain a header if every field in the first line is a character. 
-#' @param seqnames_column The column number in input_files which corresponds to the sequence names. Default is 1st column.  
-#' @param start_column The column number in input_files which corresponds to the start positions. Default is 2nd column. 
-#' @param end_column The column number in input_files which corresponds to the end positions. Default is 3rd column. 
-#' @param methylation_column The column number in input_files which corresponds to the methylation values. Default is 5th column. 
-#' @param coverage_column The column number in input_files which corresponds to the total coverage. Default is the 6th column.
+#' @param meth_files A vector of paths to input methylation files. 
+#' Automatically detects if meth_files contain a header if every field in the first line is a character. 
+#' @param seqnames_column The column number in meth_files which corresponds to the sequence names. 
+#' @param start_column The column number in meth_files which corresponds to the genomic start coordinate. 
+#' @param total_reads_col The column number in meth_files which corresponds to the total number of reads for the position. 
+#' @param meth_reads_col The column number in meth_files which corresponds to the number of methylated reads for the position.
+#' @param unmeth_reads_col The column number in meth_files which corresponds to the number of unmethylated reads for the position.
+#' @param meth_fraction_col The column number in meth_files which corresponds to the fraction of reads that support methylation at the position.
+#' Will be converted to a proportion if it appears to be a fraction.
 #' @param zero_based TRUE or FALSE indicating if files are zero-based. Default value is TRUE. 
-#' @param normalization_factor An optional numerical value to divide methylation values by to convert them to fractions e.g. 100 if they are percentages. 
-#' Default is to leave values as they are in the input files. 
-#' @param decimal_places Optional integer indicating the number of decimal places to round beta values to. Default is not to round. 
-#' @param meth_sites A GRanges object with non-overlapping locations of methylation sites of interest. Any methylation sites in input_files that are not in meth_sites are ignored.
+#' @param meth_sites A GRanges object with non-overlapping locations of methylation sites of interest e.g. CpG sites. 
+#' Any methylation sites in meth_files that are not in meth_sites are ignored.
+#' @param meth_site_context_width The width of the sequence context for the methylation sites.
+#' e.g. 2 for CG, 3 for CHG or 1 for individual CpG sites. Default is 2.
+#' @param collapse_strands TRUE or FALSE indicating whether or not to collapse data on + and - strands. 
+#' Only makes sense for symmetrically methylated contexts e.g. CG or CHG and meth_sites should include ranges on both the + and - strands if TRUE. 
+#' @param decimal_places Optional integer indicating the number of decimal places to round beta values to. Default is not to round.
 #' @param sample_metadata Sample metadata to be used as colData for the RangedSummarizedExperiment.
 #' @param hdf5_dir Directory to save HDF5 file. Is created if it doesn't exist. HDF5 file is called assays.h5. 
-#' @param dataset_name Name to give data set in HDF5 file. Default is "beta".
-#' @param overwrite TRUE or FALSE indicating whether to allow overwriting if dataset_name already exists in assays.h5. Default is FALSE.
+#' @param overwrite TRUE or FALSE indicating whether to allow overwriting if hdf5_dir already exists. Default is FALSE.
 #' @param chunkdim The dimensions of the chunks for the HDF5 file. Should be a vector of length 2 giving the number of rows and then the number of columns in each chunk.
-#' Uses HDF5Array::getHDF5DumpChunkDim(length(meth_sites), length(input_files))) by default. 
+#' Uses HDF5Array::getHDF5DumpChunkDim(length(meth_sites), length(meth_files))) by default. 
 #' @param temporary_dir Name to give temporary directory created to store intermediate files. A directory with this name cannot already exist. 
-#' Default is to create a name using tempfile("temporary_meth_chunks_"). 
-#' Will be deleted after completion. 
+#' Default is to create a subdirectory named "temporary_meth_chunks_" inside the directory given by `tempdir()`. Will be deleted after completion. 
 #' @param BPPARAM A BiocParallelParam object for parallel processing. Defaults to `BiocParallel::SerialParam()`. 
 #' @param ... Additional arguments to be passed to HDF5Array::HDF5RealizationSink() for controlling the physical properties of the created HDF5 file, 
 #' such as compression level. Uses the defaults for any properties that are not specified. 
-#' @return A RangedSummarizedExperiment with methylation values for all methylation sites in meth_sites. methylation sites will be in the same order as sort(meth_sites). 
+#' @return A RangedSummarizedExperiment with two assays for all methylation sites in meth_sites, 
+#' beta with the proportion of methylated reads and Cov with the total  number of reads for each site. methylation sites will be in the same order as sort(meth_sites). 
 #' @export
 #' @examples
 #' 
 #' # Load CpGs within first million base pairs of chromosome 1 as a GRanges object
 #' data("hg38_cpgs_subset", package = "methodical")
 #' 
-#' # Get paths to input_files
-#' input_files <- list.files(path = system.file('extdata', package = 'methodical'), 
+#' # Get paths to meth_files
+#' meth_files <- list.files(path = system.file('extdata', package = 'methodical'), 
 #'   pattern = ".bg.gz", full.names = TRUE)
 #' 
 #' # Create sample metadata
 #' sample_metadata <- data.frame(
-#'   tcga_project = gsub("_.*", "", gsub("TCGA_", "", basename(input_files))),
-#'   sample_type = ifelse(grepl("N", basename(input_files)), "Normal", "Tumour"),
-#'   row.names = tools::file_path_sans_ext(basename(input_files))
+#'   tcga_project = gsub("_.*", "", gsub("TCGA_", "", basename(meth_files))),
+#'   sample_type = ifelse(grepl("N", basename(meth_files)), "Normal", "Tumour"),
+#'   row.names = tools::file_path_sans_ext(basename(meth_files))
 #' )
 #' 
-#' # Create a HDF5-backed RangedSummarizedExperiment from input_files
-#' meth_rse <- makeMethRSEFromInputFiles(input_files = input_files, 
-#'   meth_sites = hg38_cpgs_subset, sample_metadata = sample_metadata, 
+#' # Create a HDF5-backed RangedSummarizedExperiment from meth_files
+#' meth_rse <- makeMethRSEFromInputFiles(meth_files = meth_files, 
+#'   seqnames_column = 1, start_column = 2, meth_fraction_col = 4, 
+#'   zero_based = TRUE, meth_sites = hg38_cpgs_subset, sample_metadata = sample_metadata, 
 #'   hdf5_dir = paste0(tempdir(), "/bedgraph_hdf5_1"))
 #'   
-makeMethRSEFromInputFiles <- function(input_files, 
-  seqnames_column = 1, start_column = 2, end_column = 3, methylation_column = 5,
-  coverage_column = 6, zero_based = TRUE, normalization_factor = NULL, decimal_places = NA, 
-  meth_sites, sample_metadata = NULL, hdf5_dir, dataset_name = "beta", overwrite = FALSE, chunkdim = NULL, 
-  temporary_dir = NULL, BPPARAM = BiocParallel::SerialParam(), ...){
+makeMethRSEFromInputFiles <- function(meth_files, seqnames_column, start_column, 
+  total_reads_col = NULL, meth_reads_col = NULL, unmeth_reads_col = NULL, meth_fraction_col = NULL, 
+  zero_based, meth_sites, meth_site_context_width = 2, collapse_strands = TRUE, decimal_places = NA, sample_metadata = NULL, 
+  hdf5_dir, overwrite = FALSE, chunkdim = NULL, temporary_dir = NULL, BPPARAM = BiocParallel::SerialParam(), ...){
   
   # Check that inputs have the correct data type
-  stopifnot(is(input_files, "character"), is(seqnames_column, "numeric") & seqnames_column >= 1,
-    is(start_column, "numeric") & start_column >= 1, is(end_column, "numeric") & end_column >= 1,
-    is(methylation_column, "numeric") & methylation_column >= 1, 
-    is(coverage_column, "numeric") & methylation_column >= 1, S4Vectors::isTRUEorFALSE(zero_based),
-    is(normalization_factor, "numeric") | is.null(normalization_factor),
-    is(decimal_places, "numeric") | is.na(decimal_places), is(meth_sites, "GRanges"),
+  stopifnot(is(meth_files, "character"), 
+    is.numeric(seqnames_column) && length(seqnames_column) == 1 && seqnames_column > 0 && seqnames_column %% 1 == 0,
+    is.numeric(start_column) && length(start_column) == 1 && start_column > 0 && start_column %% 1 == 0,
+    is.null(total_reads_col) | is.numeric(total_reads_column) && length(total_reads_column) == 1 && total_reads_column > 0 && total_reads_column %% 1 == 0,
+    is.null(meth_reads_col) | is.numeric(meth_reads_column) && length(meth_reads_column) == 1 && meth_reads_column > 0 && meth_reads_column %% 1 == 0,
+    is.null(unmeth_reads_col) | is.numeric(unmeth_reads_column) && length(unmeth_reads_column) == 1 && unmeth_reads_column > 0 && unmeth_reads_column %% 1 == 0,
+    is.null(meth_fraction_col) | is.numeric(meth_fraction_column) && length(meth_fraction_column) == 1 && meth_fraction_column > 0 && meth_fraction_column %% 1 == 0,
+    S4Vectors::isTRUEorFALSE(zero_based), is(meth_sites, "GRanges"), 
+    is.numeric(meth_site_context_width) && length(meth_site_context_width) == 1 && meth_site_context_width > 0 && meth_site_context_width %% 1 == 0,
+    S4Vectors::isTRUEorFALSE(collapse_strands), is(decimal_places, "numeric") | is.na(decimal_places), 
     is(sample_metadata, "data.frame") | is.null(sample_metadata), is(hdf5_dir, "character"),
-    is(dataset_name, "character"), S4Vectors::isTRUEorFALSE(overwrite), is(chunkdim, "numeric") | is.null(chunkdim),
     is(temporary_dir, "character") | is.null(temporary_dir), is(BPPARAM, "BiocParallelParam"))
     
-  # Check that normalization_factor is a whole integer if provided
-  if(!is.null(normalization_factor)){
-    if(length(normalization_factor) != 1 | normalization_factor %% 1 != 0 | normalization_factor < 0){
-      stop("normalization_factor should be single whole number")
-    }
+  # Check that total_reads_col and at least one of meth_fraction_col, meth_reads_col or unmeth_reads_col or
+  # else both meth_reads_col and unmeth_reads_col are provided 
+  if((is.null(total_reads_col) | all(sapply(list(meth_reads_col, unmeth_reads_col, meth_fraction_col), is.null))) &&
+    (is.null(meth_reads_col) | is.null(unmeth_reads_col))){
+      stop("Either both meth_reads_col and unmeth_reads_col should be provided or else total_reads_col and one other column")
+  }
+  
+  # Check that different columns given for meth_files columns
+  if(anyDuplicated(c(seqnames_column, start_column, total_reads_col, meth_reads_col, unmeth_reads_col, meth_fraction_col))){
+    stop("Duplicate column indices given for seqnames, start, total reads, meth reads, unmeth reads or meth fraction")
+  }
+  
+  # Check that all ranges in meth_sites have a width of 1, that they are disjoint 
+  # and that they are stranded if collapse_strands is TRUE
+  if(any(GenomicRanges::width(meth_sites) != 1)){
+    stop("All meth_sites should have a width of 1")
+  }
+  if(!GenomicRanges::isDisjoint(meth_sites)){
+    stop("There cannot be overlapping regions in meth_sites")
+  }
+  if(collapse_strands && "*" %in% strand(meth_sites)){
+    stop("If collapse_strands is TRUE, all ranges in meth_sites must be stranded (on + or - strand")
+  }
+    
+  # Check if meth_sites is sorted and print a message if it is not. 
+  if(!all(meth_sites == sort(meth_sites, ignore.strand = T))){
+    message("meth_sites is not sorted (ignoring strand). It will be sorted and this sorted order used for methylation sites in the HDF5 file")
+  }
+  
+  # Convert meth_sites into a data.table
+  meth_sites_df <- data.table::data.table(data.frame(meth_sites)[c("seqnames", "start", "strand")])
+  
+  # Set seqnames and start as keys for meth_sites_df and convert back to a sorted GRanges 
+  data.table::setkey(meth_sites_df, seqnames, start)
+  meth_sites <- GenomicRanges::makeGRangesFromDataFrame(meth_sites_df, end.field = "start")
+  
+  # If collapsing strands, remove sites on the - strand and set strand as *
+  if(collapse_strands){
+    meth_sites <- meth_sites[strand(meth_sites) == "+"]
+    strand(meth_sites) <- "*"
   }
   
   # If temporary_dir not provided, set it to a directory in tempdir()
@@ -83,25 +125,19 @@ makeMethRSEFromInputFiles <- function(input_files,
     dir.create(temporary_dir)
   }
   
-  # Check if meth_sites is disjoint
-  if(!GenomicRanges::isDisjoint(meth_sites)){
-    stop("There cannot be overlapping regions in meth_sites")
-  }
-  
-  # Check if meth_sites is sorted and print a message if it is not. 
-  if(!S4Vectors::isSorted(meth_sites)){
-    message("meth_sites is not sorted. It will be sorted and this sorted order will be used for methylation sites in the HDF5 file")
-  }
-  
   # Perform setup
-  setup <- .make_meth_rse_setup(meth_files = input_files, meth_sites = meth_sites, sample_metadata = sample_metadata, 
+  setup <- .make_meth_rse_setup(meth_files = meth_files, meth_sites = meth_sites, sample_metadata = sample_metadata, 
     hdf5_dir = hdf5_dir, dataset_name = dataset_name, overwrite = overwrite, chunkdim = chunkdim, 
     temporary_dir = temporary_dir, ...)
   
-  # Read in input_files and write data from chunks to appropriate temporary directory
-  meth_sites_df <- .split_bedgraphs_into_chunks(bedgraphs = input_files, 
-    seqnames_column = seqnames_column, start_column = start_column, end_column = end_column, value_column = methylation_column,
-    file_grid_columns = setup$file_grid_columns, meth_sites = meth_sites, meth_site_groups = setup$meth_site_groups, temp_chunk_dirs = setup$temp_chunk_dirs, 
+  # Create a list which specifies the columns in meth_files
+  meth_files_columns <- list(seqnames_column = seqnames_column, start_column = start_column, total_reads_col = total_reads_col,
+    meth_reads_col = meth_reads_col, unmeth_reads_col = unmeth_reads_col, meth_fraction_col = meth_fraction_col)
+  
+  # Read in meth_files and write data from chunks to appropriate temporary directory
+  .split_meth_files_into_chunks(meth_files = meth_files, meth_files_columns,
+    file_grid_columns = setup$file_grid_columns, meth_sites = meth_sites, meth_site_context_width = meth_site_context_width,
+    meth_site_groups = setup$meth_site_groups, temp_chunk_dirs = setup$temp_chunk_dirs, 
     zero_based = zero_based, normalization_factor = normalization_factor, decimal_places = decimal_places, BPPARAM = BPPARAM)
   
   # Write the chunks to the HDF5 file
@@ -110,7 +146,7 @@ makeMethRSEFromInputFiles <- function(input_files,
   
   # Create a RangedSummarizedExperiment
   rse <- .create_meth_rse_from_hdf5(hdf5_filepath = setup$hdf5_filepath, hdf5_dir = hdf5_dir,
-    meth_sites_df = meth_sites_df, sample_metadata = sample_metadata)
+    meth_sites = meth_sites, sample_metadata = sample_metadata)
   
   # Delete temporary_dir if it is empty
   if(length(list.files(temporary_dir)) == 0){
