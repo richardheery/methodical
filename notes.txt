@@ -59,4 +59,8 @@ Returns a list with setup parameters.
 .write_chunks_to_hdf5
 .create_meth_rse_from_hdf5
 
-use with instead of attach?
+Add optional context column and use context to filter this plus set context width
+
+check meth_df <- .collapse_strands(meth_df, meth_site_context_width = meth_site_context_width)
+
+Each bg in extdata has 750 lines

@@ -18,7 +18,7 @@
     
     # Check that columns are of specified type
     with(meth_files_columns, {
-      if(!is(file_head[[start_column]], "numeric")) stop(paste("start_column in", file, "is not numeric"))
+      if(!is(file_head[[start_col]], "numeric")) stop(paste("start_col in", file, "is not numeric"))
       if(!is.null(total_reads_col) && 
           !is(file_head[[total_reads_col]], "numeric")) stop(paste("total_reads_col in", file, "is not numeric"))
       if(!is.null(meth_reads_col) && 
@@ -46,8 +46,8 @@
 #' @param meth_files_columns A list specifying the columns in meth_files.
 .calculate_meth_fraction_and_total_reads = function(meth_df, meth_files_columns){
   
-  # Ensure seqnames_column and start_column are named seqnames and start
-  names(meth_df)[c(seqnames_column, start_column)] <- c("seqnames", "start")
+  # Ensure seqnames_col and start_col are named seqnames and start
+  names(meth_df)[c(seqnames_col, start_col)] <- c("seqnames", "start")
   names(meth_df)[c(total_reads_col, meth_reads_col, unmeth_reads_col, meth_fraction_col)] = 
     c("total_reads", "meth_reads", "unmeth_reads", "meth_fraction")[!sapply(list(total_reads_col, meth_reads_col, unmeth_reads_col, meth_fraction_col), is.null)]
   
@@ -77,12 +77,12 @@
 #' Combine values for stranded data
 #'
 #' @param meth_df A data.frame with methylation data.
-#' @param meth_site_width An integer giving the width of the methylation sites being studied e.g. 2 for CG sites. 
+#' @param meth_site_context_width An integer giving the width of the methylation sites being studied e.g. 2 for CG sites. 
 #' for each stand if meth_files are stranded (i.e. separate ranges for the C and G positions of CpG sites).
-.collapse_strands = function(meth_df, meth_site_width){
+.collapse_strands = function(meth_df, meth_site_context_width){
   
   # Adjust start of sites on - strand so that they corresponds to start of sites on + strand
-  meth_df[meth_df$strand == "-", ]$start <- meth_df[meth_df$strand == "-", ]$start - meth_site_width
+  meth_df[meth_df$strand == "-", ]$start <- meth_df[meth_df$strand == "-", ]$start - meth_site_context_width
   
   # Combine counts from + and - strand and set strand as * and return
   meth_df_collapsed <- dplyr::summarise(dplyr::group_by(meth_df, seqnames, start),

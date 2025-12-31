@@ -82,11 +82,11 @@
     paste(temp_chunk_dirs[x], basename(files_in_chunks[[x]]), sep = "/"))
   
   # Create a list with all setup parameters and return
-  setup_list <- list(hdf5_filepath = hdf5_filepath, beta_sink = beta_sink, Cov_sink = Cov_sink, 
+  setup <- list(hdf5_filepath = hdf5_filepath, beta_sink = beta_sink, Cov_sink = Cov_sink, 
     hdf5_grid = hdf5_grid, temp_chunk_dirs = temp_chunk_dirs, meth_site_groups = meth_site_groups, 
     file_grid_columns = file_grid_columns, files_in_chunks = files_in_chunks)
   
-  return(setup_list)
+  return(setup)
   
 }
 
@@ -123,9 +123,9 @@
     # Adjust meth_df so that it has total_reads and meth_fraction column
     meth_df = .calculate_meth_fraction_and_total_reads(meth_df = meth_df, meth_files_columns = meth_files_columns)
     
-    # If data is stranded add a column with strand to meth_df and combine values for strands
-    if(stranded){
-      meth_df <- merge(meth_df, meth_sites_df, by = c("seqnames", "start"), all.x = TRUE, sort = FALSE)
+    # If collapse_strands is TRUE add a column with strand to meth_df and combine values for strands
+    if(collapse_strands){
+      meth_df <- merge(meth_df, meth_sites_df, by = c("seqnames", "start"), all.x = FALSE, sort = FALSE)
       meth_df <- .collapse_strands(meth_df, meth_site_context_width = meth_site_context_width)
     }
     
@@ -176,6 +176,7 @@
 #' @param meth_files_columns A list specifying the columns in meth_files.
 #' @param file_grid_columns The grid column number for each file. 
 #' @param meth_sites_df A data.table with the positions of methylation sites.
+#' @param collapse_strands TRUE or FALSE indicating whether or not to collapse data on + and - strands.  
 #' @param meth_site_context_width The width of the sequence context for the methylation sites.
 #' @param meth_site_groups A list with the indices of the methylation sites in each group. 
 #' @param temp_chunk_dirs A vector giving the temporary directory associated with each chunk.
@@ -184,7 +185,7 @@
 #' @param BPPARAM A BiocParallelParam object. 
 #' @return Invisibly returns NULL.
 .split_meth_files_into_chunks <- function(meth_files, meth_files_columns, file_grid_columns, 
-  meth_sites_df, meth_site_context_width, meth_site_groups, temp_chunk_dirs, zero_based, decimal_places, BPPARAM){
+  meth_sites_df, collapse_strands, meth_site_context_width, meth_site_groups, temp_chunk_dirs, zero_based, decimal_places, BPPARAM){
   
   # Set dt_threads to 1 if more than one core being used. 
   if(BiocParallel::bpnworkers(BPPARAM) > 1){
@@ -196,11 +197,11 @@
   # Create a list with parameters to pass to .split_meth_file
   parameters_list <- list(total_files = length(meth_files), meth_site_groups = meth_site_groups,
     meth_sites_df = meth_sites_df, meth_site_context_width = meth_site_context_width, 
-    meth_files_columns = meth_files_columns, dt_threads = dt_threads, 
+    collapse_strands = collapse_strands, meth_files_columns = meth_files_columns, dt_threads = dt_threads, 
     zero_based = zero_based, decimal_places = decimal_places, temp_chunk_dirs = temp_chunk_dirs)
 
   # Loop through each chunk of meth_files
-  BiocParallel::bpmapply(.split_meth_file, meth_file = meth_files, column = file_grid_columns, 
+  BiocParallel::bpmapply(.split_meth_file, meth_file = meth_files, grid_column = file_grid_columns, 
     file_count = seq_along(meth_files), MoreArgs = list(parameters = parameters_list), BPPARAM = BPPARAM)
   
   # Run the garbage collection

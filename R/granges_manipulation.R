@@ -37,10 +37,10 @@ extractMethSitesFromGenome <- function(genome, pattern = "CG",
   sequence_names = seqnames(genome)
   if(standard_sequences_only){
     message("Searching only standard sequences (those without \"_\" in their names)")
-    sequence_names <- grep("_", sequence_names, invert = T)
+    sequence_names <- grep("_", sequence_names, invert = T, value = TRUE)
     if(length(sequence_names) == 0){stop("There are no sequences which appear to be standard sequences")}
   }
-  genome <- getSeq(genome, sequence_names)
+  genome <- BSgenome::getSeq(genome, sequence_names)
   
   # Find sites matching pattern in genome, on both the + and - strands if stranded is TRUE or just the + strand otherwise
   if(stranded){
