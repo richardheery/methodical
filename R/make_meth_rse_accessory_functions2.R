@@ -47,35 +47,42 @@
 #' @param zero_based TRUE or FALSE indicating if files are zero-based. 
 .set_meth_df_columns = function(meth_df, meth_files_columns, zero_based){
   
-  # Ensure seqnames_col and start_col are named seqnames and start and ensure seqnames is a character vector
-  names(meth_df)[c(seqnames_col, start_col)] <- c("seqnames", "start")
-  meth_df[["seqnames"]] <- as.character(meth_df[["seqnames"]]) 
-  names(meth_df)[c(total_reads_col, meth_reads_col, unmeth_reads_col, meth_fraction_col)] = 
-    c("total_reads", "meth_reads", "unmeth_reads", "meth_fraction")[!sapply(list(total_reads_col, meth_reads_col, unmeth_reads_col, meth_fraction_col), is.null)]
-  
-  # Add 1 to start of regions if zero_based is TRUE
-  if(zero_based){
-    meth_df[["start"]] <- meth_df[["start"]] + 1
-  }
-  
-  # Convert meth_fraction to a proportion if its appears to be a percentage
-  if(!is.null(meth_fraction_col)){
-    if(max(meth_df[[meth_fraction_col]], na.rm = TRUE) > 1){
-      message("meth_fraction appears to be percentages and so converting to proportions")
-      meth_df[[meth_fraction_col]] <- meth_df[[meth_fraction_col]]/100
+  meth_df <- with(meth_files_columns, {
+    
+    # Ensure seqnames_col and start_col are named seqnames and start and ensure seqnames is a character vector
+    names(meth_df)[c(seqnames_col, start_col)] <- c("seqnames", "start")
+    meth_df[["seqnames"]] <- as.character(meth_df[["seqnames"]]) 
+    names(meth_df)[c(total_reads_col, meth_reads_col, unmeth_reads_col, meth_fraction_col)] = 
+      c("total_reads", "meth_reads", "unmeth_reads", "meth_fraction")[!sapply(list(total_reads_col, meth_reads_col, unmeth_reads_col, meth_fraction_col), is.null)]
+    
+    # Add 1 to start of regions if zero_based is TRUE
+    if(zero_based){
+      meth_df[["start"]] <- meth_df[["start"]] + 1
     }
-  }
-  
-  # Add columns with meth_fraction and total_reads to meth_df, depending on which columns are present in meth_df and return meth_df
-  if(!is.null(total_reads_col) && !is.null(meth_fraction_col)){
-    meth_df = dplyr::transmute(meth_df, seqnames, start, total_reads, meth_fraction)
-  } else if(!is.null(total_reads_col) && !is.null(meth_reads_col)){
-    meth_df = dplyr::transmute(meth_df, seqnames, start, total_reads, meth_fraction = meth_reads/total_reads)
-  } else if(!is.null(total_reads_col) && !is.null(unmeth_reads_col)){
-    meth_df = dplyr::transmute(meth_df, seqnames, start, total_reads, meth_fraction = 1 - unmeth_reads/total_reads)
-  } else if(!is.null(meth_reads_col) && !is.null(unmeth_reads_col)){
-    meth_df = dplyr::transmute(meth_df, seqnames, start, total_reads = meth_reads + unmeth_reads, meth_fraction = meth_reads/total_reads)
-  }
+    
+    # Convert meth_fraction to a proportion if its appears to be a percentage
+    if(!is.null(meth_fraction_col)){
+      if(max(meth_df[[meth_fraction_col]], na.rm = TRUE) > 1){
+        message("meth_fraction appears to be percentages and so converting to proportions")
+        meth_df[[meth_fraction_col]] <- meth_df[[meth_fraction_col]]/100
+      }
+    }
+    
+    # Add columns with meth_fraction and total_reads to meth_df, depending on which columns are present in meth_df and return meth_df
+    if(!is.null(total_reads_col) && !is.null(meth_fraction_col)){
+      meth_df = dplyr::transmute(meth_df, seqnames, start, total_reads, meth_fraction)
+    } else if(!is.null(total_reads_col) && !is.null(meth_reads_col)){
+      meth_df = dplyr::transmute(meth_df, seqnames, start, total_reads, meth_fraction = meth_reads/total_reads)
+    } else if(!is.null(total_reads_col) && !is.null(unmeth_reads_col)){
+      meth_df = dplyr::transmute(meth_df, seqnames, start, total_reads, meth_fraction = 1 - unmeth_reads/total_reads)
+    } else if(!is.null(meth_reads_col) && !is.null(unmeth_reads_col)){
+      meth_df = dplyr::transmute(meth_df, seqnames, start, total_reads = meth_reads + unmeth_reads, meth_fraction = meth_reads/total_reads)
+    }
+    
+    # Output meth_df
+    meth_df
+    
+  })
   
   return(meth_df)
   

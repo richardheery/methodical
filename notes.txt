@@ -73,3 +73,6 @@ Use data.table syntax instead of summarize and group_by e.g. with make_meth_rse 
 Remove decimal places?
 
 Each bg in extdata has 750 lines
+
+Print messages at start up with 0-based, stranded, context information etc. 
+Stop fread printing ------
