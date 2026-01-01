@@ -40,16 +40,23 @@
   
 }
 
-#' Process a data.frame with methylation data so that it contains the total number of reads and the fraction of methylated reads as columns
+#' Process a data.frame with methylation data so that it contains the correct columns
 #'
 #' @param meth_df A data.frame with methylation data.
 #' @param meth_files_columns A list specifying the columns in meth_files.
-.calculate_meth_fraction_and_total_reads = function(meth_df, meth_files_columns){
+#' @param zero_based TRUE or FALSE indicating if files are zero-based. 
+.set_meth_df_columns = function(meth_df, meth_files_columns, zero_based){
   
-  # Ensure seqnames_col and start_col are named seqnames and start
+  # Ensure seqnames_col and start_col are named seqnames and start and ensure seqnames is a character vector
   names(meth_df)[c(seqnames_col, start_col)] <- c("seqnames", "start")
+  meth_df[["seqnames"]] <- as.character(meth_df[["seqnames"]]) 
   names(meth_df)[c(total_reads_col, meth_reads_col, unmeth_reads_col, meth_fraction_col)] = 
     c("total_reads", "meth_reads", "unmeth_reads", "meth_fraction")[!sapply(list(total_reads_col, meth_reads_col, unmeth_reads_col, meth_fraction_col), is.null)]
+  
+  # Add 1 to start of regions if zero_based is TRUE
+  if(zero_based){
+    meth_df[["start"]] <- meth_df[["start"]] + 1
+  }
   
   # Convert meth_fraction to a proportion if its appears to be a percentage
   if(!is.null(meth_fraction_col)){
@@ -82,14 +89,14 @@
 .collapse_strands = function(meth_df, meth_site_context_width){
   
   # Adjust start of sites on - strand so that they corresponds to start of sites on + strand
-  meth_df[meth_df$strand == "-", ]$start <- meth_df[meth_df$strand == "-", ]$start - meth_site_context_width
+  meth_df[meth_df$strand == "-", ]$start <- meth_df[meth_df$strand == "-", ]$start - (meth_site_context_width - 1)
   
-  # Combine counts from + and - strand and set strand as * and return
+  # Combine counts from + and - strand, remove strand column and return
   meth_df_collapsed <- dplyr::summarise(dplyr::group_by(meth_df, seqnames, start),
     meth_fraction = sum(round(total_reads * meth_fraction))/sum(total_reads),
     total_reads = sum(total_reads)
   )
-  meth_df_collapsed$strand = "*"
-  return(meth_df_collapsed)
+  meth_df_collapsed$strand <- NULL
+  return(data.table::as.data.table(meth_df_collapsed))
   
 }

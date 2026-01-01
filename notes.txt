@@ -55,12 +55,20 @@ Add preset options like CGmap, bedMethyl, etc
 Splits meth_sites and samples into groups, with each chunk being a combination of one meth_site and one sample group. Also returns a list with the samples in each chunk, with the
 grid being filled row-wise
 Returns a list with setup parameters. 
-.split_bedgraphs_into_chunks = Creates a list of parameters, including a df with meth_sites, to pass to .split_meth_file using BiocParallel::bpmapply. C
+
+.split_bedgraphs_into_chunks = Creates a list of parameters to pass to .split_meth_file using BiocParallel::bpmapply. 
+
+.split_meth_file = Reads in meth file, standardizes columns, collapses strands if specified, sorts meth_df and add values for all sites in meth_sites and then 
+loops through each group pf methylation sites and writes them to a file with the sample name in the directory for the appropriate chunk.
+Chunks fill the HDF5-array in a column-wise manner i.e. all the chunks in the 1st column of the grid are added first and then the 2nd and so on
+
 .write_chunks_to_hdf5
 .create_meth_rse_from_hdf5
 
 Add optional context column and use context to filter this plus set context width
 
 check meth_df <- .collapse_strands(meth_df, meth_site_context_width = meth_site_context_width)
+Use data.table syntax instead of summarize and group_by e.g. with make_meth_rse functions e.g. DT2 <- DT[, .(mean_x = mean(x)), by = group]
+Remove decimal places?
 
 Each bg in extdata has 750 lines

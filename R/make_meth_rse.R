@@ -100,6 +100,14 @@ makeMethRSEFromInputFiles <- function(meth_files, seqnames_col, start_col,
     message("meth_sites is not sorted (ignoring strand). It will be sorted and this sorted order used for methylation sites in the HDF5 file")
   }
   
+  # Indicate the final meth_sites to use based on whether collapse_strands is TRUE
+  if(collapse_strands){
+    meth_sites_final <- meth_sites[strand(meth_sites) != "-"] 
+    strand(meth_sites_final) <- "*"
+  } else 
+    meth_sites_final = meth_sites
+  }
+  
   # Convert meth_sites into a data.table
   meth_sites_df <- data.table::data.table(data.frame(meth_sites)[c("seqnames", "start", "strand")])
   
@@ -120,7 +128,7 @@ makeMethRSEFromInputFiles <- function(meth_files, seqnames_col, start_col,
   }
   
   # Perform setup
-  setup <- .make_meth_rse_setup(meth_files = meth_files, meth_sites = meth_sites, sample_metadata = sample_metadata, 
+  setup <- .make_meth_rse_setup(meth_files = meth_files, meth_sites = meth_sites_final, sample_metadata = sample_metadata, 
     hdf5_dir = hdf5_dir, overwrite = overwrite, chunkdim = chunkdim, 
     temporary_dir = temporary_dir, ...)
   

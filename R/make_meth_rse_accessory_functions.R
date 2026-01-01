@@ -104,7 +104,7 @@
   with(parameters, {
   
     # Set the current chunk to the first chunk of the current grid column
-    current_chunk <- 1 + (grid_column - 1) * length(meth_site_groups)
+    current_chunk <- 1 + ((grid_column - 1) * length(meth_site_groups))
     
     # Print count of meth_file being processed
     message(paste0("Processing file ", file_count, " out of ", total_files, ": ", meth_file, "\n"))
@@ -115,18 +115,15 @@
     # Read in input methylation file
     meth_df <- data.table::fread(meth_file, nThread = dt_threads)
     
-    # Add 1 to start of regions if zero_based is TRUE
-    if(zero_based){
-      meth_df[[start_column]] <- meth_df[[start_column]] + 1
-    }
-    
     # Adjust meth_df so that it has total_reads and meth_fraction column
-    meth_df = .calculate_meth_fraction_and_total_reads(meth_df = meth_df, meth_files_columns = meth_files_columns)
+    meth_df = .set_meth_df_columns(meth_df = meth_df, meth_files_columns = meth_files_columns, zero_based = zero_based)
     
     # If collapse_strands is TRUE add a column with strand to meth_df and combine values for strands
     if(collapse_strands){
       meth_df <- merge(meth_df, meth_sites_df, by = c("seqnames", "start"), all.x = FALSE, sort = FALSE)
       meth_df <- .collapse_strands(meth_df, meth_site_context_width = meth_site_context_width)
+      meth_site_values <- dplyr::filter(meth_site_values, strand != "-")
+      meth_site_values[["strand"]] <- "*"
     }
     
     # Round values if specified
@@ -146,12 +143,12 @@
     # Remove meth_df and run the garbage collection
     rm(meth_df); invisible(gc())
       
-    # Loop through each chunk of methylation sites
+    # Loop through each group of methylation sites
     `%do%` <- foreach::`%do%`
     foreach::foreach(mg = meth_site_groups) %do% {
       
       # Subset meth_site_values for methylation sites in chunk
-      meth_site_group_values <- data.table::as.data.table(meth_site_values[mg, c("meth_fraction", "total_reads")])
+      meth_site_group_values <- meth_site_values[mg, c("meth_fraction", "total_reads")]
       
       # Write values to appropriate file
       data.table::fwrite(x = meth_site_group_values, 
