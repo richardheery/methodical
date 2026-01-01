@@ -12,8 +12,8 @@
 #' @param zero_based TRUE or FALSE indicating if files are zero-based. Default value is TRUE. 
 #' @param meth_sites A GRanges object with non-overlapping locations of methylation sites of interest e.g. CpG sites. 
 #' Any methylation sites in meth_files that are not in meth_sites are ignored.
-#' @param meth_site_context_width The width of the sequence context for the methylation sites.
-#' e.g. 2 for CG, 3 for CHG or 1 for individual CpG sites. Default is 2.
+#' @param sequence_context A single character string or DNAString with the 
+#' sequence context of the methylation sites e.g. CG or CHG. If a character, must be coercible to a DNAString. Default is "CG".
 #' @param collapse_strands TRUE or FALSE indicating whether or not to collapse data on + and - strands. 
 #' Only makes sense for symmetrically methylated contexts e.g. CG or CHG and meth_sites should include ranges on both the + and - strands if TRUE. 
 #' @param decimal_places Optional integer indicating the number of decimal places to round beta values to. Default is not to round.
@@ -54,7 +54,7 @@
 #'   
 makeMethRSEFromInputFiles <- function(meth_files, seqnames_col, start_col, 
   total_reads_col = NULL, meth_reads_col = NULL, unmeth_reads_col = NULL, meth_fraction_col = NULL, 
-  zero_based, meth_sites, meth_site_context_width = 2, collapse_strands = TRUE, decimal_places = NA, sample_metadata = NULL, 
+  zero_based, meth_sites, sequence_context = "CG", collapse_strands = TRUE, decimal_places = NA, sample_metadata = NULL, 
   hdf5_dir, overwrite = FALSE, chunkdim = NULL, temporary_dir = NULL, BPPARAM = BiocParallel::SerialParam(), ...){
   
   # Check that inputs have the correct data type
@@ -66,10 +66,14 @@ makeMethRSEFromInputFiles <- function(meth_files, seqnames_col, start_col,
     is.null(unmeth_reads_col) | is.numeric(unmeth_reads_col) && length(unmeth_reads_col) == 1 && unmeth_reads_col > 0 && unmeth_reads_col %% 1 == 0,
     is.null(meth_fraction_col) | is.numeric(meth_fraction_col) && length(meth_fraction_col) == 1 && meth_fraction_col > 0 && meth_fraction_col %% 1 == 0,
     S4Vectors::isTRUEorFALSE(zero_based), is(meth_sites, "GRanges"), 
-    is.numeric(meth_site_context_width) && length(meth_site_context_width) == 1 && meth_site_context_width > 0 && meth_site_context_width %% 1 == 0,
+    (is(sequence_context, "DNAString") || is(sequence_context, "character")) && nchar(sequence_context) > 0,
     S4Vectors::isTRUEorFALSE(collapse_strands), is(decimal_places, "numeric") | is.na(decimal_places), 
     is(sample_metadata, "data.frame") | is.null(sample_metadata), is(hdf5_dir, "character"),
     is(temporary_dir, "character") | is.null(temporary_dir), is(BPPARAM, "BiocParallelParam"))
+  
+  # Check that if sequence_context is a character that it is coercible to a DNAString
+  tryCatch({invisible(Biostrings::DNAString(sequence_context))}, 
+    error = function(e) stop(paste(sequence_context, "is not coercible to a DNAString")))
     
   # Check that total_reads_col and at least one of meth_fraction_col, meth_reads_col or unmeth_reads_col or
   # else both meth_reads_col and unmeth_reads_col are provided 
@@ -104,8 +108,8 @@ makeMethRSEFromInputFiles <- function(meth_files, seqnames_col, start_col,
   if(collapse_strands){
     meth_sites_final <- meth_sites[strand(meth_sites) != "-"] 
     strand(meth_sites_final) <- "*"
-  } else 
-    meth_sites_final = meth_sites
+  } else {
+    meth_sites_final <- meth_sites
   }
   
   # Convert meth_sites into a data.table
@@ -139,27 +143,16 @@ makeMethRSEFromInputFiles <- function(meth_files, seqnames_col, start_col,
   # Read in meth_files and write data from chunks to appropriate temporary directory
   .split_meth_files_into_chunks(meth_files = meth_files, meth_files_columns,
     file_grid_columns = setup$file_grid_columns, meth_sites_df = meth_sites_df, collapse_strands = collapse_strands,
-    meth_site_context_width = meth_site_context_width, meth_site_groups = setup$meth_site_groups, temp_chunk_dirs = setup$temp_chunk_dirs, 
+    sequence_context = sequence_context, meth_site_groups = setup$meth_site_groups, temp_chunk_dirs = setup$temp_chunk_dirs, 
     zero_based = zero_based, decimal_places = decimal_places, BPPARAM = BPPARAM)
   
   # Write the chunks to the HDF5 file
   .write_chunks_to_hdf5(temp_chunk_dirs = setup$temp_chunk_dirs, files_in_chunks = setup$files_in_chunks, 
-    hdf5_sink = setup$hdf5_sink, hdf5_grid = setup$hdf5_grid)
-  
-  # If collapsing strands, remove sites on the - strand and set strand as *
-  if(collapse_strands){
-    meth_sites <- meth_sites[strand(meth_sites) == "+"]
-    strand(meth_sites) <- "*"
-  }
+    beta_sink = setup$beta_sink, Cov_sink = setup$Cov_sink, hdf5_grid = setup$hdf5_grid)
   
   # Create a RangedSummarizedExperiment
   rse <- .create_meth_rse_from_hdf5(hdf5_filepath = setup$hdf5_filepath, hdf5_dir = hdf5_dir,
-    meth_sites = meth_sites, sample_metadata = sample_metadata)
-  
-  # Delete temporary_dir if it is empty
-  if(length(list.files(temporary_dir)) == 0){
-    unlink(temporary_dir, recursive = TRUE)
-  }
+    meth_sites = meth_sites_final, sample_metadata = sample_metadata)
   
   return(rse)
   

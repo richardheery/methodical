@@ -121,7 +121,7 @@
     # If collapse_strands is TRUE add a column with strand to meth_df and combine values for strands
     if(collapse_strands){
       meth_df <- merge(meth_df, meth_sites_df, by = c("seqnames", "start"), all.x = FALSE, sort = FALSE)
-      meth_df <- .collapse_strands(meth_df, meth_site_context_width = meth_site_context_width)
+      meth_df <- .collapse_strands(meth_df, sequence_context = sequence_context)
       meth_site_values <- dplyr::filter(meth_site_values, strand != "-")
       meth_site_values[["strand"]] <- "*"
     }
@@ -174,7 +174,7 @@
 #' @param file_grid_columns The grid column number for each file. 
 #' @param meth_sites_df A data.table with the positions of methylation sites.
 #' @param collapse_strands TRUE or FALSE indicating whether or not to collapse data on + and - strands.  
-#' @param meth_site_context_width The width of the sequence context for the methylation sites.
+#' @param sequence_context A single character string or DNAString with the sequence context of the methylation sites e.g. CG or CHG.
 #' @param meth_site_groups A list with the indices of the methylation sites in each group. 
 #' @param temp_chunk_dirs A vector giving the temporary directory associated with each chunk.
 #' @param zero_based TRUE or FALSE indicating if files are zero-based. 
@@ -182,7 +182,7 @@
 #' @param BPPARAM A BiocParallelParam object. 
 #' @return Invisibly returns NULL.
 .split_meth_files_into_chunks <- function(meth_files, meth_files_columns, file_grid_columns, 
-  meth_sites_df, collapse_strands, meth_site_context_width, meth_site_groups, temp_chunk_dirs, zero_based, decimal_places, BPPARAM){
+  meth_sites_df, collapse_strands, sequence_context, meth_site_groups, temp_chunk_dirs, zero_based, decimal_places, BPPARAM){
   
   # Set dt_threads to 1 if more than one core being used. 
   if(BiocParallel::bpnworkers(BPPARAM) > 1){
@@ -193,7 +193,7 @@
   
   # Create a list with parameters to pass to .split_meth_file
   parameters_list <- list(total_files = length(meth_files), meth_site_groups = meth_site_groups,
-    meth_sites_df = meth_sites_df, meth_site_context_width = meth_site_context_width, 
+    meth_sites_df = meth_sites_df, sequence_context = sequence_context, 
     collapse_strands = collapse_strands, meth_files_columns = meth_files_columns, dt_threads = dt_threads, 
     zero_based = zero_based, decimal_places = decimal_places, temp_chunk_dirs = temp_chunk_dirs)
 
@@ -249,7 +249,7 @@
   }
   
   # Remove chunk_data and run gc
-  rm(chunk_data); invisible(gc())
+  rm(beta_chunk_data, Cov_chunk_data); invisible(gc())
   
   # Invisibly return TRUE
   invisible(return(TRUE))
@@ -265,12 +265,9 @@
 #' @return A RangedSummarizedExperiment with methylation values
 .create_meth_rse_from_hdf5 <- function(hdf5_filepath, hdf5_dir, meth_sites, sample_metadata){
   
-  # Get the names of the assays in hdf5_filepath
-  assay_names <- rhdf5::h5ls(hdf5_filepath)$name
-  
   # Create a list of data sets present in hdf5_filepath
-  assay_list <- S4Vectors::SimpleList(setNames(lapply(assay_names, function(x) 
-    HDF5Array::HDF5Array(filepath = hdf5_filepath, name = x)), assay_names))
+  assay_list <- S4Vectors::SimpleList(setNames(lapply(c("beta", "Cov"), function(x) 
+    HDF5Array::HDF5Array(filepath = hdf5_filepath, name = x)), c("beta", "Cov")))
   
   # Create a RangedSummarizedExperiment using the data sets in hdf5_dir, sample_metadata and meth_sites
   rse <- SummarizedExperiment::SummarizedExperiment(assays = assay_list, colData = sample_metadata, rowRanges = meth_sites)

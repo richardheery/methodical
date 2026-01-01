@@ -84,17 +84,17 @@
 #' Combine values for stranded data
 #'
 #' @param meth_df A data.frame with methylation data.
-#' @param meth_site_context_width An integer giving the width of the methylation sites being studied e.g. 2 for CG sites. 
-#' for each stand if meth_files are stranded (i.e. separate ranges for the C and G positions of CpG sites).
-.collapse_strands = function(meth_df, meth_site_context_width){
+#' @param sequence_context A single character string or DNAString with the sequence context of the methylation sites e.g. CG or CHG.
+.collapse_strands = function(meth_df, sequence_context){
   
   # Adjust start of sites on - strand so that they corresponds to start of sites on + strand
-  meth_df[meth_df$strand == "-", ]$start <- meth_df[meth_df$strand == "-", ]$start - (meth_site_context_width - 1)
+  meth_df[meth_df$strand == "-", ]$start <- meth_df[meth_df$strand == "-", ]$start - (nchar(sequence_context) - 1)
   
   # Combine counts from + and - strand, remove strand column and return
   meth_df_collapsed <- dplyr::summarise(dplyr::group_by(meth_df, seqnames, start),
     meth_fraction = sum(round(total_reads * meth_fraction))/sum(total_reads),
-    total_reads = sum(total_reads)
+    total_reads = sum(total_reads), 
+    .groups = "drop"
   )
   meth_df_collapsed$strand <- NULL
   return(data.table::as.data.table(meth_df_collapsed))
