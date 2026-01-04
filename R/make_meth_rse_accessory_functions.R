@@ -235,9 +235,12 @@
     files <- files_in_chunks[[chunk]]
     
     # Read in all files in temporary directory as a data.frame of chunk data
-    beta_chunk_data <- as.matrix(data.frame(lapply(files, data.table::fread, select = 1)))
-    Cov_chunk_data <- as.matrix(data.frame(lapply(files, data.table::fread, select = 2)))
+    beta_chunk_data <- as.matrix(data.frame(lapply(files, data.table::fread, select = 1, colClasses = "numeric")))
+    Cov_chunk_data <- as.matrix(data.frame(lapply(files, data.table::fread, select = 2, colClasses = "numeric")))
     invisible(gc())
+    
+    # Replace all NA values with 0
+    Cov_chunk_data[is.na(Cov_chunk_data)] <- 0
     
     # Write M and Cov values to HDF5 file
     invisible(HDF5Array::write_block(block = beta_chunk_data, sink = beta_sink, viewport = hdf5_grid[[as.integer(chunk)]]))

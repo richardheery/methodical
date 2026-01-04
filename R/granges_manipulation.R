@@ -56,8 +56,9 @@ extractMethSitesFromGenome <- function(genome, pattern = "CG",
   meth_sites_gr <- sort(meth_sites_gr, ignore.strand = TRUE)
   meth_sites_gr <- resize(meth_sites_gr, 1)
   
-  # Add seqinfo to GRanges and return
+  # Add seqinfo to GRanges, run garbage collection and return
   GenomeInfoDb::seqinfo(meth_sites_gr) <- seqinfo
+  invisible(gc())
   return(meth_sites_gr)
   
 }

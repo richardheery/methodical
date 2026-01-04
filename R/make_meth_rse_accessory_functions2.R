@@ -79,9 +79,6 @@
       meth_df = dplyr::transmute(meth_df, seqnames, start, total_reads = meth_reads + unmeth_reads, meth_fraction = meth_reads/total_reads)
     }
     
-    # Output meth_df
-    meth_df
-    
   })
   
   return(meth_df)
