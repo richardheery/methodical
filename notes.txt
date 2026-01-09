@@ -76,3 +76,4 @@ Each bg in extdata has 750 lines
 
 Print messages at start up with 0-based, stranded, context information etc. 
 Stop fread printing ------
+Make summarize methylation return a SummarizedExperiment

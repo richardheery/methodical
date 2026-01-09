@@ -49,8 +49,7 @@
   
   meth_df <- with(meth_files_columns, {
     
-    # Ensure seqnames_col and start_col are named seqnames and start and ensure seqnames is a character vector
-    names(meth_df)[c(seqnames_col, start_col)] <- c("seqnames", "start")
+    # Ensure seqnames is a character vector
     meth_df[["seqnames"]] <- as.character(meth_df[["seqnames"]]) 
     names(meth_df)[c(total_reads_col, meth_reads_col, unmeth_reads_col, meth_fraction_col)] = 
       c("total_reads", "meth_reads", "unmeth_reads", "meth_fraction")[!sapply(list(total_reads_col, meth_reads_col, unmeth_reads_col, meth_fraction_col), is.null)]

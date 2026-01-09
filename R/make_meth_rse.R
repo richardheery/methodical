@@ -98,6 +98,14 @@ makeMethRSEFromInputFiles <- function(meth_files, seqnames_col, start_col,
   if(collapse_strands && "*" %in% strand(meth_sites)){
     stop("If collapse_strands is TRUE, all ranges in meth_sites must be stranded (on + or - strand")
   }
+  
+  # Create a list which specifies the columns in meth_files
+  meth_files_columns <- list(seqnames = seqnames_col, start = start_col, total_reads = total_reads_col,
+    meth_reads = meth_reads_col, unmeth_reads = unmeth_reads_col, meth_fraction = meth_fraction_col)
+  
+  # Check input files
+  message("Checking input files")
+  .check_input_files(meth_files, meth_files_columns)
     
   # Check if meth_sites is sorted and print a message if it is not. 
   if(!all(meth_sites == sort(meth_sites, ignore.strand = T))){
@@ -135,10 +143,6 @@ makeMethRSEFromInputFiles <- function(meth_files, seqnames_col, start_col,
   setup <- .make_meth_rse_setup(meth_files = meth_files, meth_sites = meth_sites_final, sample_metadata = sample_metadata, 
     hdf5_dir = hdf5_dir, overwrite = overwrite, chunkdim = chunkdim, 
     temporary_dir = temporary_dir, ...)
-  
-  # Create a list which specifies the columns in meth_files
-  meth_files_columns <- list(seqnames_col = seqnames_col, start_col = start_col, total_reads_col = total_reads_col,
-    meth_reads_col = meth_reads_col, unmeth_reads_col = unmeth_reads_col, meth_fraction_col = meth_fraction_col)
   
   # Read in meth_files and write data from chunks to appropriate temporary directory
   .split_meth_files_into_chunks(meth_files = meth_files, meth_files_columns,

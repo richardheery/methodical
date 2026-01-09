@@ -112,8 +112,9 @@
     # Initialize a data.frame for all methylation sites
     meth_site_values <- meth_sites_df
     
-    # Read in input methylation file
-    meth_df <- data.table::fread(meth_file, nThread = dt_threads)
+    # Read in input methylation file with just columns in meth_files_columns
+    meth_df <- data.table::fread(meth_file, nThread = dt_threads, 
+      select = unname(unlist(meth_files_columns)), col.names = names(unlist(meth_files_columns)))
     
     # Adjust meth_df so that it has total_reads and meth_fraction column
     meth_df = .set_meth_df_columns(meth_df = meth_df, meth_files_columns = meth_files_columns, zero_based = zero_based)
