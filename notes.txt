@@ -75,5 +75,8 @@ Remove decimal places?
 Each bg in extdata has 750 lines
 
 Print messages at start up with 0-based, stranded, context information etc. 
-Stop fread printing ------
 Make summarize methylation return a SummarizedExperiment
+
+Not working in parallel
+Check what happens if .split_meth_file throws an error when used in parallel
+Print number of matching sites per file

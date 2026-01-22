@@ -2,36 +2,31 @@
 % Please edit documentation in R/granges_manipulation.R
 \name{extractMethSitesFromGenome}
 \alias{extractMethSitesFromGenome}
-\title{Create a GRanges with methylation sites of interest from a BSgenome.}
+\title{Create a GRanges with methylation sites of interest from a BSgenome or DNAStringSet}
 \usage{
 extractMethSitesFromGenome(
   genome,
   pattern = "CG",
-  plus_strand_only = TRUE,
-  meth_site_position = 1,
+  stranded = TRUE,
   standard_sequences_only = TRUE
 )
 }
 \arguments{
-\item{genome}{A BSgenome object (or the name of an installed one) or a DNAStringSet with names indicating the sequences.}
+\item{genome}{A BSgenome object or a DNAStringSet with names indicating the sequences.}
 
 \item{pattern}{A pattern to match in genome. Default is "CG".}
 
-\item{plus_strand_only}{TRUE or FALSE indicating whether to only return matches on "+" strand,
-avoiding returning duplicate hits for palindromic sequences e.g. CG.
-Not relevant if genome is a DNAStringSet. Default is TRUE.}
+\item{stranded}{TRUE or FALSE indicating whether to return matches on
+both strands or else just the "+" strand. Strand will be set to "*" if FALSE. Default is TRUE.}
 
-\item{meth_site_position}{Which position in the pattern corresponds to the methylation site of interest.
-Default is the first position.}
-
-\item{standard_sequences_only}{TRUE or FALSE indicating whether to only return sites
-on standard sequences (those without "-" in their names). Default is TRUE.}
+\item{standard_sequences_only}{TRUE or FALSE indicating whether to only return ranges
+on standard sequences (those without "_" in their names). Default is TRUE.}
 }
 \value{
 A GRanges object with genomic regions matching the pattern.
 }
 \description{
-Create a GRanges with methylation sites of interest from a BSgenome.
+Create a GRanges with methylation sites of interest from a BSgenome or DNAStringSet
 }
 \examples{
 # Get human CpG sites for hg38 genome build
@@ -39,6 +34,6 @@ hg38_cpgs <- methodical::extractMethSitesFromGenome("BSgenome.Hsapiens.UCSC.hg38
 head(hg38_cpgs)
 
 # Find CHG sites in Arabidopsis thaliana
-arabidopsis_cphpgs <- methodical::extractMethSitesFromGenome("BSgenome.Athaliana.TAIR.TAIR9", pattern = "CHG")
-head(arabidopsis_cphpgs)
+arabidopsis_CHG_sites <- methodical::extractMethSitesFromGenome("BSgenome.Athaliana.TAIR.TAIR9", pattern = "CHG")
+head(arabidopsis_CHG_sites)
 }

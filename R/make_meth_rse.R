@@ -87,7 +87,7 @@ makeMethRSEFromInputFiles <- function(meth_files, seqnames_col, start_col,
     stop("Duplicate column indices given for seqnames, start, total reads, meth reads, unmeth reads or meth fraction")
   }
   
-  # Check that all ranges in meth_sites have a width of 1, that they are disjoint 
+  # Check that all ranges in meth_sites have a width of 1, that they are disjoint
   # and that they are stranded if collapse_strands is TRUE
   if(any(GenomicRanges::width(meth_sites) != 1)){
     stop("All meth_sites should have a width of 1")
@@ -95,69 +95,79 @@ makeMethRSEFromInputFiles <- function(meth_files, seqnames_col, start_col,
   if(!GenomicRanges::isDisjoint(meth_sites)){
     stop("There cannot be overlapping regions in meth_sites")
   }
-  if(collapse_strands && "*" %in% strand(meth_sites)){
+  if(collapse_strands && "*" %in% as.character(GenomicRanges::strand(meth_sites))){
     stop("If collapse_strands is TRUE, all ranges in meth_sites must be stranded (on + or - strand")
   }
-  
-  # Create a list which specifies the columns in meth_files
-  meth_files_columns <- list(seqnames = seqnames_col, start = start_col, total_reads = total_reads_col,
-    meth_reads = meth_reads_col, unmeth_reads = unmeth_reads_col, meth_fraction = meth_fraction_col)
-  
-  # Check input files
-  message("Checking input files")
-  .check_input_files(meth_files, meth_files_columns)
-    
-  # Check if meth_sites is sorted and print a message if it is not. 
-  if(!all(meth_sites == sort(meth_sites, ignore.strand = T))){
-    message("meth_sites is not sorted (ignoring strand). It will be sorted and this sorted order used for methylation sites in the HDF5 file")
-  }
-  
-  # Indicate the final meth_sites to use based on whether collapse_strands is TRUE
-  if(collapse_strands){
-    meth_sites_final <- meth_sites[strand(meth_sites) != "-"] 
-    strand(meth_sites_final) <- "*"
-  } else {
-    meth_sites_final <- meth_sites
-  }
-  
-  # Convert meth_sites into a data.table
-  meth_sites_df <- data.table::data.table(data.frame(meth_sites)[c("seqnames", "start", "strand")])
-  
-  # Set seqnames and start as keys for meth_sites_df and convert back to a sorted GRanges 
-  data.table::setkey(meth_sites_df, seqnames, start)
-  meth_sites <- GenomicRanges::makeGRangesFromDataFrame(meth_sites_df, end.field = "start")
   
   # If temporary_dir not provided, set it to a directory in tempdir()
   if(is.null(temporary_dir)){
     temporary_dir <- tempfile("temporary_meth_chunks_")
   }
-  
-  # Check temporary directory doesn't already exist and create it if it doesn't
+
+  # Check temporary directory and hdf5_dir don't already exist and create temporary_dir
   if(dir.exists(temporary_dir)){
     stop(paste("Directory", temporary_dir, "already exists. Please provide a temporary directory name that isn't already in use."))
   } else {
     dir.create(temporary_dir)
   }
+  if(dir.exists(hdf5_dir)){
+    stop(paste("Directory", hdf5_dir, "already exists. Please provide a name for hdf5_dir that isn't already in use."))
+  }
   
+  # If sample_metadata not provided, create empty sample metadata with filenames as row.names
+  if(is.null(sample_metadata)){
+    sample_metadata <- data.frame(
+      row.names = tools::file_path_sans_ext(gsub("\\.gz$", "", basename(meth_files))))
+  }
+
+  # Create a list which specifies the columns in meth_files
+  meth_files_columns <- list(seqnames = seqnames_col, start = start_col, total_reads = total_reads_col,
+    meth_reads = meth_reads_col, unmeth_reads = unmeth_reads_col, meth_fraction = meth_fraction_col)
+
+  # Check input files
+  message("Checking input files")
+  .check_input_files(meth_files, meth_files_columns)
+  message("Performing setup")
+
+  # Check if meth_sites is sorted and print a message if it is not.
+  if(!all(meth_sites == sort(meth_sites, ignore.strand = T))){
+    message("meth_sites is not sorted (ignoring strand). It will be sorted and this sorted order used for methylation sites in the HDF5 file")
+  }
+
+  # Set the final meth_sites to use based on whether collapse_strands is TRUE
+  if(collapse_strands){
+    meth_sites_final <- meth_sites[strand(meth_sites) != "-"]
+    strand(meth_sites_final) <- "*"
+  } else {
+    meth_sites_final <- meth_sites
+  }
+
+  # Convert meth_sites into a data.table
+  meth_sites_df <- data.table::data.table(data.frame(meth_sites)[c("seqnames", "start", "strand")])
+
+  # Set seqnames and start as keys for meth_sites_df and convert back to a sorted GRanges
+  data.table::setkey(meth_sites_df, seqnames, start)
+  meth_sites <- GenomicRanges::makeGRangesFromDataFrame(meth_sites_df, end.field = "start")
+
   # Perform setup
-  setup <- .make_meth_rse_setup(meth_files = meth_files, meth_sites = meth_sites_final, sample_metadata = sample_metadata, 
-    hdf5_dir = hdf5_dir, overwrite = overwrite, chunkdim = chunkdim, 
+  setup <- .make_meth_rse_setup(meth_files = meth_files, meth_sites = meth_sites_final, sample_metadata = sample_metadata,
+    hdf5_dir = hdf5_dir, overwrite = overwrite, chunkdim = chunkdim,
     temporary_dir = temporary_dir, ...)
-  
+
   # Read in meth_files and write data from chunks to appropriate temporary directory
   .split_meth_files_into_chunks(meth_files = meth_files, meth_files_columns,
     file_grid_columns = setup$file_grid_columns, meth_sites_df = meth_sites_df, collapse_strands = collapse_strands,
-    sequence_context = sequence_context, meth_site_groups = setup$meth_site_groups, temp_chunk_dirs = setup$temp_chunk_dirs, 
+    sequence_context = sequence_context, meth_site_groups = setup$meth_site_groups, temp_chunk_dirs = setup$temp_chunk_dirs,
     zero_based = zero_based, decimal_places = decimal_places, BPPARAM = BPPARAM)
-  
+
   # Write the chunks to the HDF5 file
-  .write_chunks_to_hdf5(temp_chunk_dirs = setup$temp_chunk_dirs, files_in_chunks = setup$files_in_chunks, 
+  .write_chunks_to_hdf5(temp_chunk_dirs = setup$temp_chunk_dirs, files_in_chunks = setup$files_in_chunks,
     beta_sink = setup$beta_sink, Cov_sink = setup$Cov_sink, hdf5_grid = setup$hdf5_grid)
-  
+
   # Create a RangedSummarizedExperiment
   rse <- .create_meth_rse_from_hdf5(hdf5_filepath = setup$hdf5_filepath, hdf5_dir = hdf5_dir,
     meth_sites = meth_sites_final, sample_metadata = sample_metadata)
-  
+
   return(rse)
   
 }

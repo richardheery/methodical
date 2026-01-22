@@ -29,11 +29,13 @@
     
     
       # Check that count columns all all integers
-      countumns = c(total_reads, meth_reads, unmeth_reads)
+      count_columns = c(total_reads, meth_reads, unmeth_reads)
       if(sum(file_head[, count_columns] %% 1, na.rm = TRUE) > 0){
         stop(paste("total_reads, meth_reads and unmeth_reads columns for", file, "are not all integers"))
       }
     })
+    
+  }
   
   # Print message saying all checks have been passed
   message("All files passed initial checks")
@@ -81,15 +83,9 @@
     file.remove(hdf5_filepath)
   }
   
-  # Create sample_metadata if it doesn't exist and if it does check that the number of rows equals the length of meth_files
-  if(is.null(sample_metadata)){
-    sample_metadata <- data.frame(
-      row.names = tools::file_path_sans_ext(gsub("\\.gz$", "", basename(meth_files)))
-    )
-  } else {
-    if(nrow(sample_metadata) != length(meth_files)){
-      stop("Number of rows of sample_metadata must equal the number of methylation files")
-    }
+  # Check that the number of rows in sample_metadata equals the length of meth_files
+  if(nrow(sample_metadata) != length(meth_files)){
+    stop("Number of rows of sample_metadata must equal the number of methylation files")
   }
   
   # Create HDF5 realization sinks for methylation proportion and coverage named beta and Cov 
@@ -135,42 +131,35 @@
 #' Process a data.frame with methylation data so that it contains the correct columns
 #'
 #' @param meth_df A data.frame with methylation data.
-#' @param meth_files_columns A list specifying the columns in meth_files.
 #' @param zero_based TRUE or FALSE indicating if files are zero-based. 
-.set_meth_df_columns = function(meth_df, meth_files_columns, zero_based){
+.set_meth_df_columns = function(meth_df, zero_based){
   
-  meth_df <- with(meth_files_columns, {
-    
-    # Ensure seqnames is a character vector
-    meth_df[["seqnames"]] <- as.character(meth_df[["seqnames"]]) 
-    names(meth_df)[c(total_reads, meth_reads, unmeth_reads, meth_fraction)] = 
-      c("total_reads", "meth_reads", "unmeth_reads", "meth_fraction")[!sapply(list(total_reads, meth_reads, unmeth_reads, meth_fraction), is.null)]
-    
-    # Add 1 to start of regions if zero_based is TRUE
-    if(zero_based){
-      meth_df[["start"]] <- meth_df[["start"]] + 1
+  # Ensure seqnames is a character vector
+  meth_df[["seqnames"]] <- as.character(meth_df[["seqnames"]]) 
+  
+  # Add 1 to start of regions if zero_based is TRUE
+  if(zero_based){
+    meth_df[["start"]] <- meth_df[["start"]] + 1
+  }
+  
+  # Convert meth_fraction to a proportion if its appears to be a percentage
+  if(!is.null(meth_df[["meth_fraction"]])){
+    if(max(meth_df[["meth_fraction"]], na.rm = TRUE) > 1){
+      message("meth_fraction appears to be percentages and so converting to proportions")
+      meth_df[["meth_fraction"]] <- meth_df[["meth_fraction"]]/100
     }
-    
-    # Convert meth_fraction to a proportion if its appears to be a percentage
-    if(!is.null(meth_fraction)){
-      if(max(meth_df[[meth_fraction]], na.rm = TRUE) > 1){
-        message("meth_fraction appears to be percentages and so converting to proportions")
-        meth_df[[meth_fraction]] <- meth_df[[meth_fraction]]/100
-      }
-    }
-    
-    # Add columns with meth_fraction and total_reads to meth_df, depending on which columns are present in meth_df and return meth_df
-    if(!is.null(total_reads) && !is.null(meth_fraction)){
-      meth_df = dplyr::transmute(meth_df, seqnames, start, total_reads, meth_fraction)
-    } else if(!is.null(total_reads) && !is.null(meth_reads)){
-      meth_df = dplyr::transmute(meth_df, seqnames, start, total_reads, meth_fraction = meth_reads/total_reads)
-    } else if(!is.null(total_reads) && !is.null(unmeth_reads)){
-      meth_df = dplyr::transmute(meth_df, seqnames, start, total_reads, meth_fraction = 1 - unmeth_reads/total_reads)
-    } else if(!is.null(meth_reads) && !is.null(unmeth_reads)){
-      meth_df = dplyr::transmute(meth_df, seqnames, start, total_reads = meth_reads + unmeth_reads, meth_fraction = meth_reads/total_reads)
-    }
-    
-  })
+  }
+  
+  # Add columns with meth_fraction and total_reads to meth_df, depending on which columns are present in meth_df and return meth_df
+  if(!is.null(meth_df[["total_reads"]]) && !is.null(meth_df[["meth_fraction"]])){
+    meth_df = dplyr::transmute(meth_df, seqnames, start, total_reads, meth_fraction)
+  } else if(!is.null(meth_df[["total_reads"]]) && !is.null(meth_df[["meth_reads"]])){
+    meth_df = dplyr::transmute(meth_df, seqnames, start, total_reads, meth_fraction = meth_reads/total_reads)
+  } else if(!is.null(meth_df[["total_reads"]]) && !is.null(meth_df[["unmeth_reads"]])){
+    meth_df = dplyr::transmute(meth_df, seqnames, start, total_reads, meth_fraction = 1 - unmeth_reads/total_reads)
+  } else if(!is.null(meth_df[["meth_reads"]]) && !is.null(meth_df[["unmeth_reads"]])){
+    meth_df = dplyr::transmute(meth_df, seqnames, start, total_reads = meth_reads + unmeth_reads, meth_fraction = meth_reads/total_reads)
+  }
   
   return(meth_df)
   
@@ -218,12 +207,22 @@
     # Initialize a data.frame for all methylation sites
     meth_site_values <- meth_sites_df
     
+    # Remove NULL elements from meth_files_columns
+    meth_files_columns = meth_files_columns[!sapply(meth_files_columns, is.null)]
+    
     # Read in input methylation file with just columns in meth_files_columns
     meth_df <- data.table::fread(meth_file, nThread = dt_threads, 
       select = unname(unlist(meth_files_columns)), col.names = names(unlist(meth_files_columns)))
     
+    # Check that no sites in meth_df overlap
+    if(!GenomicRanges::isDisjoint(GenomicRanges::makeGRangesFromDataFrame(meth_df, 
+      seqnames.field = "seqnames", start.field = "start", end.field = "start", 
+      keep.extra.columns = F, starts.in.df.are.0based = FALSE))){
+      stop(paste("There are overlapping sites in", meth_file))
+    }
+    
     # Adjust meth_df so that it has total_reads and meth_fraction column
-    meth_df = .set_meth_df_columns(meth_df = meth_df, meth_files_columns = meth_files_columns, zero_based = zero_based)
+    meth_df = .set_meth_df_columns(meth_df = meth_df, zero_based = zero_based)
     
     # If collapse_strands is TRUE add a column with strand to meth_df and combine values for strands
     if(collapse_strands){

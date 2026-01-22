@@ -1,6 +1,6 @@
 #' Create a GRanges with methylation sites of interest from a BSgenome or DNAStringSet
 #'
-#' @param genome A BSgenome object (or the name of an installed one) or a DNAStringSet with names indicating the sequences.  
+#' @param genome A BSgenome object or a DNAStringSet with names indicating the sequences.  
 #' @param pattern A pattern to match in genome. Default is "CG".
 #' @param stranded TRUE or FALSE indicating whether to return matches on 
 #' both strands or else just the "+" strand. Strand will be set to "*" if FALSE. Default is TRUE.
@@ -20,12 +20,11 @@ extractMethSitesFromGenome <- function(genome, pattern = "CG",
   stranded = TRUE, standard_sequences_only = TRUE){
   
   # Check that inputs have the correct data type
-  stopifnot(is(genome, "character") | is(genome, "BSgenome") | is(genome, "DNAStringSet"), 
+  stopifnot(is(genome, "BSgenome") | is(genome, "DNAStringSet"), 
     is(pattern, "character"), S4Vectors::isTRUEorFALSE(stranded), 
     S4Vectors::isTRUEorFALSE(standard_sequences_only))
   
-  # If genome is a character, try to load genome with that name
-  if(is.character(genome)){genome <- BSgenome::getBSgenome(genome)}
+  # If genome is a DNASringSet, check that it has names
   if(is(genome, "DNASringSet") & is.null(names(genome))){
     stop("If genome is a DNASringSet, it must have names indicating the sequence")
   }
@@ -34,7 +33,7 @@ extractMethSitesFromGenome <- function(genome, pattern = "CG",
   seqinfo <- GenomeInfoDb::seqinfo(genome)
   
   # Convert genome to a DNAStringSet and subset for standard chromosomes if specified
-  sequence_names = seqnames(genome)
+  sequence_names = names(genome)
   if(standard_sequences_only){
     message("Searching only standard sequences (those without \"_\" in their names)")
     sequence_names <- grep("_", sequence_names, invert = T, value = TRUE)
