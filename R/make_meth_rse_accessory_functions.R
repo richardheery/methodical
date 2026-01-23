@@ -248,6 +248,9 @@
     
     # Remove meth_df and run the garbage collection
     rm(meth_df); invisible(gc())
+    
+    # Print number of sites in meth_file which matched meth_sites
+    message(paste0(sum(!is.na(meth_site_values[["total_reads"]])), " sites in meth_sites present in ", meth_file, "\n"))
       
     # Loop through each group of methylation sites
     `%do%` <- foreach::`%do%`

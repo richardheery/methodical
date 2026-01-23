@@ -78,5 +78,7 @@ Print messages at start up with 0-based, stranded, context information etc.
 Make summarize methylation return a SummarizedExperiment
 
 Not working in parallel
+Make .check_input_files parallel
 Check what happens if .split_meth_file throws an error when used in parallel
 Print number of matching sites per file
+Allow files with only methylation
