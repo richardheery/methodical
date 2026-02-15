@@ -81,4 +81,6 @@ Not working in parallel
 Make .check_input_files parallel
 Check what happens if .split_meth_file throws an error when used in parallel
 Print number of matching sites per file
-Allow files with only methylation
+Allow files with only methylation and no coverage
+
+Remove use of BSgenome.Hsapiens.UCSC.hg19 in working_with_meth_rses.Rmd

@@ -139,7 +139,7 @@ sampleMethSites <- function(meth_rse, n_sites = 1000, seqnames_filter = NULL,
 #' tubb6_meth_rse <- eval(tubb6_meth_rse)
 #'   
 #' # Get CpG sites for hg19
-#' hg19_cpgs <- methodical::extractMethSitesFromGenome("BSgenome.Hsapiens.UCSC.hg19")
+#' data(hg19_chr18_cpgs, package = "methodical")
 #' 
 #' # Get liftover chain for mapping hg38 to hg19
 #' library(AnnotationHub)
@@ -148,7 +148,7 @@ sampleMethSites <- function(meth_rse, n_sites = 1000, seqnames_filter = NULL,
 #'   
 #' # Liftover tubb6_meth_rse from hg38 to hg19, keeping only sites that were mapped to CpG sites in hg19
 #' tubb6_meth_rse_hg19 <- methodical::liftoverMethRSE(tubb6_meth_rse, chain = chain, 
-#'   permitted_target_regions = hg19_cpgs)
+#'   permitted_target_regions = hg19_chr18_cpgs)
 #' @export
 liftoverMethRSE <- function(meth_rse, chain, remove_one_to_many_mapping = TRUE, 
   permitted_target_regions = NULL, seqlevels = NULL){

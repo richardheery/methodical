@@ -8,7 +8,7 @@
 
 #' tubb6_meth_rse
 #'
-#' The location of the TSS for TUBB6.
+#' A RangedSummarizedExperiment with methyletion data for TUBB6.
 #'
 #'@format A call to create a RangedSummarizedExperiment with methylation data for 355 CpG sites within +/- 5,000 
 #'base pairs of the TUBB6 TSS in 126 normal prostate samples. 
@@ -55,9 +55,23 @@
 #'@format A GRanges object.  
 "hg38_cpgs_subset"
 
-#' TumourMethDatasets
+#' hg38_chr18
 #'
-#' A table describing the datasets available from TumourMethData.
+#' A DNAStringSet for chr21 from BSgenome.Hsapiens.UCSC.hg38
 #'
-#'@format A data.frame with one row for each dataset
-"TumourMethDatasets"
+#'@format A GRanges object.  
+"hg38_chr18"
+
+#' arabidopsis_chr4
+#'
+#' A DNAStringSet for chr4 from BSgenome.Athaliana.TAIR.TAIR9
+#'
+#'@format A GRanges object.  
+"arabidopsis_chr4"
+
+#' hg19_chr18_cpgs
+#'
+#' A GRanges object with CpG sites on chr18 for hg19
+#'
+#'@format A GRanges object.  
+"hg19_chr18_cpgs"

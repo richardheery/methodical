@@ -1,6 +1,8 @@
-
 # Load required packages
 library(methodical)
+library(BSgenome.Hsapiens.UCSC.hg19)
+library(BSgenome.Hsapiens.UCSC.hg38)
+library(BSgenome.Athaliana.TAIR.TAIR9)
 
 # Load TSS GRanges and get region +/- 5KB of the TSS
 wget("")
@@ -44,13 +46,21 @@ tubb6_tmrs = methodical::findTMRs(list(ENST00000591909 = tubb6_cpg_meth_transcri
 tubb6_meth_rse = quote(HDF5Array::loadHDF5SummarizedExperiment(system.file('extdata/tubb6_meth_rse', package = 'methodical')))
 
 # Get hg38 CpGs
-hg38_cpgs = methodical::extractMethSitesFromGenome("BSgenome.Hsapiens.UCSC.hg38")
+hg38_cpgs = methodical::extractMethSitesFromGenome(BSgenome.Hsapiens.UCSC.hg38)
 
 # Subset for CpGs within first million base pairs on chromosome 1
 hg38_cpgs_subset = subsetByOverlaps(hg38_cpgs, GRanges("chr1:1-1000000"))
 
 # Get CpG islands using annotatr
 hg38_cpg_islands = annotatr::build_annotations(genome = "hg38", annotations = "hg38_cpgs")
+
+# Get sequence for chr18 from hg38 and chr4 from BSgenome.Athaliana.TAIR.TAIR9
+hg38_chr18 = setNames(DNAStringSet(Biostrings::getSeq(BSgenome.Hsapiens.UCSC.hg38, "chr18")), "chr18")
+arabidopsis_chr4 = setNames(DNAStringSet(Biostrings::getSeq(BSgenome.Athaliana.TAIR.TAIR9, "Chr4")), "Chr4")
+
+# Get hg19 CpGs on chr18
+hg19_chr18 = setNames(DNAStringSet(Biostrings::getSeq(BSgenome.Hsapiens.UCSC.hg19, "chr18")), "chr18")
+hg19_chr18_cpgs = methodical::extractMethSitesFromGenome(hg19_chr18)
 
 # Add objects to package
 usethis::use_data(tubb6_tss, overwrite = T, compress = "xz")
@@ -61,3 +71,6 @@ usethis::use_data(tubb6_tmrs, overwrite = T, compress = "xz")
 usethis::use_data(tubb6_correlation_plot, overwrite = T, compress = "xz")
 usethis::use_data(hg38_cpgs_subset, overwrite = T, compress = "xz")
 usethis::use_data(hg38_cpg_islands, overwrite = T, compress = "xz")
+usethis::use_data(hg38_chr18, overwrite = T, compress = "xz")
+usethis::use_data(arabidopsis_chr4, overwrite = T, compress = "xz")
+usethis::use_data(hg19_chr18_cpgs, overwrite = T, compress = "xz")

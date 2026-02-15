@@ -9,13 +9,15 @@
 #' @return A GRanges object with genomic regions matching the pattern.
 #' @export
 #' @examples 
-#' # Get human CpG sites for hg38 genome build
-#' hg38_cpgs <- methodical::extractMethSitesFromGenome("BSgenome.Hsapiens.UCSC.hg38")
-#' head(hg38_cpgs)
+#' # Get human CpG sites for chr18 from hg38 genome build
+#' data(hg38_chr18, package = "methodical")
+#' hg38_chr18_cpgs <- methodical::extractMethSitesFromGenome(hg38_chr18)
+#' head(hg38_chr18_cpgs)
 #' 
 #' # Find CHG sites in Arabidopsis thaliana
-#' arabidopsis_CHG_sites <- methodical::extractMethSitesFromGenome("BSgenome.Athaliana.TAIR.TAIR9", pattern = "CHG")
-#' head(arabidopsis_CHG_sites)
+#' data(arabidopsis_chr4, package = "methodical")
+#' arabidopsis_chr4_CHG_sites <- methodical::extractMethSitesFromGenome(arabidopsis_chr4, pattern = "CHG")
+#' head(head(arabidopsis_chr4_CHG_sites))
 extractMethSitesFromGenome <- function(genome, pattern = "CG", 
   stranded = TRUE, standard_sequences_only = TRUE){
   
@@ -43,12 +45,24 @@ extractMethSitesFromGenome <- function(genome, pattern = "CG",
   
   # Find sites matching pattern in genome, on both the + and - strands if stranded is TRUE or just the + strand otherwise
   if(stranded){
-    meth_sites_gr_plus <- GRanges(Biostrings::vmatchPattern(pattern, genome, fixed = "subject"), strand = "+")
+    
+    # Find sites on plus and minus strands
+    meth_sites_gr_plus <- GRanges(Biostrings::vmatchPattern(pattern, genome, fixed = "subject"), strand = "*")
     reverse_complement_pattern = Biostrings::reverseComplement(Biostrings::DNAString(pattern))
-    meth_sites_gr_minus <- GRanges(Biostrings::vmatchPattern(reverse_complement_pattern, genome, fixed = "subject"), strand = "-")
-    meth_sites_gr = c(meth_sites_gr_plus, meth_sites_gr_minus)
+    meth_sites_gr_minus <- GRanges(Biostrings::vmatchPattern(reverse_complement_pattern, genome, fixed = "subject"), strand = "*")
+    
+    # Get the start and ends of sites and combine into a single GRanges and remove duplicated regions 
+    meth_sites_gr_combined <- c(meth_sites_gr_plus, meth_sites_gr_minus)
+    meth_sites_gr_start <- GRanges(resize(meth_sites_gr_combined, 1, fix = "start"), strand = "+")
+    meth_sites_gr_end <- GRanges(resize(meth_sites_gr_combined, 1, fix = "end"), strand = "-")
+    meth_sites_gr <- c(meth_sites_gr_start, meth_sites_gr_end)
+    meth_sites_gr <- sort(disjoin(meth_sites_gr), ignore.strand = TRUE)
+    
   } else {
+    
+    # Find sites only on the plus strand
     meth_sites_gr <- GRanges(Biostrings::vmatchPattern(pattern, genome, fixed = "subject"), strand = "*")
+    
   }
     
   # Sort and resize ranges so that they cover just the first base
@@ -222,142 +236,4 @@ strandedDistance <- function(query_gr, subject_gr){
     return(.count_covered_bases(intersection))
   }
 
-}
-
-#' Create a GRanges with random regions from a genome
-#' 
-#' Can constrain the random regions so that they do not overlap each other and/or an optional set of masked regions.
-#' Random regions which do meet these constraints will be discarded and new ones generated until the desired number 
-#' of regions has been reached or a maximum allowed number of attempts has been made. 
-#' After the maximum number of allowed attempts, the created random regions meeting the constraints up to that point will be returned. 
-#' Any random regions that are out-of-bounds relative to their sequence length are trimmed before being returned. 
-#'
-#' @param genome A BSgenome object. 
-#' @param n_regions Number of random regions to create. Default is 1000. 
-#' @param region_widths The widths of the random regions. Widths cannot be negative. 
-#' Can be just a single value if all regions are to have the same widths. Default is 1000.
-#' @param sequences The names of sequences to create random regions on. Default is to use all sequences in the genome.
-#' @param all_sequences_equally_likely TRUE or FALSE indicating if the probability of creating random regions on a sequence should be the same for each sequence.
-#' Default is FALSE, indicating to make the probability proportional to a sequences length.
-#' @param stranded TRUE or FALSE indicating if created regions should have a strand randomly assigned. Default is FALSE, indicating to make unstranded regions. 
-#' @param masked_regions An optional GRanges object which random regions will not be allowed to overlap. 
-#' @param allow_overlapping_regions TRUE or FALSE indicating if created random regions should be allowed to overlap. Default is FALSE. 
-#' @param ignore.strand TRUE or FALSE indicating whether strand should be ignored when 
-#' identifying overlaps between random regions with each other or with masked_regions. 
-#' Only relevant if stranded is TRUE and either allow_overlapping_regions is FALSE or masked_regions is provided. Default is TRUE.
-#' @param max_tries The maximum number of attempts to make to find non-overlapping regions which do not overlap masked_regions. Default value is 100. 
-#' @return A GRanges object
-#' @export 
-#' @examples 
-#' # Set random seed
-#' set.seed(123)
-#' 
-#' # Create 10,000 random non-overlapping regions with width 1,000 for hg38
-#' random_regions <- methodical::createRandomRegions(genome = "BSgenome.Hsapiens.UCSC.hg38", n_regions = 10000)
-#' head(random_regions)
-createRandomRegions <- function(genome, n_regions = 1000, region_widths = 1000, sequence_names = NULL, all_sequence_names_equally_likely = FALSE,
-   stranded = FALSE, masked_regions = NULL, allow_overlapping_regions = FALSE, ignore.strand = TRUE, max_tries = 100){
-  
-  # Check that inputs have the correct data type
-  stopifnot(is(genome, "character") | is(genome, "BSgenome"), 
-    is(n_regions, "numeric") & n_regions >= 1, is(region_widths, "numeric") & region_widths >= 1,
-    is(sequence_names, "character") | is.null(sequence_names), S4Vectors::isTRUEorFALSE(all_sequence_names_equally_likely),
-    S4Vectors::isTRUEorFALSE(stranded), is(masked_regions, "GRanges") | is.null(masked_regions),
-    S4Vectors::isTRUEorFALSE(allow_overlapping_regions), S4Vectors::isTRUEorFALSE(ignore.strand), 
-    is(max_tries, "numeric") & n_regions >= 1)
-  
-  # Check that all region_widths are positive
-  if(any(region_widths < 0)){stop("region_widths cannot contain negative values")}
-  
-  # If genome is a character, try to load genome with that name
-  if(is.character(genome)){genome <- BSgenome::getBSgenome(genome)}
-  
-  # If no sequence_names provided, use the standard sequence_names for the species from the provider
-  if(is.null(sequence_names)){
-    sequence_names <- seqnames(genome)
-  } else {
-    if(any(!sequence_names %in% seqlevels(genome))){
-      stop("One or more provided sequence names are not in the genome")
-    }
-  }
-  
-  # If all_sequence_names_equally_likely is false, make likelihood of sequence_names proportional to their lengths
-  if(!all_sequence_names_equally_likely){
-    sequence_probabilities <- seqlengths(genome)[sequence_names]
-  } else {
-    sequence_probabilities <- rep(1, length(sequence_names))
-  }
-  
-  # Initialize an empty vector of GRanges and try_number to 1
-  final_random_gr <- GRanges()
-  try_number <- 1
-  original_n_regions <- n_regions
-  
-  # Keep attempting to find random regions meeting the criteria until the required number 
-  # of regions are found or the maximum number of tries is reached
-  while(n_regions > 0 & try_number <= max_tries){
-    
-    # Print the attempt number if using masked region or overlapping regions are not permitted
-    if(!is.null(masked_regions) | !allow_overlapping_regions){
-      message(paste("Attempt", try_number, "to find", original_n_regions, "random regions:"))
-    }
-    
-    # Select random sequence_names
-    random_sequence_names <- sample(sequence_names, size = n_regions, prob = sequence_probabilities, replace = TRUE)
-    
-    # Create a data.frame
-    random_gr_df <- data.frame(seqnames = random_sequence_names, seqlengths = seqlengths(genome)[random_sequence_names], row.names = NULL)
-    
-    # Select a random start site on each sequence
-    random_gr_df$start <- sapply(random_gr_df$seqlengths, function(x) sample(seq_len(x), 1))
-    
-    # Add the widths to each start site
-    random_gr_df$end <- random_gr_df$start + region_widths - 1
-    
-    # Randomly assign a strand if specified
-    if(stranded){random_gr_df$strand <- sample(c("+", "-"), nrow(random_gr_df), replace = TRUE)}
-    
-    # Create a GRanges from the data.frame and return and initialize a column indicating if they pass the contraints to TRUE
-    temp_random_gr <- makeGRangesFromDataFrame(random_gr_df, keep.extra.columns = FALSE)
-    temp_random_gr$pass <- TRUE
-    
-    # Indicate if any random regions overlap masked_regions
-    if(!is.null(masked_regions)){
-      temp_random_gr$pass <- !overlapsAny(temp_random_gr, masked_regions, ignore.strand = ignore.strand)
-    }
-    
-    # Indicate if any random regions overlap other random regions, including those previously found
-    if(!allow_overlapping_regions){
-      temp_random_gr$pass <- 
-        countOverlaps(temp_random_gr, c(temp_random_gr, final_random_gr), ignore.strand = ignore.strand) == 1 & temp_random_gr$pass
-    }
-    
-    # Add seqinfo to temp_random_gr and identify out-of-bounds regions
-    seqlevels(temp_random_gr) <- seqlevels(genome)
-    suppressWarnings(seqinfo(temp_random_gr) <- seqinfo(genome))
-    temp_random_gr$pass[width(temp_random_gr) != width(trim(temp_random_gr))] = FALSE
-    
-    # Identify the passing_regions and add to final_random_gr
-    passing_regions <- temp_random_gr[temp_random_gr$pass]
-    final_random_gr <- c(final_random_gr, passing_regions)
-    
-    # Identify failing regions
-    failing_regions <- temp_random_gr[!temp_random_gr$pass]
-    
-    # Update n_regions to number of regions still remaining to be found
-    n_regions <- length(failing_regions)
-    region_widths <- width(failing_regions)
-    
-    # Print the number of random regions found
-    if(!is.null(masked_regions) | !allow_overlapping_regions){message(paste("Found", length(final_random_gr), "regions"))}
-    
-    # Update try_number
-    try_number <- try_number + 1
-    
-  }
-  
-  # Remove pass column and return final_random_gr
-  final_random_gr$pass <- NULL
-  return(final_random_gr)
-  
 }

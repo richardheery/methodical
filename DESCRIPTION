@@ -30,9 +30,6 @@ Imports:
     BiocParallel,
     BiocStyle,
     Biostrings,
-    BSgenome,
-    BSgenome.Hsapiens.UCSC.hg19,
-    BSgenome.Hsapiens.UCSC.hg38,
     cowplot,
     data.table,
     DelayedArray,
@@ -59,10 +56,8 @@ Imports:
     TumourMethData,
     usethis
 Suggests: 
-    BSgenome.Athaliana.TAIR.TAIR9,
     DESeq2,
     methrix,
     rmarkdown
 VignetteBuilder: knitr
-SystemRequirements: kallisto
 URL: https://github.com/richardheery/methodical
