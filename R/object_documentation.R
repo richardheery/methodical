@@ -57,7 +57,7 @@
 
 #' hg38_chr18
 #'
-#' A DNAStringSet for chr21 from BSgenome.Hsapiens.UCSC.hg38
+#' A DNAStringSet for first 1,000,000 bp from chr18 from BSgenome.Hsapiens.UCSC.hg38
 #'
 #'@format A GRanges object.  
 "hg38_chr18"

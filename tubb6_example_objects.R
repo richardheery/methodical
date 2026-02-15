@@ -54,8 +54,8 @@ hg38_cpgs_subset = subsetByOverlaps(hg38_cpgs, GRanges("chr1:1-1000000"))
 # Get CpG islands using annotatr
 hg38_cpg_islands = annotatr::build_annotations(genome = "hg38", annotations = "hg38_cpgs")
 
-# Get sequence for chr18 from hg38 and chr4 from BSgenome.Athaliana.TAIR.TAIR9
-hg38_chr18 = setNames(DNAStringSet(Biostrings::getSeq(BSgenome.Hsapiens.UCSC.hg38, "chr18")), "chr18")
+# Get sequence for first 1,000,000 bp from chr18 from hg38 and chr4 from BSgenome.Athaliana.TAIR.TAIR9
+hg38_chr18 = setNames(DNAStringSet(Biostrings::getSeq(BSgenome.Hsapiens.UCSC.hg38, "chr18")[1:1000000]), "chr18")
 arabidopsis_chr4 = setNames(DNAStringSet(Biostrings::getSeq(BSgenome.Athaliana.TAIR.TAIR9, "Chr4")), "Chr4")
 
 # Get hg19 CpGs on chr18
