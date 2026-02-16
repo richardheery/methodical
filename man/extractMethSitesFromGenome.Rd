@@ -29,11 +29,13 @@ A GRanges object with genomic regions matching the pattern.
 Create a GRanges with methylation sites of interest from a BSgenome or DNAStringSet
 }
 \examples{
-# Get human CpG sites for hg38 genome build
-hg38_cpgs <- methodical::extractMethSitesFromGenome("BSgenome.Hsapiens.UCSC.hg38")
-head(hg38_cpgs)
+# Get human CpG sites for chr18 from hg38 genome build
+data(hg38_chr18, package = "methodical")
+hg38_chr18_cpgs <- methodical::extractMethSitesFromGenome(hg38_chr18)
+head(hg38_chr18_cpgs)
 
 # Find CHG sites in Arabidopsis thaliana
-arabidopsis_CHG_sites <- methodical::extractMethSitesFromGenome("BSgenome.Athaliana.TAIR.TAIR9", pattern = "CHG")
-head(arabidopsis_CHG_sites)
+data(arabidopsis_chr4, package = "methodical")
+arabidopsis_chr4_CHG_sites <- methodical::extractMethSitesFromGenome(arabidopsis_chr4, pattern = "CHG")
+head(head(arabidopsis_chr4_CHG_sites))
 }

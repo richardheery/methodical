@@ -9,7 +9,7 @@
 #' @param unmeth_reads_col The column number in meth_files which corresponds to the number of unmethylated reads for the position.
 #' @param meth_fraction_col The column number in meth_files which corresponds to the fraction of reads that support methylation at the position.
 #' Will be converted to a proportion if it appears to be a fraction.
-#' @param zero_based TRUE or FALSE indicating if files are zero-based. Default value is TRUE. 
+#' @param zero_based TRUE or FALSE indicating if files are zero-based. 
 #' @param meth_sites A GRanges object with non-overlapping locations of methylation sites of interest e.g. CpG sites. 
 #' Any methylation sites in meth_files that are not in meth_sites are ignored.
 #' @param sequence_context A single character string or DNAString with the 

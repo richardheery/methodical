@@ -17,6 +17,6 @@ Nature 580.7801 (2020): 93-99.'
 tubb6_meth_rse
 }
 \description{
-The location of the TSS for TUBB6.
+A RangedSummarizedExperiment with methyletion data for TUBB6.
 }
 \keyword{datasets}
