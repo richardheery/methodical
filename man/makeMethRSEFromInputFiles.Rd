@@ -43,7 +43,7 @@ same sequence context e.g. CG or CHG. Automatically detects if meth_files contai
 \item{meth_fraction_col}{The column number in meth_files which corresponds to the fraction of reads that support methylation at the position.
 Will be converted to a proportion if it appears to be a fraction.}
 
-\item{zero_based}{TRUE or FALSE indicating if files are zero-based. Default value is TRUE.}
+\item{zero_based}{TRUE or FALSE indicating if files are zero-based.}
 
 \item{meth_sites}{A GRanges object with non-overlapping locations of methylation sites of interest e.g. CpG sites.
 Any methylation sites in meth_files that are not in meth_sites are ignored.}

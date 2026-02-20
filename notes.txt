@@ -66,7 +66,15 @@ Chunks fill the HDF5-array in a column-wise manner i.e. all the chunks in the 1s
 
 .create_meth_rse_from_hdf5
 
-Add optional context column and use context to filter this plus set context width
+### To do
+
+Add parameters to extract meth sites to say if sites are symmetrically methylated or not
+
+Add option to provide cmd to fread to filter input files before reading?
+Chnage use of BiocParallel?/Make .split_meth_file cheaper
+Make .check_input_files parallel
+
+set context width
 
 meth_df and meth_sites_df names too similar
 Use data.table syntax instead of summarize and group_by e.g. with make_meth_rse functions e.g. DT2 <- DT[, .(mean_x = mean(x)), by = group]
@@ -77,8 +85,6 @@ Each bg in extdata has 750 lines
 Print messages at start up with 0-based, stranded, context information etc. 
 Make summarize methylation return a SummarizedExperiment
 
-Not working in parallel
-Make .check_input_files parallel
 Check what happens if .split_meth_file throws an error when used in parallel
 Print number of matching sites per file
 Allow files with only methylation and no coverage

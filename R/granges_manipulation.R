@@ -5,7 +5,7 @@
 #' @param stranded TRUE or FALSE indicating whether to return matches on 
 #' both strands or else just the "+" strand. Strand will be set to "*" if FALSE. Default is TRUE.
 #' @param standard_sequences_only TRUE or FALSE indicating whether to only return ranges 
-#' on standard sequences (those without "_" in their names). Default is TRUE. 
+#' on standard sequences (those without "_" in their names). Default is FALSE. 
 #' @return A GRanges object with genomic regions matching the pattern.
 #' @export
 #' @examples 
@@ -19,7 +19,7 @@
 #' arabidopsis_chr4_CHG_sites <- methodical::extractMethSitesFromGenome(arabidopsis_chr4, pattern = "CHG")
 #' head(head(arabidopsis_chr4_CHG_sites))
 extractMethSitesFromGenome <- function(genome, pattern = "CG", 
-  stranded = TRUE, standard_sequences_only = TRUE){
+  stranded = TRUE, standard_sequences_only = FALSE){
   
   # Check that inputs have the correct data type
   stopifnot(is(genome, "BSgenome") | is(genome, "DNAStringSet"), 
