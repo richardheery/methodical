@@ -90,3 +90,20 @@ Print number of matching sites per file
 Allow files with only methylation and no coverage
 
 Remove use of BSgenome.Hsapiens.UCSC.hg19 in working_with_meth_rses.Rmd
+
+Check that overwrite in make_meth_rse works
+
+Make export_bedGraph_from_rse also export bigWigs? Use genome info from meth_rse
+
+### Make reading files use less memory
+meth_sites (modified), meth_sites_df, meth_sites_final, 
+parameters_list (contains meth_sites_df)[should not be duplicated unless copied]
+
+Each call to .split_meth_file using 5 GB RAM
+Inside 
+meth_site_values = meth_sites_df
+meth_df = Read in meth_file
+GenomicRanges::isDisjoint uses 3 GB
+merge uses 2.5 GB (try data.table vs merge)
+.collapse_strands uses 3 GB (try data.table vs merge)
+

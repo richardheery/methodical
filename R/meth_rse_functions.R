@@ -1,3 +1,32 @@
+#' Export values for a sample in a RangedSummarizedExperiment as a bedGraph
+#' 
+#' @param meth_rse A RangedSummarizedExperiment for methylation data.
+#' @param assay_number The assay from meth_rse to extract values from. Default is the first assay.
+#' @param sample_name The name of a single sample in meth_rse.
+#' @param file_name The output filename. 
+#' @return A data.frame with the methylation site values for all sites in meth_rse which overlap genomic_ranges. 
+#' Row names are the coordinates of the sites as a character vector. 
+#' @export
+export_bedGraph_from_rse = function(meth_rse, assay_number = 1, sample_name, file_name){
+  
+  # Check that inputs have the correct data type
+  stopifnot(is(meth_rse, "RangedSummarizedExperiment"), 
+    is(assay_number, "numeric"), 
+    is(sample_name, "character") & length(sample_name == 1),
+    is(file_name, "character") & length(file_name == 1))
+  
+  # Get values for indicated sample and assay number
+  values <- SummarizedExperiment::assay(test, assay_number)[, sample_name]
+  
+  # Extract row ranges and add values as score column
+  ranges <- SummarizedExperiment::rowRanges(meth_rse)
+  ranges$score <- values
+  
+  # Export ranges as bedGraph
+  rtracklayer::export.bedGraph(ranges, file_name)
+  
+}
+
 #' Extract values for methylation sites overlapping genomic regions from a methylation RSE. 
 #' 
 #' @param meth_rse A RangedSummarizedExperiment for methylation data.
@@ -279,5 +308,34 @@ maskRangesInRSE <- function(rse, mask_ranges, assay_number = 1){
   
     # Return rse_masked
     return(rse_masked)
+  
+}
+
+#' Convert a methylation RSE to a BSseq object
+#' 
+#' @param meth_rse A RangedSummarizedExperiment with methylation values.
+#' @param proportion_assay The assay of meth_rse which corresponds to the proportion of methylated reads. 
+#' Can be either a numeric index or the name of the assay. Default is the first assay.
+#' @param coverage_assay The assay of meth_rse which corresponds to the coverage (the total number of reads).
+#' Can be either a numeric index or the name of the assay. Default is the second assay.
+#' @return A RangedSummarized experiment identical to meth_rse with two additional assays added: one for methylated reads and another for unmethylated reads.
+#' @export
+convert_rse_to_bsseq = function(meth_rse, proportion_assay = 1, coverage_assay = 2){
+  
+  # Set methylation and coverage for any sites with missing methylation values to 0 
+  meth_rse_copy <- meth_rse
+  SummarizedExperiment::assay(meth_rse_copy, coverage_assay)[is.na(SummarizedExperiment::assay(meth_rse_copy, proportion_assay))] <- 0
+  SummarizedExperiment::assay(meth_rse_copy, proportion_assay)[is.na(SummarizedExperiment::assay(meth_rse_copy, proportion_assay))] <- 0
+  
+  # Create a BSseq object with assays with number of methylated reads and total coverage from the inout meth_rse
+  bsseq <- bsseq::BSseq(
+    M = SummarizedExperiment::assay(meth_rse, coverage_assay) * SummarizedExperiment::assay(meth_rse, proportion_assay), 
+    Cov = SummarizedExperiment::assay(meth_rse, coverage_assay), 
+    gr = SummarizedExperiment::rowRanges(meth_rse),
+    pData = SummarizedExperiment::colData(meth_rse),
+    sampleNames = SummarizedExperiment::colnames(meth_rse))
+  
+  # Return bsseq
+  return(bsseq)
   
 }
