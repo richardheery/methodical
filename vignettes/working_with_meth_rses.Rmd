@@ -23,7 +23,6 @@ knitr::opts_chunk$set(
 ```{r setup, message = F}
 library(methodical)
 library(TumourMethData)
-library(BSgenome.Hsapiens.UCSC.hg19)
 ```
 
 ## Introduction
@@ -96,7 +95,7 @@ cpg_island_annotation = cpg_island_annotation[seqnames(cpg_island_annotation) ==
 cpg_island_annotation <- GRangesList(split(cpg_island_annotation, cpg_island_annotation$type))
 
 # Create a BPPARAM class
-BPPARAM = BiocParallel::bpparam()
+BPPARAM = BiocParallel::SerialParam()
 
 # Summarize methylation levels for CpG islands
 cpg_island_methylation <- summarizeRegionMethylation(
@@ -184,7 +183,7 @@ We will demonstrate how to mask LINE repetitive regions across all samples.
 ```{r}
 # Download repetitive sequences from AnnotationHub and filter for LINE elements
 repeat_annotation_hg38 <- AnnotationHub::AnnotationHub()[["AH99003"]]
-line_elements_hg38 <- repeat_annotation_hg38[repeat_annotation_hg38$repClass == "SINE"]
+line_elements_hg38 <- repeat_annotation_hg38[repeat_annotation_hg38$repClass == "LINE"]
 
 # Mask LINE elements in mcrpc_wgbs_hg38_chr11
 mcrpc_wgbs_hg38_chr11_lines_masked <- maskRangesInRSE(rse = mcrpc_wgbs_hg38_chr11, 
@@ -193,9 +192,9 @@ mcrpc_wgbs_hg38_chr11_lines_masked <- maskRangesInRSE(rse = mcrpc_wgbs_hg38_chr1
 # Extract the methylation values for one of the LINE elements in the 
 # unmasked and masked RSE
 extractGRangesMethSiteValues(meth_rse = mcrpc_wgbs_hg38_chr11, 
-  genomic_regions = line_elements_hg38[1000])[, 1:6]
+  genomic_regions = line_elements_hg38[912388])[, 1:6]
 extractGRangesMethSiteValues(meth_rse = mcrpc_wgbs_hg38_chr11_lines_masked, 
-  genomic_regions = line_elements_hg38[1000])[, 1:6]
+  genomic_regions = line_elements_hg38[912388])[, 1:6]
 
 ```
 
@@ -220,10 +219,11 @@ We will demonstrate how to liftover mcrpc_wgbs_hg38_chr11 to hg19.
 
 ```{r}
 # Create a DNAStringSet for chromosome11
-chr11_dss = setNames(DNAStringSet(BSgenome.Hsapiens.UCSC.hg19[["chr11"]]), "chr11")
+options(timeout = Inf)
+chr11_dss <- rtracklayer::import("http://hgdownload.soe.ucsc.edu/goldenPath/hg19/chromosomes/chr11.fa.gz", format = "fasta")
 
 # Get CpG sites for hg19 for chromsome 11
-hg19_cpgs <- methodical::extractMethSitesFromGenome(genome = chr11_dss, search_both_strands = FALSE)
+hg19_cpgs <- methodical::extractMethSitesFromGenome(genome = chr11_dss, stranded = FALSE)
 
 # Download hg38 to hg19 liftover chain from AnnotationHub
 hg38tohg19Chain <- AnnotationHub::AnnotationHub()[["AH14108"]]
@@ -233,11 +233,11 @@ mcrpc_wgbs_hg19_chr11 <- liftoverMethRSE(meth_rse = mcrpc_wgbs_hg38_chr11, chain
   remove_one_to_many_mapping = TRUE, permitted_target_regions = hg19_cpgs)
 
 # Compare the dimensions of mcrpc_wgbs_hg38_chr11 and mcrpc_wgbs_hg19_chr11. 
-# 1,423,050 methylation sites could not be lifted over from hg38 to hg19. 
+# 1,286,553 methylation sites could be lifted over from hg38 to hg19. 
 dim(mcrpc_wgbs_hg38_chr11)
 dim(mcrpc_wgbs_hg19_chr11)
 
-# chr1:921635 should be lifted over to chr1:857015 so confirm that they have 
+# chr11:67581759 should be lifted over to chr11:67349230 so confirm that they have 
 # the same methylation values in hg38 and hg19
 rtracklayer::liftOver(GRanges("chr11:67581759"), hg38tohg19Chain)
 extractGRangesMethSiteValues(mcrpc_wgbs_hg38_chr11, GRanges("chr11:67581759"))[, 1:8]

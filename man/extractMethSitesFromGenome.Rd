@@ -8,7 +8,7 @@ extractMethSitesFromGenome(
   genome,
   pattern = "CG",
   stranded = TRUE,
-  standard_sequences_only = TRUE
+  standard_sequences_only = FALSE
 )
 }
 \arguments{
@@ -20,7 +20,7 @@ extractMethSitesFromGenome(
 both strands or else just the "+" strand. Strand will be set to "*" if FALSE. Default is TRUE.}
 
 \item{standard_sequences_only}{TRUE or FALSE indicating whether to only return ranges
-on standard sequences (those without "_" in their names). Default is TRUE.}
+on standard sequences (those without "_" in their names). Default is FALSE.}
 }
 \value{
 A GRanges object with genomic regions matching the pattern.
