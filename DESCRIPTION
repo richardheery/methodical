@@ -64,3 +64,4 @@ Suggests:
     rmarkdown
 VignetteBuilder: knitr
 URL: https://github.com/richardheery/methodical
+Config/Bioconductor/UnsupportedPlatforms: windows
