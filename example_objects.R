@@ -54,9 +54,9 @@ hg38_cpgs_subset = subsetByOverlaps(hg38_cpgs, GRanges("chr1:1-1000000"))
 # Get CpG islands using annotatr
 hg38_cpg_islands = annotatr::build_annotations(genome = "hg38", annotations = "hg38_cpgs")
 
-# Get sequence for first 1,000,000 bp from chr18 from hg38 and chr4 from BSgenome.Athaliana.TAIR.TAIR9
-hg38_chr18 = setNames(DNAStringSet(Biostrings::getSeq(BSgenome.Hsapiens.UCSC.hg38, "chr18")[1:1000000]), "chr18")
-arabidopsis_chr4 = setNames(DNAStringSet(Biostrings::getSeq(BSgenome.Athaliana.TAIR.TAIR9, "Chr4")), "Chr4")
+# Get sequence for first 1,000,000 bp from human chr18 from hg38 and Arabidopsis chr4 from BSgenome.Athaliana.TAIR.TAIR9
+chr18_subset_hg38 = setNames(DNAStringSet(Biostrings::getSeq(BSgenome.Hsapiens.UCSC.hg38, "chr18")[1:1000000]), "chr18")
+chr4_subset_a_thal = setNames(DNAStringSet(Biostrings::getSeq(BSgenome.Athaliana.TAIR.TAIR9, "Chr4")[1:1000000]), "Chr4")
 
 # Get hg19 CpGs on chr18
 hg19_chr18 = setNames(DNAStringSet(Biostrings::getSeq(BSgenome.Hsapiens.UCSC.hg19, "chr18")), "chr18")
@@ -71,6 +71,6 @@ usethis::use_data(tubb6_tmrs, overwrite = T, compress = "xz")
 usethis::use_data(tubb6_correlation_plot, overwrite = T, compress = "xz")
 usethis::use_data(hg38_cpgs_subset, overwrite = T, compress = "xz")
 usethis::use_data(hg38_cpg_islands, overwrite = T, compress = "xz")
-usethis::use_data(hg38_chr18, overwrite = T, compress = "xz")
-usethis::use_data(arabidopsis_chr4, overwrite = T, compress = "xz")
+usethis::use_data(chr18_subset_hg38, overwrite = T, compress = "xz")
+usethis::use_data(chr4_subset_a_thal, overwrite = T, compress = "xz")
 usethis::use_data(hg19_chr18_cpgs, overwrite = T, compress = "xz")

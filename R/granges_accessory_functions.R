@@ -4,27 +4,28 @@
 #' @param pattern A pattern to match in genome. Default is "CG".
 #' @param stranded TRUE or FALSE indicating whether to return matches on 
 #' both strands or else just the "+" strand. Strand will be set to "*" if FALSE. Default is TRUE.
-#' @param standard_sequences_only TRUE or FALSE indicating whether to only return ranges 
+#' @param standard_seqs_only TRUE or FALSE indicating whether to only return ranges 
 #' on standard sequences (those without "_" in their names). Default is FALSE. 
 #' @return A GRanges object with genomic regions matching the pattern.
 #' @export
 #' @examples 
-#' # Get human CpG sites for chr18 from hg38 genome build
-#' data(hg38_chr18, package = "methodical")
-#' hg38_chr18_cpgs <- methodical::extractMethSitesFromGenome(hg38_chr18)
-#' head(hg38_chr18_cpgs)
+#' # Get human CpG sites for a portion of chr18 from hg38 genome build
+#' data(chr18_subset_hg38, package = "methodical")
+#' chr18_subset_hg38_cpgs <- methodical::extractMethSitesFromGenome(chr18_subset_hg38)
+#' head(chr18_subset_hg38_cpgs)
 #' 
 #' # Find CHG sites in Arabidopsis thaliana
-#' data(arabidopsis_chr4, package = "methodical")
-#' arabidopsis_chr4_CHG_sites <- methodical::extractMethSitesFromGenome(arabidopsis_chr4, pattern = "CHG")
-#' head(head(arabidopsis_chr4_CHG_sites))
+#' data(chr4_subset_a_thal, package = "methodical")
+#' chr4_subset_a_thal_chg_sites <- methodical::extractMethSitesFromGenome(
+#' genome = chr4_subset_a_thal, pattern = "CHG")
+#' head(chr4_subset_a_thal_chg_sites)
 extractMethSitesFromGenome <- function(genome, pattern = "CG", 
-  stranded = TRUE, standard_sequences_only = FALSE){
+  stranded = TRUE, standard_seqs_only = FALSE){
   
   # Check that inputs have the correct data type
   stopifnot(is(genome, "BSgenome") | is(genome, "DNAStringSet"), 
     is(pattern, "character"), S4Vectors::isTRUEorFALSE(stranded), 
-    S4Vectors::isTRUEorFALSE(standard_sequences_only))
+    S4Vectors::isTRUEorFALSE(standard_seqs_only))
   
   # If genome is a DNASringSet, check that it has names
   if(is(genome, "DNASringSet") & is.null(names(genome))){
@@ -36,7 +37,7 @@ extractMethSitesFromGenome <- function(genome, pattern = "CG",
   
   # Convert genome to a DNAStringSet and subset for standard chromosomes if specified
   sequence_names = names(genome)
-  if(standard_sequences_only){
+  if(standard_seqs_only){
     message("Searching only standard sequences (those without \"_\" in their names)")
     sequence_names <- grep("_", sequence_names, invert = T, value = TRUE)
     if(length(sequence_names) == 0){stop("There are no sequences which appear to be standard sequences")}
@@ -189,51 +190,5 @@ strandedDistance <- function(query_gr, subject_gr){
   # Get the signed distance of query_gr from subject_gr and return
   d <- d * subject_strand
   return(d)
-
-}
-
-#' Calculate the number of unique bases covered by all regions in a GRanges object
-#'
-#' @param gr A GRanges object
-#' @return An numeric value
-.count_covered_bases <- function(gr){
-  
-  # Check that inputs have the correct data type
-  stopifnot(is(gr, "GRanges"))
-  
-  return(sum(width(reduce(gr, ignore.strand = TRUE))))
-
-}
-
-#' Calculate the number of bases in the intersection of two GRanges objects
-#'
-#' @param gr1 A GRanges object
-#' @param gr2 A GRanges object
-#' @param ignore.strand TRUE or FALSE indicating whether strand should be ignored when calculating intersections. Default is TRUE.
-#' @param overlap_measure One of "absolute", "proportion" or "jaccard" indicating whether to calculate 
-#' the absolute size of the intersection in base pairs, the proportion base pairs of gr1 overlapping gr2 
-#' or the Jaccard index of the intersection in terms of base pairs. Default value is "absolute".
-#' @return An numeric value
-.calculate_regions_intersections <- function(gr1, gr2, ignore.strand = TRUE, overlap_measure = "absolute"){
-  
-  # Check that inputs have the correct data type
-  stopifnot(is(gr1, "GRanges"), is(gr2, "GRanges"), 
-    S4Vectors::isTRUEorFALSE(ignore.strand), is(overlap_measure, "character"))
-  
-  # Check allowed value provided for overlap_measure
-  match.arg(overlap_measure, c("absolute", "proportion", "jaccard"))
-  
-  # Create GRanges with the intersection and union of gr1 and gr2
-  intersection <- GenomicRanges::intersect(gr1, gr2, ignore.strand = ignore.strand)
-  union <- c(gr1, gr2)
-  
-  # Calculate proportion, Jaccard index or absolute overlap depending on overlap_measure
-  if(overlap_measure == "proportion"){
-    return(.count_covered_bases(intersection)/.count_covered_bases(gr1))
-  } else if(overlap_measure == "jaccard"){
-    return(.count_covered_bases(intersection)/.count_covered_bases(union))
-  } else {
-    return(.count_covered_bases(intersection))
-  }
 
 }

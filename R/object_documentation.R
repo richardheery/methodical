@@ -55,19 +55,19 @@
 #'@format A GRanges object.  
 "hg38_cpgs_subset"
 
-#' hg38_chr18
+#' chr18_subset_hg38
 #'
 #' A DNAStringSet for first 1,000,000 bp from chr18 from BSgenome.Hsapiens.UCSC.hg38
 #'
-#'@format A GRanges object.  
-"hg38_chr18"
+#'@format A DNAStringSet object.  
+"chr18_subset_hg38"
 
-#' arabidopsis_chr4
+#' chr4_subset_a_thal
 #'
-#' A DNAStringSet for chr4 from BSgenome.Athaliana.TAIR.TAIR9
+#' A DNAStringSet for first 1,000,000 bp from chr4 from BSgenome.Athaliana.TAIR.TAIR9
 #'
-#'@format A GRanges object.  
-"arabidopsis_chr4"
+#'@format A DNAStringSet object.  
+"chr4_subset_a_thal"
 
 #' hg19_chr18_cpgs
 #'
