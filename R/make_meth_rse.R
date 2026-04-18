@@ -261,7 +261,7 @@ makeMethRSEFromArrayFiles <- function(array_files, probe_name_column = 1, beta_v
   
   # Perform setup
   setup <- .make_meth_rse_setup(meth_files = array_files, meth_sites = probe_ranges, sample_metadata = sample_metadata, 
-    hdf5_dir = hdf5_dir, dataset_name = dataset_name, overwrite = overwrite, chunkdim = chunkdim, 
+    hdf5_dir = hdf5_dir, overwrite = overwrite, chunkdim = chunkdim, 
     temporary_dir = temporary_dir, ...)
   
   # Read in array files and write data from chunks to appropriate temporary directory
