@@ -116,7 +116,7 @@ expand_granges = function(genomic_regions, upstream = 0, downstream = 0) {
   genomic_regions <- GenomicRanges::shift(genomic_regions, 
     -ifelse(GenomicRanges::strand(genomic_regions) == "-", downstream, upstream))
   
-  # Expand GRanges so that their width equals their original size plus upstream and dowsntream
+  # Expand GRanges so that their width equals their original size plus upstream and downstream
   genomic_regions <- GenomicRanges::resize(genomic_regions, 
     width = (GenomicRanges::width(genomic_regions) + upstream + downstream), fix = "start", ignore.strand = T)
   

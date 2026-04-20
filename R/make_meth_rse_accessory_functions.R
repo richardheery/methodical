@@ -419,13 +419,6 @@
   array_file <- setNames(data.table::fread(file, 
     select = c(probe_name_column, beta_value_column)), c("name", "value"))
   
-  # Convert values from percentages to proportions if specified
-  if(!is.null(normalization_factor)){
-    if(max(array_file$value, na.rm = TRUE) > 1){
-      array_file$value <- array_file$value/normalization_factor
-    }
-  }
-  
   # Round values if specified
   if(!is.na(decimal_places)){
     array_file$value <- round(array_file$value, decimal_places)
