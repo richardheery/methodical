@@ -77,7 +77,7 @@ extractMethSitesFromGenome <- function(genome, pattern = "CG",
   
 }
 
-#' Expand GRanges
+#' Expand GRanges upstream and downstream
 #'
 #' Expand ranges in a GRanges object upstream and downstream by specified numbers of bases, taking account of strand.
 #' Unstranded ranges are treated like they on the "+" strand. 
@@ -112,39 +112,16 @@ expand_granges = function(genomic_regions, upstream = 0, downstream = 0) {
     stop("Some regions would have a negative width after adjustment. This is not permitted.")
   }
   
-  ## Save names of genomic_regions
-  genomic_regions_names = names(genomic_regions)
+  # Shift genomic regions upstream either by upstream (strand is + or *) or downstream (strand is -) 
+  genomic_regions <- GenomicRanges::shift(genomic_regions, 
+    -ifelse(GenomicRanges::strand(genomic_regions) == "-", downstream, upstream))
   
-  # Check for each range if it's on the negative or positive strand
-  strand_is_minus = as.character(GenomicRanges::strand(genomic_regions)) == "-"
-  on_plus = which(!strand_is_minus)
-  on_minus = which(strand_is_minus)
-  
-  # Create vectors with the start and end sites of genomic_regions
-  genomic_regions_starts = start(genomic_regions)
-  genomic_regions_ends = end(genomic_regions)
-  
-  # Adjust ranges based on whether they are on the positive or negative strand
-  genomic_regions_starts[on_plus] = genomic_regions_starts[on_plus] - upstream
-  genomic_regions_starts[on_minus] = genomic_regions_starts[on_minus] - downstream
-  genomic_regions_ends[on_plus] = genomic_regions_ends[on_plus] + downstream
-  genomic_regions_ends[on_minus] = genomic_regions_ends[on_minus] + upstream
-  
-  # Store strand and metadata from genomic_regions
-  genomic_regions_strand = strand(genomic_regions)
-  genomic_regions_mcols = mcols(genomic_regions)
-  
-  # Recreate genomic_regions with new starts and ends
-  genomic_regions = GRanges(seqnames = seqnames(genomic_regions), 
-    ranges = IRanges(genomic_regions_starts, genomic_regions_ends))
-  
-  # Restore strand and metadata
-  strand(genomic_regions) = genomic_regions_strand
-  mcols(genomic_regions) = genomic_regions_mcols
+  # Expand GRanges so that their width equals their original size plus upstream and dowsntream
+  genomic_regions <- GenomicRanges::resize(genomic_regions, 
+    width = (GenomicRanges::width(genomic_regions) + upstream + downstream), fix = "start", ignore.strand = T)
   
   # Remove any out-of-bounds regions and return genomic_regions
-  genomic_regions = GenomicRanges::trim(genomic_regions)
-  names(genomic_regions) = genomic_regions_names
+  genomic_regions <- GenomicRanges::trim(genomic_regions)
   return(genomic_regions)
 } 
 
