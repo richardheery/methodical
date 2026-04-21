@@ -125,62 +125,17 @@ expand_granges = function(genomic_regions, upstream = 0, downstream = 0) {
   return(genomic_regions)
 } 
 
-#' Expand GRanges
-#'
-#' Expand ranges in a GRanges object upstream and downstream by specified numbers of bases, taking account of strand.
-#' Unstranded ranges are treated like they on the "+" strand. 
-#' If any of the resulting ranges are out-of-bounds given the seqinfo of genomic_regions, they will be trimmed using trim().
-#'
-#' @param genomic_regions A GRanges object
-#' @param upstream Number of bases to add upstream of each region in genomic_regions. 
-#' Must be numeric vector of length 1 or else equal to the length of genomic_regions. Default value is 0. 
-#' Negative values result in upstream end of regions being shortened, however the width of the resulting regions cannot be less than zero. 
-#' @param downstream Number of bases to add downstream of each region in genomic_regions. Negative values result in downstream end of regions being shortened. 
-#' Must be numeric vector of length 1 or else equal to the length of genomic_regions. Default value is 0.
-#' Negative values result in upstream end of regions being shortened, however the width of the resulting regions cannot be less than zero. 
-#' @return A GRanges object
-#' @export
-#' @examples 
-#' data(tubb6_tss, package = "methodical")
-#' tubb6_tss
-#' methodical::expand_granges(tubb6_tss, upstream = 5000, downstream = 5000)
-expand_granges = function(genomic_regions, upstream = 0, downstream = 0) {
-  
-  # Check that genomic_regions is a GRanges object
-  if(!is(genomic_regions, "GRanges")){stop("genomic_regions must be a GRanges object")}
-  
-  # Check that upstream and downstream are vectors of either length 1 or with the same length as genomic_regions
-  if(!length(upstream) %in% c(1, length(genomic_regions))){
-    stop("upstream should be a vector of length 1 or the length of genomic_regions")}
-  if(!length(downstream) %in% c(1, length(genomic_regions))){
-    stop("downstream should be a vector of length 1 or the length of genomic_regions")}
-  
-  # Check if any regions would have negative widths after adjustment
-  if(any(width(genomic_regions) + upstream + downstream < 0)){
-    stop("Some regions would have a negative width after adjustment. This is not permitted.")
-  }
-  
-  # Shift genomic regions upstream either by upstream (strand is + or *) or downstream (strand is -) 
-  genomic_regions <- GenomicRanges::shift(genomic_regions, 
-    -ifelse(GenomicRanges::strand(genomic_regions) == "-", downstream, upstream))
-  
-  # Expand GRanges so that their width equals their original size plus upstream and dowsntream
-  genomic_regions <- GenomicRanges::resize(genomic_regions, 
-    width = GenomicRanges::width(genomic_regions) + upstream + downstream, fix = "start")
-  
-  # Remove any out-of-bounds regions and return genomic_regions
-  genomic_regions <- GenomicRanges::trim(genomic_regions)
-  return(genomic_regions)
-} 
 
 #' Calculate distances of query GRanges upstream or downstream of subject GRanges
 #' 
-#' Upstream and downstream are relative to the strand of subject_gr. 
-#' Unstranded regions are treated the same as regions on the "+" strand. 
+#' Upstream ranges are assigned negative distances and downstream regions positive distances and
+#' are relative to the strand of subject_gr. Unstranded ranges are treated the same as regions on the "+" strand. 
+#' If subject_gr has a length of 1, then distances are calculated between each range in query_gr and this range, 
+#' otherwise distances are calculated in a pairwise manner between ranges in query_gr and subject_gr.
 #'
-#' @param query_gr A GRanges object
-#' @param subject_gr A GRanges object. 
-#' @return A numeric vector of distances
+#' @param query_gr A GRanges object.
+#' @param subject_gr A GRanges object.
+#' @return A numeric vector of distances.
 #' @export
 #' @examples 
 #' # Create query and subject GRanges 
@@ -201,7 +156,7 @@ strandedDistance <- function(query_gr, subject_gr){
   # Initialize a vector of zeros with length equal to query_gr
   d <- rep(0, length(query_gr))
   
-  # Find the length of the gap between query_gr and subject_gr, leaving as 0 if they overlap
+  # Find the length of the gap between query_gr and subject_gr , leaving as 0 if they overlap
   d[end(query_gr) < start(subject_gr)] <- (end(query_gr) - start(subject_gr))[end(query_gr) < start(subject_gr)]
   d[start(query_gr) > end(subject_gr)] <- (start(query_gr) - end(subject_gr))[start(query_gr) > end(subject_gr)]
   
