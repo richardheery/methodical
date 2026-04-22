@@ -7,16 +7,18 @@
 strandedDistance(query_gr, subject_gr)
 }
 \arguments{
-\item{query_gr}{A GRanges object}
+\item{query_gr}{A GRanges object.}
 
 \item{subject_gr}{A GRanges object.}
 }
 \value{
-A numeric vector of distances
+A numeric vector of distances.
 }
 \description{
-Upstream and downstream are relative to the strand of subject_gr.
-Unstranded regions are treated the same as regions on the "+" strand.
+Upstream ranges are assigned negative distances and downstream regions positive distances and
+are relative to the strand of subject_gr. Unstranded ranges are treated the same as regions on the "+" strand.
+If subject_gr has a length of 1, then distances are calculated between each range in query_gr and this range,
+otherwise distances are calculated in a pairwise manner between ranges in query_gr and subject_gr.
 }
 \examples{
 # Create query and subject GRanges 

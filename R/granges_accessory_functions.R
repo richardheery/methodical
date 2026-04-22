@@ -9,10 +9,10 @@
 #' @return A GRanges object with genomic regions matching the pattern.
 #' @export
 #' @examples 
-#' # Get human CpG sites for a portion of chr18 from hg38 genome build
-#' data(chr18_subset_hg38, package = "methodical")
-#' chr18_subset_hg38_cpgs <- methodical::extractMethSitesFromGenome(chr18_subset_hg38)
-#' head(chr18_subset_hg38_cpgs)
+#' # Get human CpG sites for a portion of chr1 from hg38 genome build
+#' data(chr1_subset_hg38, package = "methodical")
+#' chr1_subset_hg38_cpgs <- methodical::extractMethSitesFromGenome(chr1_subset_hg38)
+#' head(chr1_subset_hg38_cpgs)
 #' 
 #' # Find CHG sites in Arabidopsis thaliana
 #' data(chr4_subset_a_thal, package = "methodical")

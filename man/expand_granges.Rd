@@ -2,10 +2,8 @@
 % Please edit documentation in R/granges_accessory_functions.R
 \name{expand_granges}
 \alias{expand_granges}
-\title{Expand GRanges}
+\title{Expand GRanges upstream and downstream}
 \usage{
-expand_granges(genomic_regions, upstream = 0, downstream = 0)
-
 expand_granges(genomic_regions, upstream = 0, downstream = 0)
 }
 \arguments{
@@ -21,22 +19,13 @@ Negative values result in upstream end of regions being shortened, however the w
 }
 \value{
 A GRanges object
-
-A GRanges object
 }
 \description{
 Expand ranges in a GRanges object upstream and downstream by specified numbers of bases, taking account of strand.
 Unstranded ranges are treated like they on the "+" strand.
 If any of the resulting ranges are out-of-bounds given the seqinfo of genomic_regions, they will be trimmed using trim().
-
-Expand ranges in a GRanges object upstream and downstream by specified numbers of bases, taking account of strand.
-Unstranded ranges are treated like they on the "+" strand.
-If any of the resulting ranges are out-of-bounds given the seqinfo of genomic_regions, they will be trimmed using trim().
 }
 \examples{
-data(tubb6_tss, package = "methodical")
-tubb6_tss
-methodical::expand_granges(tubb6_tss, upstream = 5000, downstream = 5000)
 data(tubb6_tss, package = "methodical")
 tubb6_tss
 methodical::expand_granges(tubb6_tss, upstream = 5000, downstream = 5000)

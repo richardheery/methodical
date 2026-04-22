@@ -45,18 +45,17 @@ tubb6_tmrs = methodical::findTMRs(list(ENST00000591909 = tubb6_cpg_meth_transcri
 # Change tubb6_meth_rse to a call to the tubb6_meth_rse directory located in the package extdata
 tubb6_meth_rse = quote(HDF5Array::loadHDF5SummarizedExperiment(system.file('extdata/tubb6_meth_rse', package = 'methodical')))
 
-# Get hg38 CpGs
-hg38_cpgs = methodical::extractMethSitesFromGenome(BSgenome.Hsapiens.UCSC.hg38)
-
-# Subset for CpGs within first million base pairs on chromosome 1
-hg38_cpgs_subset = subsetByOverlaps(hg38_cpgs, GRanges("chr1:1-1000000"))
-
 # Get CpG islands using annotatr
 hg38_cpg_islands = annotatr::build_annotations(genome = "hg38", annotations = "hg38_cpgs")
 
-# Get sequence for first 1,000,000 bp from human chr18 from hg38 and Arabidopsis chr4 from BSgenome.Athaliana.TAIR.TAIR9
-chr18_subset_hg38 = setNames(DNAStringSet(Biostrings::getSeq(BSgenome.Hsapiens.UCSC.hg38, "chr18")[1:1000000]), "chr18")
+# Get 1 MB sequence from human chr11 from hg38 and Arabidopsis chr4 from BSgenome.Athaliana.TAIR.TAIR9
+chr1_subset_hg38 = setNames(DNAStringSet(Biostrings::getSeq(BSgenome.Hsapiens.UCSC.hg38, "chr1")[1:1000000]), "chr1")
+chr11_hg38 = setNames(DNAStringSet(Biostrings::getSeq(BSgenome.Hsapiens.UCSC.hg38, "chr11")), "chr11")
 chr4_subset_a_thal = setNames(DNAStringSet(Biostrings::getSeq(BSgenome.Athaliana.TAIR.TAIR9, "Chr4")[1:1000000]), "Chr4")
+
+# Extract hg38 CpGs from chr11_subset_hg38 and filter for those in vicinity of GSTP1
+chr11_hg38_cpgs = methodical::extractMethSitesFromGenome(chr11_hg38, stranded = T)
+chr11_subset_hg38_cpgs = subsetByOverlaps(chr11_hg38_cpgs, GRanges("chr11:67578812-67588812"))
 
 # Get hg19 CpGs on chr18
 hg19_chr18 = setNames(DNAStringSet(Biostrings::getSeq(BSgenome.Hsapiens.UCSC.hg19, "chr18")), "chr18")
@@ -69,8 +68,8 @@ usethis::use_data(tubb6TranscriptCounts, overwrite = T, compress = "xz")
 usethis::use_data(tubb6_cpg_meth_transcript_cors, overwrite = T, compress = "xz")
 usethis::use_data(tubb6_tmrs, overwrite = T, compress = "xz")
 usethis::use_data(tubb6_correlation_plot, overwrite = T, compress = "xz")
-usethis::use_data(hg38_cpgs_subset, overwrite = T, compress = "xz")
+usethis::use_data(chr11_subset_hg38_cpgs, overwrite = T, compress = "xz")
 usethis::use_data(hg38_cpg_islands, overwrite = T, compress = "xz")
-usethis::use_data(chr18_subset_hg38, overwrite = T, compress = "xz")
+usethis::use_data(chr1_subset_hg38, overwrite = T, compress = "xz")
 usethis::use_data(chr4_subset_a_thal, overwrite = T, compress = "xz")
 usethis::use_data(hg19_chr18_cpgs, overwrite = T, compress = "xz")

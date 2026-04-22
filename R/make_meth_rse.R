@@ -32,25 +32,28 @@
 #' @export
 #' @examples
 #' 
-#' # Load CpGs within first million base pairs of chromosome 1 as a GRanges object
-#' data("hg38_cpgs_subset", package = "methodical")
+#' # Load CpGs from subset of chromosome 11 as a GRanges object
+#' data("chr11_subset_hg38_cpgs", package = "methodical")
 #' 
 #' # Get paths to meth_files
 #' meth_files <- list.files(path = system.file('extdata', package = 'methodical'), 
-#'   pattern = ".bg.gz", full.names = TRUE)
+#'   pattern = ".CX_report.txt.gz", full.names = TRUE)
 #' 
 #' # Create sample metadata
 #' sample_metadata <- data.frame(
-#'   tcga_project = gsub("_.*", "", gsub("TCGA_", "", basename(meth_files))),
 #'   sample_type = ifelse(grepl("N", basename(meth_files)), "Normal", "Tumour"),
-#'   row.names = tools::file_path_sans_ext(basename(meth_files))
+#'   row.names = gsub("_.*", "", basename(meth_files))
 #' )
 #' 
 #' # Create a HDF5-backed RangedSummarizedExperiment from meth_files
 #' meth_rse <- makeMethRSEFromInputFiles(meth_files = meth_files, 
 #'   seqnames_col = 1, start_col = 2, meth_reads_col = 4, unmeth_reads_col = 5, 
-#'   zero_based = TRUE, meth_sites = hg38_cpgs_subset, sample_metadata = sample_metadata, 
-#'   hdf5_dir = paste0(tempdir(), "/bedgraph_hdf5_1"))
+#'   zero_based = FALSE, meth_sites = chr11_subset_hg38_cpgs, sample_metadata = sample_metadata, 
+#'   hdf5_dir = paste0(tempdir(), "/test_hdf5_1"))
+#'   
+#' # Show beta values and coverage
+#' assay(meth_rse, "beta")
+#' assay(meth_rse, "Cov")
 #'   
 makeMethRSEFromInputFiles <- function(meth_files, seqnames_col, start_col, 
   total_reads_col = NULL, meth_reads_col = NULL, unmeth_reads_col = NULL, meth_fraction_col = NULL, 
@@ -58,7 +61,7 @@ makeMethRSEFromInputFiles <- function(meth_files, seqnames_col, start_col,
   hdf5_dir, overwrite = FALSE, chunkdim = NULL, temporary_dir = NULL, BPPARAM = BiocParallel::SerialParam(), ...){
   
   # Check that inputs have the correct data type
-  stopifnot(is(meth_files, "character"), 
+  stopifnot(is(meth_files, "character") && length(meth_files) > 0 && all(file.exists(meth_files)), 
     is.numeric(seqnames_col) && length(seqnames_col) == 1 && seqnames_col > 0 && seqnames_col %% 1 == 0,
     is.numeric(start_col) && length(start_col) == 1 && start_col > 0 && start_col %% 1 == 0,
     is.null(total_reads_col) | is.numeric(total_reads_col) && length(total_reads_col) == 1 && total_reads_col > 0 && total_reads_col %% 1 == 0,
@@ -168,111 +171,6 @@ makeMethRSEFromInputFiles <- function(meth_files, seqnames_col, start_col,
   rse <- .create_meth_rse_from_hdf5(hdf5_filepath = setup$hdf5_filepath, hdf5_dir = hdf5_dir,
     meth_sites = meth_sites_final, sample_metadata = sample_metadata)
 
-  return(rse)
-  
-}
-
-#' Create a HDF5-backed RangedSummarizedExperiment for methylation values in array files
-#'
-#' @param array_files A vector of paths to input files. Automatically detects if array_files contain a header if every field in the first line is a character. 
-#' @param probe_name_column The number of the column which corresponds to the name of the probes. Default is 1st column. 
-#' @param beta_value_column The number of the column which corresponds to the beta values . Default is 2nd column.  
-#' @param decimal_places Integer indicating the number of decimal places to round beta values to. Default is 2. 
-#' @param probe_ranges A GRanges object giving the genomic locations of probes where each region corresponds to a separate probe. 
-#' There should be a metadata column called name with the name of the probe associated with each region. 
-#' Any probes in array_files that are not in probe_ranges are ignored. 
-#' @param sample_metadata Sample metadata to be used as colData for the RangedSummarizedExperiment
-#' @param hdf5_dir Directory to save HDF5 file. Is created if it doesn't exist. HDF5 file is called assays.h5. 
-#' @param dataset_name Name to give data set in HDF5 file. Default is "beta".
-#' @param overwrite TRUE or FALSE indicating whether to allow overwriting if dataset_name already exists in assays.h5. Default is FALSE.
-#' @param chunkdim The dimensions of the chunks for the HDF5 file. Should be a vector of length 2 giving the number of rows and then the number of columns in each chunk.
-#' @param temporary_dir Name to give a temporary directory to store intermediate files. A directory with this name cannot already exist. 
-#' Default is to create a name using tempfile("temporary_meth_chunks_"). 
-#' @param BPPARAM A BiocParallelParam object for parallel processing. Defaults to `BiocParallel::SerialParam()`. 
-#' @param ... Additional arguments to be passed to HDF5Array::HDF5RealizationSink() for controlling the physical properties of the created HDF5 file, 
-#' such as compression level. Uses the defaults for any properties that are not specified. 
-#' @return A RangedSummarizedExperiment with methylation values for all methylation sites in meth_sites. Methylation sites will be in the same order as sort(meth_sites). 
-#' @export
-#' @examples
-#' # Get human CpG sites for hg38 genome build
-#' data("infinium_450k_probe_granges_hg19", package = "methodical")
-#' 
-#' # Get paths to array files
-#' array_files <- list.files(path = system.file('extdata', package = 'methodical'), 
-#'   pattern = ".txt.gz", full.names = TRUE)
-#' 
-#' # Create sample metadata
-#' sample_metadata <- data.frame(
-#'   tcga_project = "LUAD",
-#'   sample_type = "Tumour", submitter = gsub("_01.tsv.gz", "", basename(array_files)),
-#'   row.names = gsub(".tsv.gz", "", basename(array_files))
-#' )
-#' 
-#' # Create a HDF5-backed RangedSummarizedExperiment from array files using default chumk dimensions
-#' meth_rse <- makeMethRSEFromArrayFiles(array_files = array_files, 
-#'  probe_ranges = infinium_450k_probe_granges_hg19, 
-#'  sample_metadata = sample_metadata, hdf5_dir =  paste0(tempdir(), "/array_file_hdf5_1"))
-#'
-makeMethRSEFromArrayFiles <- function(array_files, probe_name_column = 1, beta_value_column = 2, 
-  decimal_places = NA, probe_ranges, sample_metadata = NULL, hdf5_dir, dataset_name = "beta", 
-  overwrite = FALSE, chunkdim = NULL, temporary_dir = NULL, BPPARAM = BiocParallel::SerialParam(), ...){
-  
-  # Check that inputs have the correct data type
-  stopifnot(is(array_files, "character"), is(probe_name_column, "numeric") & probe_name_column >= 1,
-    is(beta_value_column, "numeric") & beta_value_column >= 1, 
-    is(decimal_places, "numeric") | is.na(decimal_places), is(probe_ranges, "GRanges"),
-    is(sample_metadata, "data.frame") | is.null(sample_metadata), is(hdf5_dir, "character"),
-    is(dataset_name, "character"), S4Vectors::isTRUEorFALSE(overwrite), is(chunkdim, "numeric") | is.null(chunkdim),
-    is(temporary_dir, "character") | is.null(temporary_dir), is(BPPARAM, "BiocParallelParam"))
-  
-  # Check that probe_ranges has a metadata column called name and that there are no duplicate names
-  if(!"name" %in% names(mcols(probe_ranges))){
-    stop("probe_ranges must have a metadata column called name")
-  } else if(anyDuplicated(probe_ranges$name)){
-    stop("probe_ranges$name cannot contain any duplicates")
-  }
-  
-  # If temporary_dir not provided, set it to a directory in tempdir()
-  if(is.null(temporary_dir)){
-    temporary_dir <- tempfile("temporary_meth_chunks_")
-  }
-  
-  # Check temporary directory doesn't already exist and create it if it doesn't
-  if(dir.exists(temporary_dir)){
-    stop(paste("Directory", temporary_dir, "already exists. Please provide a temporary directory name that isn't already in use."))
-  } else {
-    dir.create(temporary_dir)
-  }
-  
-  # Check if probe_ranges is sorted and print a message if it is not. 
-  if(!S4Vectors::isSorted(probe_ranges)){
-    message("probe_ranges is not sorted. It will be sorted and this sorted order will be used for methylation sites in the HDF5 file")
-  }
-  
-  # Perform setup
-  setup <- .make_meth_rse_setup(meth_files = array_files, meth_sites = probe_ranges, sample_metadata = sample_metadata, 
-    hdf5_dir = hdf5_dir, overwrite = overwrite, chunkdim = chunkdim, 
-    temporary_dir = temporary_dir, ...)
-  
-  # Read in array files and write data from chunks to appropriate temporary directory
-  probe_sites_df <- .split_meth_array_files_into_chunks(array_files = array_files, probe_name_column = probe_name_column, 
-    beta_value_column = beta_value_column, file_grid_columns = setup$file_grid_columns, probe_ranges = probe_ranges,
-    probe_groups = setup$meth_site_groups, temp_chunk_dirs = setup$temp_chunk_dirs, 
-    decimal_places = decimal_places, BPPARAM = BPPARAM)
-  
-  # Write the chunks to the HDF5 file
-  .write_chunks_to_hdf5(hdf5_sink = setup$hdf5_sink, hdf5_grid = setup$hdf5_grid, 
-    temp_chunk_dirs = setup$temp_chunk_dirs, files_in_chunks = setup$files_in_chunks)
-  
-  # Create a RangedSummarizedExperiment
-  rse <- .create_meth_rse_from_hdf5(hdf5_filepath = setup$hdf5_filepath, hdf5_dir = hdf5_dir,
-    meth_sites_df = probe_sites_df, sample_metadata = sample_metadata)
-  
-  # Delete temporary_dir if it is empty
-  if(length(list.files(temporary_dir)) == 0){
-    unlink(temporary_dir, recursive = TRUE)
-  }
-  
   return(rse)
   
 }

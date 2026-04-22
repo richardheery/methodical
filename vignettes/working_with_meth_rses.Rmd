@@ -85,7 +85,7 @@ and memory usage.
 
 ```{r}
 # Load CpG islands annotation for hg38 
-cpg_island_annotation <- annotatr::build_annotations(genome = "hg38", annotation = "hg38_cpgs")
+cpg_island_annotation <- data("hg38_cpg_islands", package = "methodical")
 names(cpg_island_annotation) <- cpg_island_annotation$id
 
 # Filter for annotation for chr11

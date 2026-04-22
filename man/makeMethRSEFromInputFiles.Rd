@@ -82,24 +82,27 @@ Create a HDF5-backed RangedSummarizedExperiment for methylation values in meth_f
 }
 \examples{
 
-# Load CpGs within first million base pairs of chromosome 1 as a GRanges object
-data("hg38_cpgs_subset", package = "methodical")
+# Load CpGs from subset of chromosome 11 as a GRanges object
+data("chr11_subset_hg38_cpgs", package = "methodical")
 
 # Get paths to meth_files
 meth_files <- list.files(path = system.file('extdata', package = 'methodical'), 
-  pattern = ".bg.gz", full.names = TRUE)
+  pattern = ".CX_report.txt.gz", full.names = TRUE)
 
 # Create sample metadata
 sample_metadata <- data.frame(
-  tcga_project = gsub("_.*", "", gsub("TCGA_", "", basename(meth_files))),
   sample_type = ifelse(grepl("N", basename(meth_files)), "Normal", "Tumour"),
-  row.names = tools::file_path_sans_ext(basename(meth_files))
+  row.names = gsub("_.*", "", basename(meth_files))
 )
 
 # Create a HDF5-backed RangedSummarizedExperiment from meth_files
 meth_rse <- makeMethRSEFromInputFiles(meth_files = meth_files, 
   seqnames_col = 1, start_col = 2, meth_reads_col = 4, unmeth_reads_col = 5, 
-  zero_based = TRUE, meth_sites = hg38_cpgs_subset, sample_metadata = sample_metadata, 
-  hdf5_dir = paste0(tempdir(), "/bedgraph_hdf5_1"))
+  zero_based = FALSE, meth_sites = chr11_subset_hg38_cpgs, sample_metadata = sample_metadata, 
+  hdf5_dir = paste0(tempdir(), "/test_hdf5_1"))
+  
+# Show beta values and coverage
+assay(meth_rse, "beta")
+assay(meth_rse, "Cov")
   
 }

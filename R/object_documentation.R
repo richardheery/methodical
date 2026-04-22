@@ -48,19 +48,19 @@
 #'@format A ggplot object.  
 "tubb6_correlation_plot"
 
-#' hg38_cpgs_subset
+#' chr11_subset_hg38_cpgs
 #'
-#' All the CpG sites within the first one million base pairs of chromosome 1.
+#' All the CpG sites on both strands within the region chr11:67578812-67588812
 #'
 #'@format A GRanges object.  
-"hg38_cpgs_subset"
+"chr11_subset_hg38_cpgs"
 
-#' chr18_subset_hg38
+#' chr1_subset_hg38
 #'
-#' A DNAStringSet for first 1,000,000 bp from chr18 from BSgenome.Hsapiens.UCSC.hg38
+#' A DNAStringSet for first 1,000,000 bp from chr1 from BSgenome.Hsapiens.UCSC.hg38
 #'
 #'@format A DNAStringSet object.  
-"chr18_subset_hg38"
+"chr1_subset_hg38"
 
 #' chr4_subset_a_thal
 #'
