@@ -24,15 +24,12 @@ Depends:
 LazyData: false
 Imports: 
     AnnotationHub,
-    annotatr,
     BiocCheck,
     BiocManager,
     BiocParallel,
     BiocStyle,
     Biostrings,
     BSgenome,
-    BSgenome.Hsapiens.UCSC.hg19,
-    BSgenome.Hsapiens.UCSC.hg38,
     bsseq,
     cowplot,
     data.table,

@@ -46,7 +46,8 @@ tubb6_tmrs = methodical::findTMRs(list(ENST00000591909 = tubb6_cpg_meth_transcri
 tubb6_meth_rse = quote(HDF5Array::loadHDF5SummarizedExperiment(system.file('extdata/tubb6_meth_rse', package = 'methodical')))
 
 # Get CpG islands using annotatr
-hg38_cpg_islands = annotatr::build_annotations(genome = "hg38", annotations = "hg38_cpgs")
+library(annotatr)
+hg38_cpg_islands = build_annotations(genome = "hg38", annotations = "hg38_cpgs")
 
 # Get 1 MB sequence from human chr11 from hg38 and Arabidopsis chr4 from BSgenome.Athaliana.TAIR.TAIR9
 chr1_subset_hg38 = setNames(DNAStringSet(Biostrings::getSeq(BSgenome.Hsapiens.UCSC.hg38, "chr1")[1:1000000]), "chr1")
