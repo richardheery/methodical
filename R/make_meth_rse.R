@@ -175,14 +175,6 @@ makeMethRSEFromInputFiles <- function(meth_files, seqnames_col, start_col,
   
 }
 
-#' infinium_450k_probe_granges_hg19
-#'
-#' The hg19 genomic coordinates for methylation sites analysed by the Infinium HumanMethylation450K array.
-#'
-#'@format GRanges object with 482,421 ranges and one metadata column name giving the name of the associated probe. 
-#'@source Derived from the manifest file downloaded from https://webdata.illumina.com/downloads/productfiles/humanmethylation450/humanmethylation450_15017482_v1-2.csv?_gl<-1*ocsx4f*_ga*MTk1Nzc4MDkwMy4xNjg3ODcxNjg0*_ga_VVVPY8BDYL*MTY4Nzg3MTY4My4xLjEuMTY4Nzg3MzU5Mi4xMC4wLjA.
-"infinium_450k_probe_granges_hg19"
-
 #' Convert a Methrix object into a RangedSummarizedExperiment
 #'
 #' @param methrix A methrix object

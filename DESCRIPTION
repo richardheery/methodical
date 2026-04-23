@@ -60,8 +60,6 @@ Imports:
     TumourMethData,
     usethis
 Suggests: 
-    DESeq2,
-    methrix,
     rmarkdown
 VignetteBuilder: knitr
 URL: https://github.com/richardheery/methodical
