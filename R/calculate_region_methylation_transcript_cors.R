@@ -162,7 +162,7 @@ calculateRegionMethylationTranscriptCors <- function(meth_rse, assay = 1, transc
   feature_matches <- split(feature_matches_df$genomic_region_names, feature_matches_df$transcript_id)
   
   # For each transcript, calculate the correlation between its expression and the methylation of regions associated with it
-  methylation_transcript_correlations <- suppressMessages(BiocParallel::bplapply(X = names(feature_matches), 
+  methylation_transcript_correlations <- suppressWarnings(BiocParallel::bplapply(X = names(feature_matches), 
     FUN = function(X) {rapidCorTest(
       table1 = t(genomic_region_methylation[feature_matches[[X]], ]),
       table2 = setNames(data.frame(unlist(transcript_expression_table[X, ])), X),

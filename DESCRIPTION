@@ -54,10 +54,11 @@ Imports:
     tibble,
     tidyr,
     tools,
-    TumourMethData,
     usethis
 Suggests: 
-    rmarkdown
+    DESeq2,
+    rmarkdown,
+    TumourMethData
 VignetteBuilder: knitr
 URL: https://github.com/richardheery/methodical
 Config/Bioconductor/UnsupportedPlatforms: windows
