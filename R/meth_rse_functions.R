@@ -1,30 +1,73 @@
-#' Export values for a sample in a RangedSummarizedExperiment as a bedGraph
+#' Export values for samples in a RangedSummarizedExperiment as bedGraphs or bigWigs
 #' 
 #' @param meth_rse A RangedSummarizedExperiment for methylation data.
 #' @param assay_number The assay from meth_rse to extract values from. Default is the first assay.
-#' @param sample_name The name of a single sample in meth_rse.
-#' @param file_name The output filename. 
-#' @return A data.frame with the methylation site values for all sites in meth_rse which overlap genomic_ranges. 
-#' Row names are the coordinates of the sites as a character vector. 
+#' @param samples The names of one or more samples in meth_rse. Default is all samples.
+#' @param filetype The type of file to output. Should be one of either "bedGraph" or "bigWig".
+#' If meth_rse contains a large number of regions, may be more efficient to export as bedGraph and convert to bigWigs externally. 
+#' @param output_dir The directory to save the output files. Default is current directory.
+#' @param compress_bedGraphs Whether or not to compress output bedGraph files with gzip. Default is TRUE. 
 #' @export
-export_bedGraph_from_rse = function(meth_rse, assay_number = 1, sample_name, file_name){
+export_files_from_rse = function(meth_rse, assay_number = 1, samples = NULL, 
+  filetype, output_dir = ".", compress_bedGraphs = TRUE){
+  
+  # If no samples provided, set to all samples
+  if(is.null(samples)){samples <- colnames(meth_rse)}
   
   # Check that inputs have the correct data type
   stopifnot(is(meth_rse, "RangedSummarizedExperiment"), 
-    is(assay_number, "numeric"), 
-    is(sample_name, "character") & length(sample_name == 1),
-    is(file_name, "character") & length(file_name == 1))
+    is(assay_number, "numeric") & length(assay_number) == 1 & 
+      assay_number >= 1 & assay_number %% 1 == 0,
+    is(samples, "character") & length(samples) >= 1,
+    is(filetype, "character") & length(filetype) == 1,
+    is(output_dir, "character") & length(output_dir) == 1,
+    is(compress_bedGraphs, "logical"))
   
-  # Get values for indicated sample and assay number
-  values <- SummarizedExperiment::assay(test, assay_number)[, sample_name]
+  # Check that filetype is one of bedGraph or bigWig and that all samples are in meth_rse
+  filetype <- match.arg(filetype, c("bedGraph", "bigWig"))
+  if(!all(samples %in% colnames(meth_rse))){
+    stop("Not all samples are in meth_rse")
+  }
   
-  # Extract row ranges and add values as score column
-  ranges <- SummarizedExperiment::rowRanges(meth_rse)
-  ranges$score <- values
+  # Create output_dir if it doesn't exist and output file names for each sample
+  if(!dir.exists(output_dir)){
+    dir.create(output_dir, recursive = TRUE)
+  }
+  if(filetype == "bedGraph"){
+    output_files <- paste0(output_dir, "/", samples, ".bedGraph", ".gz"[compress_bedGraphs])
+  } else {
+    output_files <- paste0(output_dir, "/", samples, ".bw")
+  }
   
-  # Export ranges as bedGraph
-  rtracklayer::export.bedGraph(ranges, file_name)
-  
+  # For each sample, extract the values for the specified assay and export as a bedGraph
+  for(sample_number in seq_along(samples)){
+    
+    # Get values for indicated sample and assay number
+    sample_name <- samples[sample_number]
+    filename <- output_files[sample_number]
+    message(paste("Exporting", sample_name, "as", filetype))
+    values <- SummarizedExperiment::assay(meth_rse, assay_number)[, sample_name]
+    
+    # Extract row ranges and add values as score column and remove ranges with NA values
+    ranges <- SummarizedExperiment::rowRanges(meth_rse)
+    ranges$score <- values
+    ranges <- ranges[!is.na(ranges$score)]
+    
+    # Export ranges as either beGraph or bigWig
+    if(filetype == "bedGraph"){
+    
+      # Convert ranges to a data.frame, make start 0-based and export as a bedGraph
+      ranges <- data.frame(ranges)
+      ranges$start <- ranges$start - 1
+      data.table::fwrite(ranges, file = filename, sep = "\t")
+    
+    } else {
+      
+      # Export ranges as bigWig
+      rtracklayer::export.bw(ranges, filename)
+      
+    }
+  }
 }
 
 #' Extract values for methylation sites overlapping genomic regions from a methylation RSE. 
@@ -188,8 +231,12 @@ liftoverMethRSE <- function(meth_rse, chain, remove_one_to_many_mapping = TRUE,
     is(permitted_target_regions, "GRanges") | is.null(permitted_target_regions),
     is(seqlevels, "character") | is.null(seqlevels))
   
+  # If strand is * for rowRanges, change to +
+  row_ranges <- SummarizedExperiment::rowRanges(meth_rse)
+  GenomicRanges::strand(row_ranges)[which(GenomicRanges::strand(row_ranges) == "*")] <- "+"
+  
   # Liftover rowRanges for meth_rse using specified liftover chain file
-  liftover_ranges <- rtracklayer::liftOver(SummarizedExperiment::rowRanges(meth_rse), chain)
+  liftover_ranges <- rtracklayer::liftOver(row_ranges, chain)
   
   # Put seqlevels of liftover_ranges in the order specified by seqlevels
   if(!is.null(seqlevels)){
@@ -202,7 +249,7 @@ liftoverMethRSE <- function(meth_rse, chain, remove_one_to_many_mapping = TRUE,
   # Get the number of regions in the target genome each region in the source genome matches to
   mappings_count <- lengths(liftover_ranges)
   
-  # Remove non-mapping regions from selected_ranges if specified
+  # Remove non-mapping regions from selected_ranges
   non_mapping_regions <- which(mappings_count == 0)
   message(paste(length(non_mapping_regions), "non-mapping sites removed"))
   selected_ranges <- setdiff(selected_ranges, non_mapping_regions)
@@ -214,7 +261,7 @@ liftoverMethRSE <- function(meth_rse, chain, remove_one_to_many_mapping = TRUE,
     selected_ranges <- setdiff(selected_ranges, one_to_many_mapping_regions)
   }
   
-  # Remove many-to-one mapping regions from selected_ranges if specified
+  # Remove many-to-one mapping regions from selected_ranges
   self_overlaps <- GenomicRanges::countOverlaps(liftover_ranges, liftover_ranges)
   many_to_one_mapping_regions <- which(self_overlaps > 1)
   message(paste(length(many_to_one_mapping_regions), "many-to-one mapping sites removed"))
@@ -228,9 +275,15 @@ liftoverMethRSE <- function(meth_rse, chain, remove_one_to_many_mapping = TRUE,
     selected_ranges <- setdiff(selected_ranges, non_target_overlaps)
   }
   
+  # If regions were lifted over to the reverse strand, shift their position upstream by 1 bp
+  liftover_ranges <- unlist(liftover_ranges[selected_ranges])
+  liftover_ranges[which(GenomicRanges::strand(liftover_ranges) == "-")] <- 
+    GenomicRanges::shift(liftover_ranges[which(GenomicRanges::strand(liftover_ranges) == "-")], - 1)
+  GenomicRanges::strand(liftover_ranges) <- "*"
+  
   # Subset meth_rse for selected rows and update rowRanges
   meth_rse <- meth_rse[selected_ranges, ]
-  SummarizedExperiment::rowRanges(meth_rse) <- unlist(liftover_ranges[selected_ranges]) #
+  SummarizedExperiment::rowRanges(meth_rse) <- liftover_ranges 
   
   # Return meth_rse 
   return(meth_rse)

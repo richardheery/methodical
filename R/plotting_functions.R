@@ -562,6 +562,9 @@ annotatePlot <- function(meth_site_plot, annotation_grl, reference_tss = FALSE, 
   } else if(length(annotation_grl) != length(grl_colours)){
     stop("grl_colours must have the same length as annotation_grl")
   }
+  
+  # Add names from annotation_grl to grl_colours
+  if(is.null(names(grl_colours))){names(grl_colours) <- names(annotation_grl)}
     
   # If reference_tss is TRUE, try to extract tss_range from meth_site_plot
   if(is(reference_tss, "logical")){
