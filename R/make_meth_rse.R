@@ -182,7 +182,7 @@ makeMethRSEFromInputFiles <- function(meth_files, seqnames_col, start_col,
 #' Default is both "beta" and "cov" assays. 
 #' @return A RangedSummarizedExperiment 
 #' @export
-#' @examples
+#' @examplesIf requireNamespace("methrix", quietly = TRUE)
 #' # Load a sample methrix object
 #' data("methrix_data", package = "methrix")
 #'   

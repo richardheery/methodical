@@ -19,10 +19,12 @@ A RangedSummarizedExperiment
 Convert a Methrix object into a RangedSummarizedExperiment
 }
 \examples{
+\dontshow{if (requireNamespace("methrix", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # Load a sample methrix object
 data("methrix_data", package = "methrix")
   
 # Convert methrix to a RangedSummarizedExperiment with one assay for the methylation beta values
 meth_rse <- methodical::methrixToRSE(methrix_data, assays = "beta")
 print(meth_rse)
+\dontshow{\}) # examplesIf}
 }

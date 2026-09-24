@@ -233,7 +233,7 @@ liftoverMethRSE <- function(meth_rse, chain, remove_one_to_many_mapping = TRUE,
   
   # If strand is * for rowRanges, change to +
   row_ranges <- SummarizedExperiment::rowRanges(meth_rse)
-  GenomicRanges::strand(row_ranges)[which(GenomicRanges::strand(row_ranges) == "*")] <- "+"
+  GenomicRanges::strand(row_ranges)[which(as.character(GenomicRanges::strand(row_ranges)) == "*")] <- "+"
   
   # Liftover rowRanges for meth_rse using specified liftover chain file
   liftover_ranges <- rtracklayer::liftOver(row_ranges, chain)
@@ -277,8 +277,8 @@ liftoverMethRSE <- function(meth_rse, chain, remove_one_to_many_mapping = TRUE,
   
   # If regions were lifted over to the reverse strand, shift their position upstream by 1 bp
   liftover_ranges <- unlist(liftover_ranges[selected_ranges])
-  liftover_ranges[which(GenomicRanges::strand(liftover_ranges) == "-")] <- 
-    GenomicRanges::shift(liftover_ranges[which(GenomicRanges::strand(liftover_ranges) == "-")], - 1)
+  liftover_ranges[which(as.character(GenomicRanges::strand(liftover_ranges)) == "-")] <- 
+    GenomicRanges::shift(liftover_ranges[which(as.character(GenomicRanges::strand(liftover_ranges)) == "-")], - 1)
   GenomicRanges::strand(liftover_ranges) <- "*"
   
   # Subset meth_rse for selected rows and update rowRanges
